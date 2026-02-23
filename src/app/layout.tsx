@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Atkinson_Hyperlegible } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import ClubNav from '@/components/ClubNav'
 import JsonLd from '@/components/JsonLd'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 
-const inter = Inter({ subsets: ['latin'] })
+const atkinson = Atkinson_Hyperlegible({ subsets: ['latin'], weight: ['400', '700'] })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
 
@@ -62,24 +62,22 @@ export default function RootLayout({
   const gaMeasurementId = process.env.GA_MEASUREMENT_ID
 
   return (
-    <html lang="en">
+    <html lang="en" className="bg-[#0B1F21]">
       <head>
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
       </head>
-      <body className={`${inter.className} bg-[#0a0a0a] text-white antialiased`}>
+      <body className={`${atkinson.className} bg-[#0B1F21] text-white antialiased`}>
         {gaMeasurementId && (
           <GoogleAnalytics measurementId={gaMeasurementId} />
         )}
         <Navbar />
         <ClubNav />
         <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
-        <footer className="mt-16 border-t border-[#222] py-8 text-center text-sm text-gray-400">
+        <footer className="mt-16 border-t border-[#222] px-4 py-8 text-center text-sm text-white/60">
           <p>
             PLHub — Premier League news aggregated from Reddit and BBC Sport.
-          </p>
-          <p className="mt-1">
-            Not affiliated with the Premier League or its clubs.
+            <span className="hidden sm:inline"> Not affiliated with the Premier League or its clubs.</span>
           </p>
         </footer>
       </body>

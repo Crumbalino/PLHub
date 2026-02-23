@@ -18,6 +18,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'resources.premierleague.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.redditinc.com',
+      },
     ],
   },
 }

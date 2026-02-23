@@ -3,19 +3,21 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a0a;
+  --background: #0B1F21;
   --foreground: #ededed;
   --brand-teal: #00555A;
   --brand-gold: #C4A23E;
 }
 
 html {
-  font-size: 17px;
+  font-size: 18px;
 }
 
 body {
-  background: var(--background);
+  background: #0B1F21 !important;
   color: var(--foreground);
+  letter-spacing: 0.01em;
+  line-height: 1.65;
 }
 
 /* Hide scrollbar but allow scrolling */
