@@ -6,8 +6,8 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-2xl">⚽</span>
-          <span className="text-xl font-bold tracking-tight text-white">
-            PL<span className="text-[#3DFF91]">Hub</span>
+          <span className="text-xl font-bold tracking-tight">
+            <span className="text-brand-teal">PL</span><span className="text-brand-gold">Hub</span>
           </span>
         </Link>
         <div className="flex items-center gap-4 text-sm text-gray-400">

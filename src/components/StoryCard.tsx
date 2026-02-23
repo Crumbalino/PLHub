@@ -1,15 +1,57 @@
+import Image from 'next/image'
 import { Post } from '@/types'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
-import { formatDistanceToNow } from '@/lib/utils'
+import { formatDistanceToNow, decodeHtmlEntities } from '@/lib/utils'
 import JsonLd from './JsonLd'
 
 interface StoryCardProps {
   post: Post
 }
 
+const TRUSTED_SOURCES = new Set(['BBC Sport', 'Sky Sports', 'The Guardian'])
+
+type CredibilityTier = 'trusted' | 'community'
+
+function getCredibilityTier(post: Post): CredibilityTier {
+  if (
+    post.source === 'rss' &&
+    post.subreddit &&
+    TRUSTED_SOURCES.has(post.subreddit)
+  ) {
+    return 'trusted'
+  }
+  return 'community'
+}
+
+function CredibilityBadge({ tier }: { tier: CredibilityTier }) {
+  if (tier === 'trusted') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-[#C4A23E]/10 px-2 py-0.5 text-[11px] font-medium tracking-wide text-[#C4A23E]">
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+          <path
+            d="M1.5 4.5L3.5 6.5L7.5 2.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Trusted Source
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center rounded-full bg-white/5 px-2 py-0.5 text-[11px] font-medium tracking-wide text-gray-500">
+      Community
+    </span>
+  )
+}
+
 export default function StoryCard({ post }: StoryCardProps) {
   const club = post.club_slug ? CLUBS_BY_SLUG[post.club_slug] : null
-  const accentColor = club?.primaryColor ?? '#3DFF91'
+  const credibilityTier = getCredibilityTier(post)
+  const sourceName =
+    post.source === 'reddit' ? 'Reddit' : (post.subreddit ?? 'RSS')
 
   const articleSchema = {
     '@context': 'https://schema.org',
@@ -18,97 +60,110 @@ export default function StoryCard({ post }: StoryCardProps) {
     url: post.url,
     datePublished: post.published_at,
     author: post.author
-      ? {
-          '@type': 'Person',
-          name: post.author,
-        }
+      ? { '@type': 'Person', name: post.author }
       : undefined,
     publisher: {
       '@type': 'Organization',
-      name: post.source === 'reddit' ? 'Reddit' : 'BBC Sport',
+      name: sourceName,
     },
   }
 
   return (
-    <article
-      className="relative flex flex-col gap-3 overflow-hidden rounded-xl bg-[#1a1a1a] p-4 transition-colors hover:bg-[#1f1f1f]"
-      style={{ borderLeft: `3px solid ${accentColor}` }}
-    >
+    <article className="flex flex-col gap-4 rounded-2xl bg-[#141414] p-6 transition-colors hover:bg-[#181818]">
       <JsonLd data={articleSchema} />
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          {club && (
-            <span className="text-lg" aria-label={club.name}>
-              {club.badgeEmoji}
-            </span>
-          )}
-          <span
-            className={`rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ${
-              post.source === 'reddit'
-                ? 'bg-orange-500/20 text-orange-400'
-                : 'bg-blue-500/20 text-blue-400'
-            }`}
-          >
-            {post.source === 'reddit' ? 'Reddit' : 'BBC Sport'}
+      {/* 1. HEADER ROW — club badge + short name + source + timestamp */}
+      <div className="flex items-center gap-2 text-xs text-gray-400">
+        {/* Club badge or generic ball */}
+        {club ? (
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10">
+            <Image
+              src={club.badgeUrl}
+              alt={`${club.name} badge`}
+              width={24}
+              height={24}
+              unoptimized
+              className="object-contain"
+            />
           </span>
-          {post.club_slug && club && (
-            <span
-              className="rounded px-2 py-0.5 text-xs font-medium"
-              style={{
-                backgroundColor: accentColor + '22',
-                color: accentColor,
-              }}
-            >
-              {club.name}
-            </span>
-          )}
-        </div>
-        <time
-          dateTime={post.published_at}
-          className="shrink-0 text-xs text-gray-500"
-        >
+        ) : (
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-base">
+            ⚽
+          </span>
+        )}
+
+        {/* Club short name */}
+        {club && (
+          <>
+            <span className="font-medium text-gray-300">{club.shortName}</span>
+            <span className="text-gray-600" aria-hidden="true">·</span>
+          </>
+        )}
+
+        {/* Source */}
+        <span>{sourceName}</span>
+
+        <span className="text-gray-600" aria-hidden="true">·</span>
+
+        {/* Timestamp */}
+        <time dateTime={post.published_at}>
           {formatDistanceToNow(post.published_at)}
         </time>
       </div>
 
-      {/* Title */}
-      <h3 className="text-sm font-semibold leading-snug text-white">
+      {/* 2. HEADLINE — dominant element */}
+      <h3 className="text-xl font-bold leading-snug text-white">
         <a
           href={post.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="transition-colors hover:text-gray-300"
+          className="transition-colors hover:text-gray-200"
         >
-          {post.title}
+          {decodeHtmlEntities(post.title)}
         </a>
       </h3>
 
-      {/* AI Summary */}
+      {/* 3. AI SUMMARY — indented with teal left border */}
       {post.summary && (
-        <p className="text-xs leading-relaxed text-gray-400">{post.summary}</p>
+        <div className="border-l-2 pl-4" style={{ borderColor: 'var(--brand-teal)' }}>
+          <p className="text-sm leading-relaxed text-gray-300">
+            {decodeHtmlEntities(post.summary)}
+          </p>
+        </div>
       )}
 
-      {/* Footer */}
-      <div className="mt-auto flex items-center justify-between text-xs text-gray-500">
-        {post.source === 'reddit' && post.score > 0 && (
-          <span className="flex items-center gap-1">
-            <span className="text-orange-400">▲</span>
-            {post.score.toLocaleString()} upvotes
-          </span>
-        )}
-        {post.source === 'rss' && (
-          <span>BBC Sport</span>
-        )}
+      {/* 4. CTA ROW */}
+      <div>
         <a
           href={post.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-auto transition-colors hover:text-white"
+          className="text-sm font-medium text-[#C4A23E] hover:underline"
         >
-          Read more →
+          {post.source === 'reddit' ? 'Read thread →' : 'Read article →'}
         </a>
+      </div>
+
+      {/* 5. TAGS ROW — credibility + club tag + upvotes, small and muted */}
+      <div className="flex flex-wrap items-center gap-2">
+        <CredibilityBadge tier={credibilityTier} />
+        {club && (
+          <span
+            className="rounded-full px-2 py-0.5 text-[11px] font-medium"
+            style={{
+              backgroundColor: club.primaryColor + '18',
+              color: club.primaryColor,
+            }}
+          >
+            {club.shortName}
+          </span>
+        )}
+        {post.source === 'reddit' && post.score > 0 && (
+          <span className="flex items-center gap-1 text-[11px] text-gray-500">
+            <span className="text-orange-400" aria-hidden="true">▲</span>
+            {post.score.toLocaleString()}
+          </span>
+        )}
       </div>
     </article>
   )

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchBBCSportRss } from '@/lib/rss'
+import { fetchAllRssFeeds } from "@/lib/rss"
 import { generateSummary, delay } from '@/lib/claude'
 import { createServerClient } from '@/lib/supabase'
 
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = createServerClient()
-    const posts = await fetchBBCSportRss()
+    const posts = await fetchAllRssFeeds()
 
     let inserted = 0
     let skipped = 0

@@ -5,6 +5,12 @@
 :root {
   --background: #0a0a0a;
   --foreground: #ededed;
+  --brand-teal: #00555A;
+  --brand-gold: #C4A23E;
+}
+
+html {
+  font-size: 17px;
 }
 
 body {

@@ -1,10 +1,12 @@
 export interface Club {
   slug: string
   name: string
+  shortName: string
   subreddit: string
   primaryColor: string
   secondaryColor: string
   badgeEmoji: string
+  badgeUrl: string
 }
 
 export interface Post {

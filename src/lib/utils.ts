@@ -1,3 +1,19 @@
+const HTML_ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&apos;': "'",
+  '&#x27;': "'",
+  '&#x2F;': '/',
+  '&nbsp;': ' ',
+}
+
+export function decodeHtmlEntities(str: string): string {
+  return str.replace(/&[#\w]+;/g, (entity) => HTML_ENTITIES[entity] ?? entity)
+}
+
 export function formatDistanceToNow(dateString: string): string {
   const date = new Date(dateString)
   const now = new Date()

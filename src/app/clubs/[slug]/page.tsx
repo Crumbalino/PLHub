@@ -81,7 +81,7 @@ export default async function ClubPage({ params }: PageProps) {
     posts.length > 0 ? formatDistanceToNow(posts[0].fetched_at) : null
 
   return (
-    <>
+    <div className="mx-auto max-w-[760px]">
       {/* Breadcrumb */}
       <div className="mb-6">
         <Breadcrumb
@@ -94,10 +94,9 @@ export default async function ClubPage({ params }: PageProps) {
 
       {/* Club Hero Banner */}
       <section
-        className="mb-8 overflow-hidden rounded-2xl p-6 sm:p-8"
+        className="mb-10 overflow-hidden rounded-2xl p-6 sm:p-8"
         style={{
-          background: `linear-gradient(135deg, ${club.primaryColor}33 0%, ${club.secondaryColor}22 100%)`,
-          borderLeft: `4px solid ${club.primaryColor}`,
+          background: `linear-gradient(135deg, ${club.primaryColor}28 0%, ${club.secondaryColor}18 100%)`,
         }}
       >
         <div className="flex items-center gap-4">
@@ -118,7 +117,7 @@ export default async function ClubPage({ params }: PageProps) {
         </div>
 
         {/* Placeholder SEO copy */}
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-gray-400">
+        <p className="mt-4 text-sm leading-relaxed text-gray-400">
           Stay up to date with all the latest{' '}
           <strong className="text-white">{club.name}</strong> news, transfer
           gossip, match reports, and fan discussion. We aggregate posts from the{' '}
@@ -135,23 +134,23 @@ export default async function ClubPage({ params }: PageProps) {
         </p>
 
         {lastUpdated && (
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-2 text-xs text-gray-400">
             Last updated {lastUpdated}
           </p>
         )}
       </section>
 
-      {/* Posts Grid */}
+      {/* Posts Feed */}
       {posts.length === 0 ? (
         <EmptyState clubName={club.name} />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-8">
           {posts.map((post) => (
             <StoryCard key={post.id} post={post} />
           ))}
         </div>
       )}
-    </>
+    </div>
   )
 }
 
@@ -162,7 +161,7 @@ function EmptyState({ clubName }: { clubName: string }) {
       <h3 className="mt-4 text-lg font-semibold text-gray-300">
         No {clubName} stories yet
       </h3>
-      <p className="mt-2 max-w-sm text-sm text-gray-500">
+      <p className="mt-2 max-w-sm text-sm text-gray-400">
         {clubName} news will appear here once the cron jobs have run. Check back
         soon or trigger the cron manually.
       </p>

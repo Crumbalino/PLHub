@@ -1,6 +1,19 @@
 import Parser from 'rss-parser'
 
-const BBC_FOOTBALL_RSS = 'https://feeds.bbci.co.uk/sport/football/rss.xml'
+const FEEDS = [
+  {
+    name: 'BBC Sport',
+    url: 'https://feeds.bbci.co.uk/sport/football/rss.xml',
+  },
+  {
+    name: 'Sky Sports',
+    url: 'https://www.skysports.com/rss/12040',
+  },
+  {
+    name: 'The Guardian',
+    url: 'https://www.theguardian.com/football/rss',
+  },
+]
 
 export interface FetchedRssPost {
   external_id: string
@@ -11,12 +24,12 @@ export interface FetchedRssPost {
   club_slug: null
   author: string | null
   score: number
-  subreddit: null
+  subreddit: string // repurposed as feed name for RSS items
   image_url: string | null
   published_at: string
 }
 
-export async function fetchBBCSportRss(): Promise<FetchedRssPost[]> {
+async function fetchFeed(name: string, url: string): Promise<FetchedRssPost[]> {
   const parser = new Parser({
     customFields: {
       item: [['media:thumbnail', 'mediaThumbnail']],
@@ -24,7 +37,7 @@ export async function fetchBBCSportRss(): Promise<FetchedRssPost[]> {
   })
 
   try {
-    const feed = await parser.parseURL(BBC_FOOTBALL_RSS)
+    const feed = await parser.parseURL(url)
 
     return (feed.items ?? []).map((item) => {
       const guid = item.guid ?? item.link ?? ''
@@ -43,13 +56,38 @@ export async function fetchBBCSportRss(): Promise<FetchedRssPost[]> {
         club_slug: null,
         author: item.creator ?? null,
         score: 0,
-        subreddit: null,
+        subreddit: name,
         image_url: imageUrl,
         published_at: item.isoDate ?? item.pubDate ?? new Date().toISOString(),
       }
     })
   } catch (err) {
-    console.error('Failed to fetch BBC Sport RSS:', err)
+    console.error(`Failed to fetch ${name} RSS:`, err)
     return []
   }
 }
+
+export async function fetchAllRssFeeds(): Promise<FetchedRssPost[]> {
+  const results = await Promise.allSettled(
+    FEEDS.map((feed) => fetchFeed(feed.name, feed.url))
+  )
+
+  const allPosts: FetchedRssPost[] = []
+  const seen = new Set<string>()
+
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      for (const post of result.value) {
+        if (!seen.has(post.external_id)) {
+          seen.add(post.external_id)
+          allPosts.push(post)
+        }
+      }
+    }
+  }
+
+  return allPosts
+}
+
+// Keep named export for backwards compatibility
+export const fetchBBCSportRss = () => fetchFeed('BBC Sport', FEEDS[0].url)

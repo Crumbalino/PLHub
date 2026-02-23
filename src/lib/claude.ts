@@ -13,12 +13,22 @@ export async function generateSummary(
     return null
   }
 
-  const prompt = `Summarize this Premier League news in 2-3 sentences for a fan: ${title}. ${content ?? ''}`
+  const prompt = `You're writing a 2-3 sentence summary for PLHub, a Premier League news site. The reader is a football fan, 35+, sharp, short on time. They want to know: what happened, why it matters, and whether it's worth clicking.
+
+Tone: dry, slightly cheeky, like a well-informed mate. No hype, no filler, no corporate speak. Be direct.
+
+Format: 2-3 short punchy sentences max. No bullet points. No intro phrases like 'This article...' or 'In this post...'. Just get straight to it.
+
+If it's a Reddit thread and there are comments available, factor in what fans are actually saying — the mood, the debate, the funny take. If it's a video post with no description, say what you can reasonably infer from the title.
+
+Content to summarise:
+Title: ${title}
+Content: ${content ?? ''}`
 
   try {
     const message = await client.messages.create({
       model: 'claude-opus-4-6',
-      max_tokens: 150,
+      max_tokens: 200,
       messages: [
         {
           role: 'user',

@@ -74,7 +74,7 @@ export default function RootLayout({
         <Navbar />
         <ClubNav />
         <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
-        <footer className="mt-16 border-t border-[#222] py-8 text-center text-sm text-gray-500">
+        <footer className="mt-16 border-t border-[#222] py-8 text-center text-sm text-gray-400">
           <p>
             PLHub — Premier League news aggregated from Reddit and BBC Sport.
           </p>

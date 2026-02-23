@@ -12,6 +12,8 @@ const config: Config = {
         background: '#0a0a0a',
         surface: '#1a1a1a',
         border: '#222222',
+        'brand-teal': '#00555A',
+        'brand-gold': '#C4A23E',
       },
     },
   },

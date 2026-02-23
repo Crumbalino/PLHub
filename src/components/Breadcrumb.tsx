@@ -25,7 +25,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
   return (
     <>
       <JsonLd data={schema} />
-      <nav aria-label="Breadcrumb" className="text-sm text-gray-500">
+      <nav aria-label="Breadcrumb" className="text-sm text-gray-400">
         <ol className="flex items-center gap-2">
           {items.map((item, index) => (
             <li key={item.href} className="flex items-center gap-2">

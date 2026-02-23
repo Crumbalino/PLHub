@@ -14,6 +14,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'ichef.bbci.co.uk',
       },
+      {
+        protocol: 'https',
+        hostname: 'resources.premierleague.com',
+      },
     ],
   },
 }
