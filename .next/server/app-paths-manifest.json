@@ -1,0 +1,6 @@
+{
+  "/api/cron/rss/route": "app/api/cron/rss/route.js",
+  "/api/cron/reddit/route": "app/api/cron/reddit/route.js",
+  "/page": "app/page.js",
+  "/clubs/[slug]/page": "app/clubs/[slug]/page.js"
+}
