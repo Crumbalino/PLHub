@@ -13,6 +13,18 @@ const FEEDS = [
     name: 'The Guardian',
     url: 'https://www.theguardian.com/football/rss',
   },
+  {
+    name: 'talkSPORT',
+    url: 'https://talksport.com/feed/',
+  },
+  {
+    name: 'Goal.com',
+    url: 'https://www.goal.com/feeds/en/news',
+  },
+  {
+    name: '90min',
+    url: 'https://www.90min.com/feed',
+  },
 ]
 
 export interface FetchedRssPost {

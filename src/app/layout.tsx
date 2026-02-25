@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Atkinson_Hyperlegible } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
-import ClubNav from '@/components/ClubNav'
+import MatchTicker from '@/components/MatchTicker'
 import JsonLd from '@/components/JsonLd'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 
@@ -13,22 +13,33 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'PLHub — Premier League News Aggregator',
+    default: 'PLHub — Premier League News. Right Now.',
     template: '%s | PLHub',
   },
   description:
-    'Latest Premier League news, transfer gossip and match updates from all 20 clubs aggregated from Reddit and BBC Sport.',
+    'The pulse of the Premier League. News and views from all 20 clubs, ranked by the community. Transfer rumours, match reports and fan discussion. Constantly updated.',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
   openGraph: {
     type: 'website',
     url: siteUrl,
     siteName: 'PLHub',
+    locale: 'en_GB',
+    images: [{ url: '/PLHlogowhite_1x1.png', width: 1000, height: 1000 }],
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
+    site: '@plhub',
   },
   robots: {
     index: true,
     follow: true,
+  },
+  alternates: {
+    canonical: siteUrl,
   },
 }
 
@@ -46,7 +57,7 @@ const websiteSchema = {
   '@type': 'WebSite',
   name: 'PLHub',
   url: siteUrl,
-  description: 'Latest Premier League news from all 20 clubs.',
+  description: 'Premier League news and views ranked by the community',
   potentialAction: {
     '@type': 'SearchAction',
     target: `${siteUrl}/?q={search_term_string}`,
@@ -72,9 +83,9 @@ export default function RootLayout({
           <GoogleAnalytics measurementId={gaMeasurementId} />
         )}
         <Navbar />
-        <ClubNav />
+        <MatchTicker />
         <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
-        <footer className="mt-16 border-t border-[#222] px-4 py-8 text-center text-sm text-white/60">
+        <footer className="mt-16 border-t border-[#222] px-4 py-8 text-center text-sm text-white">
           <p>
             PLHub — Premier League news aggregated from Reddit and BBC Sport.
             <span className="hidden sm:inline"> Not affiliated with the Premier League or its clubs.</span>

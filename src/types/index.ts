@@ -20,6 +20,7 @@ export interface Post {
   club_slug: string | null
   author: string | null
   score: number
+  previous_score?: number
   subreddit: string | null
   image_url: string | null
   fetched_at: string

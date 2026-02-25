@@ -25,16 +25,30 @@ export async function GET(req: NextRequest) {
       // Check for duplicate
       const { data: existing } = await supabase
         .from('posts')
-        .select('id')
+        .select('id, score')
         .eq('external_id', post.external_id)
         .single()
 
       if (existing) {
-        skipped++
+        // Post exists — update score
+        const { error } = await supabase
+          .from('posts')
+          .update({
+            score: post.score,
+            fetched_at: new Date().toISOString(),
+          })
+          .eq('external_id', post.external_id)
+
+        if (error) {
+          console.error('Update error:', error)
+          errors++
+        } else {
+          skipped++
+        }
         continue
       }
 
-      // Generate AI summary
+      // Generate AI summary for new posts
       const summary = await generateSummary(post.title, post.content)
       await delay(200)
 

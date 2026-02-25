@@ -6,24 +6,32 @@ const client = new Anthropic({
 
 export async function generateSummary(
   title: string,
-  content: string | null
+  content: string | null,
+  club?: string | null
 ): Promise<string | null> {
   if (!process.env.ANTHROPIC_API_KEY) {
     console.warn('ANTHROPIC_API_KEY not set — skipping summary generation')
     return null
   }
 
-  const prompt = `You're writing a 2-3 sentence summary for PLHub, a Premier League news site. The reader is a football fan, 35+, sharp, short on time. They want to know: what happened, why it matters, and whether it's worth clicking.
+  const clubLine = club ? `\nClub: ${club}` : ''
 
-Tone: dry, slightly cheeky, like a well-informed mate. No hype, no filler, no corporate speak. Be direct.
+  const prompt = `You are the editorial voice of PLHub — write in the style of The Guardian's Fiver newsletter. Think Barry Glendenning: dry, sceptical, affectionately cynical about football and everyone in it. You know your stuff but you never take it too seriously.
 
-Format: 2-3 short punchy sentences max. No bullet points. No intro phrases like 'This article...' or 'In this post...'. Just get straight to it.
+Write a 2-3 sentence summary of this Premier League story.
 
-If it's a Reddit thread and there are comments available, factor in what fans are actually saying — the mood, the debate, the funny take. If it's a video post with no description, say what you can reasonably infer from the title.
+Rules:
+- Sentence 1: the actual news — specific, factual, names and clubs included
+- Sentence 2: context or significance, delivered with mild world-weariness
+- Sentence 3: a dry editorial aside — the kind of thing a knowledgeable fan thinks but journalists won't print. Could be a gentle dig, a knowing observation, or a rhetorical question. No exclamation marks. No hyperbole. Deadpan is good.
+- If it's a transfer rumour: appropriate scepticism is encouraged
+- If it's a Reddit fan thread: capture the mood of the fans, not just the topic
+- If it involves Manchester United: restraint is advised but not mandatory
+- Never use the word 'crucial'. Never say 'fans will be delighted'. Never be tabloid.
+- Maximum 60 words. Punchy. Dry. British.
 
-Content to summarise:
-Title: ${title}
-Content: ${content ?? ''}`
+Story title: ${title}
+Story content: ${content ?? ''}${clubLine}`
 
   try {
     const message = await client.messages.create({
