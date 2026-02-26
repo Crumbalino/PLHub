@@ -9,6 +9,9 @@ import PulseBadge from '@/components/PulseBadge'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
 import Pagination from '@/components/Pagination'
+import PLTableWidgetServer from '@/components/PLTableWidgetServer'
+import FixturesWidgetServer from '@/components/FixturesWidgetServer'
+import AdPlaceholder from '@/components/AdPlaceholder'
 import { formatDistanceToNow } from '@/lib/utils'
 import { CLUBS_BY_SLUG, CLUBS } from '@/lib/clubs'
 import { calculateIndex } from '@/lib/plhub-index'
@@ -243,10 +246,37 @@ export default async function HomePage({ searchParams }: PageProps) {
   const groupedPosts = groupPostsByTime(indexPosts)
 
   return (
-    <div className="max-w-5xl mx-auto px-4">
-      <div className="flex gap-8">
-        {/* Main feed — left, wider */}
-        <div className="flex-1 min-w-0">
+    <div className="min-h-screen bg-[#0B1F21]">
+      {/* Mobile/Tablet: Compact horizontal strips above feed */}
+      <div className="lg:hidden border-b border-white/10 px-4 py-4 space-y-4">
+        {/* Compact PL Table Strip */}
+        <div>
+          <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-3">League Table</h3>
+          <PLTableWidgetServer compact={true} />
+        </div>
+
+        {/* Compact Fixtures Strip */}
+        <div>
+          <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-3">Next Matches</h3>
+          <FixturesWidgetServer compact={true} />
+        </div>
+      </div>
+
+      <div className="max-w-[1320px] mx-auto px-4 py-6">
+        <div className="flex gap-6">
+          {/* LEFT SIDEBAR — 280px fixed */}
+          <div className="hidden lg:block w-[280px] shrink-0">
+            <div className="sticky top-20 space-y-6">
+              {/* PL Table Widget */}
+              <PLTableWidgetServer compact={false} />
+
+              {/* Ad Placeholder */}
+              <AdPlaceholder size="300x250" />
+            </div>
+          </div>
+
+          {/* CENTRE FEED — flex-1, max-w ~720px */}
+          <div className="flex-1 min-w-0 lg:max-w-[720px]">
       {/* Hero SEO Section */}
       <section className="pt-6 pb-4 text-center">
         <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
@@ -450,25 +480,44 @@ export default async function HomePage({ searchParams }: PageProps) {
               </h2>
 
               <div className="flex flex-col gap-3">
-                {groupedPosts.map(group => (
-                  <div key={group.label}>
-                    <div className="flex items-center gap-3 my-4">
-                      <div className="flex-1 h-px bg-white/[0.06]" />
-                      <span className="text-[11px] text-white/30 font-medium uppercase tracking-widest">
-                        {group.label}
-                      </span>
-                      <div className="flex-1 h-px bg-white/[0.06]" />
-                    </div>
-                    {group.posts.map((post, index) => (
+                {groupedPosts.map(group => {
+                  let cardCount = 0
+                  const postElements: React.ReactNode[] = []
+
+                  group.posts.forEach((post, index) => {
+                    postElements.push(
                       <StoryCard
                         key={post.id}
                         post={post}
                         indexScore={toIndex(post.score ?? 0)}
                         featured={index % 5 === 0}
                       />
-                    ))}
-                  </div>
-                ))}
+                    )
+                    cardCount++
+
+                    // Insert ad every 5 cards
+                    if (cardCount % 5 === 0 && cardCount < group.posts.length) {
+                      postElements.push(
+                        <div key={`ad-${post.id}`} className="my-2">
+                          <AdPlaceholder size="728x90" />
+                        </div>
+                      )
+                    }
+                  })
+
+                  return (
+                    <div key={group.label}>
+                      <div className="flex items-center gap-3 my-4">
+                        <div className="flex-1 h-px bg-white/[0.06]" />
+                        <span className="text-[11px] text-white/30 font-medium uppercase tracking-widest">
+                          {group.label}
+                        </span>
+                        <div className="flex-1 h-px bg-white/[0.06]" />
+                      </div>
+                      {postElements}
+                    </div>
+                  )
+                })}
               </div>
               <div className="mt-8">
                 <Pagination
@@ -482,14 +531,18 @@ export default async function HomePage({ searchParams }: PageProps) {
           )}
         </>
       )}
-        </div>
-        {/* End of main feed */}
+          </div>
+          {/* End of centre feed */}
 
-        {/* Sidebar — right, sticky */}
-        <div className="hidden lg:block w-[280px] shrink-0">
-          <div className="sticky top-[70px] space-y-6">
-            <PLTable />
-            <NextFixtures />
+          {/* RIGHT SIDEBAR — 280px fixed */}
+          <div className="hidden lg:block w-[280px] shrink-0">
+            <div className="sticky top-20 space-y-6">
+              {/* Fixtures Widget */}
+              <FixturesWidgetServer compact={false} />
+
+              {/* Ad Placeholder */}
+              <AdPlaceholder size="300x250" />
+            </div>
           </div>
         </div>
       </div>
