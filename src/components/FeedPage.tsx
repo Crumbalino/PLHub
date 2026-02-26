@@ -3,18 +3,15 @@
 import { useState, useMemo } from 'react'
 import { Post } from '@/types'
 import FeedContainer from './FeedContainer'
-import Top5Tabs from './Top5Tabs'
 
 export default function FeedPage({
   initialPosts,
   totalCount,
   initialClub = null,
-  top5Posts = [],
 }: {
   initialPosts: Post[]
   totalCount: number
   initialClub?: string | null
-  top5Posts?: Post[]
 }) {
   const [clubFilter, setClubFilter] = useState<string | null>(initialClub || null)
 
@@ -26,15 +23,6 @@ export default function FeedPage({
       return clubName === clubFilter.toLowerCase()
     })
   }, [initialPosts, clubFilter])
-
-  const filteredTop5 = useMemo(() => {
-    if (!clubFilter) return top5Posts
-
-    return top5Posts.filter((post) => {
-      const clubName = post.club_slug?.toLowerCase() || ''
-      return clubName === clubFilter.toLowerCase()
-    })
-  }, [top5Posts, clubFilter])
 
   const headingText = clubFilter
     ? `${clubFilter.replace('-', ' ').charAt(0).toUpperCase() + clubFilter.replace('-', ' ').slice(1)} Stories`
@@ -58,8 +46,6 @@ export default function FeedPage({
         </div>
       )}
 
-      {/* Top 5 - only show when no club filter or club has posts */}
-      {!clubFilter && filteredTop5.length > 0 && <Top5Tabs posts={filteredTop5} />}
 
       {/* Feed heading */}
       <div className="mb-6 mt-4">

@@ -422,20 +422,20 @@ export default async function HomePage({ searchParams }: PageProps) {
               <>
                 {/* Trending section */}
                 {currentPage === 1 && sort === 'index' && !clubSlug && trendingPosts.length > 0 && (
-                  <section className="mb-8" aria-labelledby="trending-heading">
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                      <span className="text-white text-sm">↑</span>
+                  <section className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-green-400 text-sm">▲</span>
                       <span className="text-sm font-bold text-white">Trending</span>
                     </div>
-
                     <div className="flex flex-col gap-2">
-                      {trendingPosts.map((post, idx) => (
+                      {trendingPosts.slice(0, 5).map((post, idx) => (
                         <a
                           key={post.id}
                           href={`#post-${post.id}`}
-                          className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 cursor-pointer transition-all duration-150 hover:border-l-2 hover:border-[#F5C842] hover:pl-1"
+                          className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2 hover:bg-white/10 transition-colors"
                         >
-                          <span className="w-6 text-white font-bold text-sm text-center">{idx + 1}</span>
+                          <span className="w-5 text-sm font-bold text-white">{idx + 1}</span>
+                          <span className="text-green-400 text-xs">▲</span>
                           <span className="text-sm text-white line-clamp-1 flex-1">{post.title}</span>
                         </a>
                       ))}
@@ -455,7 +455,6 @@ export default async function HomePage({ searchParams }: PageProps) {
                       initialPosts={filteredIndexPosts}
                       totalCount={totalCount}
                       initialClub={clubSlug || null}
-                      top5Posts={top5}
                     />
                   </section>
                 )}
