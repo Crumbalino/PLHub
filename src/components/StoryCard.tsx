@@ -140,7 +140,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
           <img
             src={post.image_url || ''}
             alt=""
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
             onError={() => setImgError(true)}
             loading="lazy"
           />
@@ -162,11 +162,18 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
             ) : (
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: borderColor }} />
             )}
-            <span className="text-xs font-medium text-white">{sourceName}</span>
+            <span className="text-sm font-medium text-white">{sourceName}</span>
           </div>
 
           {/* Timestamp */}
-          <div className="absolute bottom-3 right-4 text-xs text-white/70">{getTimeDisplay(post)}</div>
+          <div className="absolute bottom-3 right-4 text-sm text-white/70">{getTimeDisplay(post)}</div>
+
+          {/* Score badge */}
+          {indexScore && (
+            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
+              ↑ {indexScore}
+            </div>
+          )}
 
           {/* YouTube play button overlay */}
           {post.source === 'youtube' && (
@@ -183,16 +190,16 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
       {!hasValidImage && (
         <div className="flex items-center gap-2 px-5 pt-4 pb-2 text-xs border-b border-white/5">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: borderColor }} />
-          <span className="font-medium text-gray-300">{sourceName}</span>
+          <span className="font-medium text-gray-200">{sourceName}</span>
           <div className="flex-1" />
-          <span className="text-gray-500">{getTimeDisplay(post)}</span>
+          <span className="text-sm text-gray-400">{getTimeDisplay(post)}</span>
         </div>
       )}
 
       {/* CONTENT AREA */}
       <div className="px-4 md:px-5 pt-4 pb-5">
         {/* Headline */}
-        <h3 className="text-lg md:text-xl font-semibold text-white leading-snug tracking-tight mb-3 line-clamp-3">
+        <h3 className="text-xl md:text-2xl font-bold text-white leading-tight tracking-tight mb-3 line-clamp-3">
           {decodeHtmlEntities(post.title)}
         </h3>
 
@@ -201,7 +208,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
           <div className="mb-3">
             <button
               onClick={() => setExpanded(!expanded)}
-              className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white cursor-pointer transition-colors select-none"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] cursor-pointer transition-colors select-none"
             >
               {expanded ? 'Less ▾' : 'More ▸'}
             </button>
@@ -227,7 +234,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
         {/* Footer row */}
         <div className="flex items-center justify-between pt-3 border-t border-white/5">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
             {post.club_slug && (
               <>
                 <img
@@ -249,6 +256,11 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
               </>
             )}
           </div>
+          {!hasValidImage && indexScore && (
+            <div className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
+              ↑ {indexScore}
+            </div>
+          )}
         </div>
       </div>
     </article>

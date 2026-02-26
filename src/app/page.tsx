@@ -359,7 +359,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         <h1 className="text-2xl md:text-4xl font-bold text-white text-center">
           The Pulse of the Premier League
         </h1>
-        <p className="mt-2 text-sm md:text-base text-gray-300 text-center">
+        <p className="mt-2 text-sm md:text-base text-gray-200 text-center">
           Curated and summarised by The Secret Pundit
         </p>
       </section>
@@ -421,7 +421,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
       {/* Club filter indicator */}
       {clubSlug && (
-        <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center gap-2 text-sm text-gray-300">
+        <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center gap-2 text-sm text-gray-200">
           <span>Showing: <span className="font-semibold text-white">{CLUBS_BY_SLUG[clubSlug]?.name || clubSlug}</span></span>
           <Link
             href="/"
@@ -433,6 +433,13 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       )}
 
+      {/* Feed sort controls */}
+      <div className="flex items-center justify-center gap-2 mb-6 mx-auto max-w-[1320px] px-4">
+        <a href={clubSlug ? `/?club=${clubSlug}` : '/'} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${sort === 'index' ? 'bg-[#00555A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>Pulse</a>
+        <a href={`/?sort=hot${clubSlug ? `&club=${clubSlug}` : ''}`} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${sort === 'hot' ? 'bg-[#00555A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>Hot</a>
+        <a href={`/?sort=new${clubSlug ? `&club=${clubSlug}` : ''}`} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${sort === 'new' ? 'bg-[#00555A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>New</a>
+      </div>
+
       {!hasContent ? (
         <EmptyState />
       ) : (
@@ -443,11 +450,11 @@ export default async function HomePage({ searchParams }: PageProps) {
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px flex-1 bg-white/5" />
                 <div>
-                  <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                     <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
                     Today's Top 5
                   </h2>
-                  <p className="text-sm text-gray-400 mt-1">What The Secret Pundit is watching right now</p>
+                  <p className="text-base text-gray-400 mt-1">What The Secret Pundit is watching right now</p>
                 </div>
                 <div className="h-px flex-1 bg-white/5" />
               </div>
@@ -475,7 +482,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                       {/* Headline + meta */}
                       <div className="flex-1 min-w-0">
                         <p className={`font-semibold leading-snug line-clamp-2 group-hover:text-white/60 transition-colors ${
-                          index === 0 ? 'text-sm text-white' : 'text-xs text-white/80'
+                          index === 0 ? 'text-base text-white' : 'text-base text-white'
                         }`}>
                           {decodeHtmlEntities(post.title)}
                         </p>
@@ -487,7 +494,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                               className="w-3 h-3 object-contain opacity-60"
                             />
                           )}
-                          <span className="text-[10px] text-white/30">{getTimeDisplay(post)}</span>
+                          <span className="text-sm text-gray-400">{getTimeDisplay(post)}</span>
                         </div>
                       </div>
                       {/* Pulse */}
@@ -567,15 +574,15 @@ export default async function HomePage({ searchParams }: PageProps) {
               <div className="mb-8">
                 <h2
                   id="index-heading"
-                  className="text-lg font-semibold tracking-tight text-white flex items-center gap-2 mb-2"
+                  className="text-xl font-bold tracking-tight text-white flex items-center gap-2 mb-2"
                 >
                   <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
                   Ranked by the PLHub Index
                 </h2>
-                <p className="text-sm text-gray-400 mb-2">
+                <p className="text-base text-gray-200 mb-2">
                   Stories ranked by source credibility, recency, and community engagement — not paid placement, ever.
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-400">
                   Updated {lastFetched || 'just now'}
                 </p>
               </div>

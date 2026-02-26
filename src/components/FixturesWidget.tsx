@@ -19,7 +19,7 @@ export default function FixturesWidget() {
   return (
     <div className="rounded-xl bg-[#152B2E] border border-white/5 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-        <span className="text-sm font-semibold text-[#C4A23E]">Upcoming</span>
+        <span className="text-base font-semibold text-[#C4A23E]">Upcoming</span>
         <span className="text-[10px] text-gray-400">Next 6</span>
       </div>
 
@@ -55,7 +55,7 @@ export default function FixturesWidget() {
       </div>
 
       <div className="border-t border-white/5 px-4 py-3">
-        <div className="text-sm font-semibold text-[#C4A23E] mb-3">Recent Results</div>
+        <div className="text-base font-semibold text-[#C4A23E] mb-3">Recent Results</div>
         <div className="space-y-2">
           {recentResults.map((result, idx) => (
             <div key={idx} className="flex items-center gap-2 justify-between">

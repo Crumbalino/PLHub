@@ -28,7 +28,7 @@ export default function PLTableWidget() {
     <div className="rounded-xl bg-[#152B2E] border border-white/5 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
         <div>
-          <span className="text-sm font-semibold text-[#C4A23E]">Premier League</span>
+          <span className="text-base font-semibold text-[#C4A23E]">Premier League</span>
           <span className="text-[10px] text-gray-400 ml-2">2025/26</span>
         </div>
       </div>
