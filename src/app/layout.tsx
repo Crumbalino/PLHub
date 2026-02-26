@@ -99,7 +99,7 @@ export default function RootLayout({
             PLHub — Premier League news aggregated from Reddit, BBC Sport, YouTube and more.
             <span className="hidden sm:inline"> Not affiliated with the Premier League or its clubs.</span>
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-500">
             All summaries by The Secret Pundit. Opinionated. Anonymous. Occasionally wrong.
           </p>
         </footer>

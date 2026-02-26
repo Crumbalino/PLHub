@@ -313,11 +313,11 @@ export default async function HomePage({ searchParams }: PageProps) {
           {/* CENTRE FEED — flex-1, max-w ~720px */}
           <div className="flex-1 min-w-0 lg:max-w-[720px]">
       {/* Hero SEO Section */}
-      <section className="pt-6 pb-8 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold text-white text-center">
+      <section className="pt-6 pb-8 px-4 text-center">
+        <h1 className="text-2xl md:text-4xl font-bold text-white text-center">
           The Pulse of the Premier League
         </h1>
-        <p className="mt-2 text-base text-gray-300 text-center">
+        <p className="mt-2 text-sm md:text-base text-gray-300 text-center">
           Curated and summarised by The Secret Pundit
         </p>
       </section>
@@ -351,12 +351,12 @@ export default async function HomePage({ searchParams }: PageProps) {
             </div>
 
             {/* Club Badges Grid */}
-            <div className="flex flex-wrap gap-2 justify-center">
+            <div className="flex flex-wrap gap-3 justify-center">
               {CLUBS.map((club) => (
                 <Link
                   key={club.slug}
                   href={`/?club=${club.slug}${sort !== 'index' ? `&sort=${sort}` : ''}`}
-                  className={`w-9 h-9 rounded-full p-1.5 cursor-pointer transition-colors ${
+                  className={`w-10 h-10 md:w-9 md:h-9 rounded-full p-1.5 cursor-pointer transition-colors ${
                     clubSlug === club.slug
                       ? 'bg-white/10 ring-2 ring-[#C4A23E]'
                       : 'bg-white/5 hover:bg-white/10'

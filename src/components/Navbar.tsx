@@ -25,13 +25,13 @@ function NavbarContent() {
 
         {/* Sort controls — center (desktop only) */}
         <div className="hidden sm:flex flex-1 justify-center items-center gap-2">
-          <a href={pulseUrl} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors min-h-[44px] flex items-center ${sort === 'index' ? 'bg-[#00555A] text-white' : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/5'}`}>
+          <a href={pulseUrl} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors min-h-[40px] flex items-center ${sort === 'index' ? 'bg-[#00555A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
             Pulse
           </a>
-          <a href={hotUrl} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors min-h-[44px] flex items-center ${sort === 'hot' ? 'bg-[#00555A] text-white' : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/5'}`}>
+          <a href={hotUrl} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors min-h-[40px] flex items-center ${sort === 'hot' ? 'bg-[#00555A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
             Hot
           </a>
-          <a href={newUrl} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors min-h-[44px] flex items-center ${sort === 'new' ? 'bg-[#00555A] text-white' : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/5'}`}>
+          <a href={newUrl} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors min-h-[40px] flex items-center ${sort === 'new' ? 'bg-[#00555A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
             New
           </a>
         </div>

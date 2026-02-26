@@ -136,7 +136,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
     >
       {/* IMAGE BLOCK */}
       {hasValidImage && !imgError && (
-        <div className="relative w-full h-[180px] md:h-[220px]">
+        <div className="relative w-full h-[160px] md:h-[220px]">
           <img
             src={post.image_url || ''}
             alt=""
@@ -190,9 +190,9 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
       )}
 
       {/* CONTENT AREA */}
-      <div className="px-5 pt-4 pb-5">
+      <div className="px-4 md:px-5 pt-4 pb-5">
         {/* Headline */}
-        <h3 className="text-xl font-semibold text-white leading-snug tracking-tight mb-3 line-clamp-3">
+        <h3 className="text-lg md:text-xl font-semibold text-white leading-snug tracking-tight mb-3 line-clamp-3">
           {decodeHtmlEntities(post.title)}
         </h3>
 
