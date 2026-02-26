@@ -5,7 +5,7 @@ function NavbarContent() {
     <nav className="sticky top-0 z-50 bg-[#0B1F21] border-b border-white/5">
       <div className="max-w-[1320px] mx-auto px-4 flex items-center justify-center h-24 relative">
         <a href="/" className="flex items-center">
-          <img src="/logo-transparent.png" alt="PLhub" className="h-10 w-auto" />
+          <img src="/logo.png" alt="PLhub" className="h-12 w-auto" />
         </a>
         <a
           href="/auth/signin"
