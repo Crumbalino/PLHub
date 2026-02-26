@@ -13,6 +13,8 @@ import { formatDistanceToNow } from '@/lib/utils'
 import { CLUBS_BY_SLUG, CLUBS } from '@/lib/clubs'
 import { calculateIndex } from '@/lib/plhub-index'
 
+export const dynamic = 'force-dynamic'
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
 
 export const metadata: Metadata = {
