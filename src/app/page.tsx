@@ -495,7 +495,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-y-5">
+              <div className="flex flex-col gap-y-6">
                 {groupedPosts.map(group => {
                   let cardCount = 0
                   const postElements: React.ReactNode[] = []

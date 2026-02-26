@@ -181,7 +181,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
   return (
     <article
       id={`post-${post.id}`}
-      className="rounded-lg bg-[#152B2E] border border-white/5 border-l-[3px] p-4 md:p-6 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-black/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+      className="rounded-xl bg-[#152B2E] border border-white/5 border-l-[3px] border-b border-white/5 p-4 md:p-6 mb-2 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-black/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
       style={{ borderLeftColor: borderColor }}
     >
       <script
