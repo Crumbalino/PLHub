@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { Post } from '@/types'
-import { decodeHtmlEntities } from '@/lib/utils'
+import { decodeHtmlEntities, calculateHotScore } from '@/lib/utils'
 import { calculateIndex } from '@/lib/plhub-index'
 import { getClubCode, getTimeDisplay, toIndex } from '@/lib/card-utils'
 
@@ -19,7 +19,7 @@ export default function Top5Tabs({ posts }: Top5TabsProps) {
     if (activeTab === 'pulse') {
       sorted.sort((a, b) => calculateIndex(b) - calculateIndex(a))
     } else if (activeTab === 'hot') {
-      sorted.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+      sorted.sort((a, b) => calculateHotScore(b) - calculateHotScore(a))
     } else if (activeTab === 'new') {
       sorted.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())
     }
@@ -29,16 +29,11 @@ export default function Top5Tabs({ posts }: Top5TabsProps) {
 
   return (
     <section className="mb-8">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="h-px flex-1 bg-white/5" />
-        <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
-            Trending
-          </h2>
-          <p className="text-base text-gray-400 mt-1">Most talked about right now</p>
-        </div>
-        <div className="h-px flex-1 bg-white/5" />
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-white inline-flex items-center gap-2">
+          <div className="w-1 h-6 bg-[#C4A23E] rounded-full"></div>
+          Trending
+        </h2>
       </div>
 
       {/* Tabs */}
@@ -49,8 +44,8 @@ export default function Top5Tabs({ posts }: Top5TabsProps) {
             onClick={() => setActiveTab(tab.toLowerCase() as 'pulse' | 'hot' | 'new')}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
               activeTab === tab.toLowerCase()
-                ? 'bg-[#00555A] text-white'
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                ? 'bg-white text-[#0B1F21] font-semibold shadow-sm'
+                : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
             {tab}
@@ -61,6 +56,7 @@ export default function Top5Tabs({ posts }: Top5TabsProps) {
       <div className="rounded-xl border border-white/[0.08] overflow-hidden">
         {sortedPosts.map((post, index) => {
           const indexScore = toIndex(post.score ?? 0)
+          const isNew = (Date.now() - new Date(post.published_at).getTime()) < 3 * 60 * 60 * 1000
           return (
             <a
               key={post.id}
@@ -91,12 +87,18 @@ export default function Top5Tabs({ posts }: Top5TabsProps) {
                     />
                   )}
                   <span className="text-sm text-gray-400">{getTimeDisplay(post)}</span>
+                  {isNew && (
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded-full uppercase tracking-wide">New</span>
+                  )}
                 </div>
               </div>
               {/* Score Badge */}
               {indexScore && (
-                <div className="shrink-0 bg-[#00555A] text-white text-xs font-bold px-3 py-1 rounded-full">
-                  ↑ {indexScore}
+                <div className="shrink-0 bg-[#00555A]/90 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                  <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
+                    <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="text-white">{indexScore}</span>
                 </div>
               )}
             </a>

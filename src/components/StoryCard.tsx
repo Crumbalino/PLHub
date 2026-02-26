@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Post } from '@/types'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
-import { decodeHtmlEntities, stripMarkdown, upgradeImageUrl } from '@/lib/utils'
+import { decodeHtmlEntities, stripMarkdown, upgradeImageUrl, formatSummaryForDisplay } from '@/lib/utils'
 
 interface StoryCardProps {
   post: Post
@@ -172,8 +172,11 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
           {/* Score badge */}
           {indexScore && (
-            <div className="absolute top-3 right-3 bg-[#00555A] text-white text-xs font-bold px-2 py-1 rounded-full">
-              <span className="text-[#C4A23E]">↑</span> {indexScore}
+            <div className="absolute top-3 right-3 bg-[#00555A]/90 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
+                <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="text-white">{indexScore}</span>
             </div>
           )}
 
@@ -218,20 +221,22 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
             </div>
 
             {expanded && (
-              <div className="border-l-2 border-l-[#00555A] pl-4 py-2 mt-3 mb-3">
-                <p className="text-base text-gray-200 leading-relaxed mb-3">
-                  {stripMarkdown(decodeHtmlEntities(post.summary))}
+              <div className="summary-font border-l-2 border-l-[#00555A] pl-4 py-2 mt-3 mb-3">
+                <p className="text-base text-gray-200 leading-[1.85] tracking-wide whitespace-pre-line mb-3">
+                  {formatSummaryForDisplay(post.summary || '')}
                 </p>
                 <a
                   href={post.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-block text-sm font-semibold text-[#C4A23E] hover:underline"
+                  className="inline-block mt-2 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] hover:underline transition-colors"
+                  style={{ fontFamily: 'inherit' }}
                 >
-                  {getCTAText(post)}
+                  {post.source === 'youtube' ? 'Watch on YouTube →' :
+                   post.source === 'reddit' ? 'Read thread →' : 'Read article →'}
                 </a>
-                <span className="block mt-3 text-sm text-gray-500 italic select-none">.SP</span>
+                <span className="block mt-3 text-xs text-gray-500 italic select-none">.SP</span>
               </div>
             )}
           </div>

@@ -107,3 +107,24 @@ export function upgradeImageUrl(url: string | null | undefined): string | null |
 
   return url
 }
+
+export function calculateHotScore(post: any): number {
+  const score = post.score || post.plhub_index || 0
+  const publishedAt = new Date(post.published_at || post.created_at).getTime()
+  const now = Date.now()
+  const hoursAgo = Math.max(1, (now - publishedAt) / (1000 * 60 * 60))
+
+  return score / Math.pow(hoursAgo, 1.5)
+}
+
+export function formatSummaryForDisplay(text: string): string {
+  let cleaned = stripMarkdown(decodeHtmlEntities(text))
+
+  const sentences = cleaned.split(/(?<=\.)\s+(?=[A-Z])/)
+  const paragraphs: string[] = []
+  for (let i = 0; i < sentences.length; i += 3) {
+    paragraphs.push(sentences.slice(i, i + 3).join(' '))
+  }
+
+  return paragraphs.join('\n\n')
+}
