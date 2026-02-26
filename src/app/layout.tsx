@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import MatchTicker from '@/components/MatchTicker'
 import JsonLd from '@/components/JsonLd'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import BackToTopButton from '@/components/BackToTopButton'
 
 const atkinson = Atkinson_Hyperlegible({ subsets: ['latin'], weight: ['400', '700'] })
 
@@ -79,13 +80,14 @@ export default function RootLayout({
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
       </head>
-      <body className={`${atkinson.className} bg-[#0B1F21] text-white antialiased`}>
+      <body className={`${atkinson.className} bg-[#0B1F21] text-white antialiased`} style={{ fontSize: '18px', lineHeight: '1.65', letterSpacing: '0.01em' }}>
         {gaMeasurementId && (
           <GoogleAnalytics measurementId={gaMeasurementId} />
         )}
         <Navbar />
         <MatchTicker />
         <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+        <BackToTopButton />
         <footer className="mt-16 border-t border-[#222] px-4 py-8 text-center text-sm text-white">
           <p>
             PLHub — Premier League news aggregated from Reddit and BBC Sport.

@@ -8,7 +8,7 @@ import ClubSelector from '@/components/ClubSelector'
 import PulseBadge from '@/components/PulseBadge'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
-import Pagination from '@/components/Pagination'
+import LoadMoreButton from '@/components/LoadMoreButton'
 import PLTableWidgetServer from '@/components/PLTableWidgetServer'
 import FixturesWidgetServer from '@/components/FixturesWidgetServer'
 import AdPlaceholder from '@/components/AdPlaceholder'
@@ -352,12 +352,19 @@ export default async function HomePage({ searchParams }: PageProps) {
         <EmptyState />
       ) : (
         <>
-          {/* Section 1: Trending leaderboard — page 1 of index sort only */}
+          {/* Section 1: Today's Top 5 — page 1 of index sort only */}
           {currentPage === 1 && sort === 'index' && top5.length > 0 && (
             <section className="mb-8">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <span className="text-xs font-bold text-white tracking-wider">Trending</span>
-                <span className="text-[#F5C842] text-sm">↑</span>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-px flex-1 bg-white/5" />
+                <div>
+                  <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
+                    Today's Top 5
+                  </h2>
+                  <p className="text-sm text-gray-400 mt-1">The biggest PL stories right now</p>
+                </div>
+                <div className="h-px flex-1 bg-white/5" />
               </div>
               <div className="rounded-xl border border-white/[0.08] overflow-hidden">
                 {top5.map((post, index) => {
@@ -465,19 +472,28 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           {/* Divider */}
           {currentPage === 1 && sort === 'index' && (top5.length > 0 || trendingPosts.length > 0) && indexPosts.length > 0 && (
-            <hr className="mb-8 border-white/10" />
+            <hr className="mb-8 border-white/5" />
           )}
 
           {/* Section 3: Feed with sort toggle */}
           {indexPosts.length > 0 && (
             <section aria-labelledby="index-heading">
-              {/* Section heading */}
-              <h2
-                id="index-heading"
-                className="mb-6 text-lg font-semibold tracking-tight text-white"
-              >
-                {SECTION_HEADINGS[sort]}
-              </h2>
+              {/* Section heading with description and update time */}
+              <div className="mb-8">
+                <h2
+                  id="index-heading"
+                  className="text-lg font-semibold tracking-tight text-white flex items-center gap-2 mb-2"
+                >
+                  <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
+                  Ranked by the PLHub Index
+                </h2>
+                <p className="text-sm text-gray-400 mb-2">
+                  Stories ranked by source credibility, recency, and community engagement — not paid placement, ever.
+                </p>
+                <p className="text-xs text-gray-500">
+                  Updated {lastFetched || 'just now'}
+                </p>
+              </div>
 
               <div className="flex flex-col gap-y-5">
                 {groupedPosts.map(group => {
@@ -519,14 +535,12 @@ export default async function HomePage({ searchParams }: PageProps) {
                   )
                 })}
               </div>
-              <div className="mt-8">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  basePath="/"
-                  sortParam={sort !== 'index' ? sort : undefined}
-                />
-              </div>
+              <LoadMoreButton
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                sortParam={sort !== 'index' ? sort : undefined}
+              />
             </section>
           )}
         </>
