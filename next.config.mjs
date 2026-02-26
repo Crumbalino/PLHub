@@ -26,6 +26,18 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'www.redditinc.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'yt3.ggpht.com',
+      },
     ],
   },
 }

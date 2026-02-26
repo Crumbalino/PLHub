@@ -94,6 +94,11 @@ const calculateReadTime = (post: Post): string => {
 }
 
 const getSourceBorderColor = (post: Post): string => {
+  // YouTube red
+  if (post.source === 'youtube') {
+    return '#FF0000'
+  }
+
   const sourceInfo = getSourceInfo(post)
   if (!sourceInfo) return '#00555A'
 
@@ -114,7 +119,9 @@ const getSourceBorderColor = (post: Post): string => {
 }
 
 const getCTAText = (post: Post): string => {
-  return post.source === 'reddit' ? 'Read thread →' : 'Read article →'
+  if (post.source === 'youtube') return 'Watch on YouTube →'
+  if (post.source === 'reddit') return 'Read thread →'
+  return 'Read article →'
 }
 
 export default function StoryCard({ post, indexScore, featured = false }: StoryCardProps) {
@@ -249,7 +256,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
       {/* IMAGE: 16:9 aspect ratio, 200px max-height on desktop, 160px on mobile */}
       {!expanded && hasValidImage && !imgError && (
-        <div className="aspect-[16/9] overflow-hidden rounded-lg mb-4 bg-[#0B1F21] max-h-[160px] md:max-h-[200px]">
+        <div className="aspect-[16/9] overflow-hidden rounded-lg mb-4 bg-[#0B1F21] max-h-[160px] md:max-h-[200px] relative">
           <img
             src={post.image_url || ''}
             alt=""
@@ -257,6 +264,13 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
             onError={() => setImgError(true)}
             loading="lazy"
           />
+          {post.source === 'youtube' && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          )}
         </div>
       )}
 
@@ -267,10 +281,13 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
       {/* AI SUMMARY: Teal left border, if exists */}
       {!expanded && post.summary && (
-        <div className="border-l-2 border-l-[#00555A] pl-4 mb-4">
-          <p className="text-sm text-gray-300 leading-relaxed line-clamp-3">
-            {post.summary}
-          </p>
+        <div className="mb-4">
+          <p className="text-sm text-gray-200 font-medium mb-2">The Secret Pundit's Take</p>
+          <div className="border-l-2 border-l-[#00555A] pl-4">
+            <p className="text-sm text-gray-300 leading-relaxed line-clamp-3">
+              {post.summary}
+            </p>
+          </div>
         </div>
       )}
 

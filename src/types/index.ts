@@ -16,7 +16,7 @@ export interface Post {
   url: string
   content: string | null
   summary: string | null
-  source: 'reddit' | 'rss'
+  source: 'reddit' | 'rss' | 'youtube'
   club_slug: string | null
   author: string | null
   score: number

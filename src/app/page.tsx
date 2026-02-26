@@ -282,6 +282,9 @@ export default async function HomePage({ searchParams }: PageProps) {
         <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
           The Pulse of the Premier League
         </h1>
+        <p className="mt-2 text-base text-gray-200 text-center">
+          Curated and summarised by The Secret Pundit
+        </p>
         <p className="mt-3 text-sm text-white text-center">
           News and views from across the Premier League. Ranked by the community. Constantly updated.
         </p>
@@ -362,7 +365,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                     <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
                     Today's Top 5
                   </h2>
-                  <p className="text-sm text-gray-400 mt-1">The biggest PL stories right now</p>
+                  <p className="text-sm text-gray-400 mt-1">What The Secret Pundit is watching right now</p>
                 </div>
                 <div className="h-px flex-1 bg-white/5" />
               </div>

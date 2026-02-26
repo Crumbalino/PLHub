@@ -94,10 +94,13 @@ export default function RootLayout({
         <MatchTicker />
         <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
         <BackToTopButton />
-        <footer className="mt-16 border-t border-[#222] px-4 py-8 text-center text-sm text-white">
-          <p>
-            PLHub — Premier League news aggregated from Reddit and BBC Sport.
+        <footer className="mt-16 border-t border-[#222] px-4 py-8 text-center space-y-3">
+          <p className="text-sm text-white">
+            PLHub — Premier League news aggregated from Reddit, BBC Sport, YouTube and more.
             <span className="hidden sm:inline"> Not affiliated with the Premier League or its clubs.</span>
+          </p>
+          <p className="text-sm text-gray-200">
+            All summaries written by The Secret Pundit. Opinionated. Anonymous. Occasionally wrong.
           </p>
         </footer>
 
