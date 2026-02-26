@@ -14,6 +14,11 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Anchor targets clear the sticky navbar */
+article[id^="post-"] {
+  scroll-margin-top: 6rem;
+}
+
 body {
   background: #0B1F21 !important;
   color: var(--foreground);

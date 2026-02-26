@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { Post } from '@/types'
 import StoryCard from './StoryCard'
+import { toIndex } from '@/lib/card-utils'
 
 type SortMode = 'pulse' | 'hot' | 'new'
 
@@ -133,7 +134,7 @@ export default function FeedContainer({
         }}
       >
         {sortedPosts.map((post) => (
-          <StoryCard key={post.id} post={post} />
+          <StoryCard key={post.id} post={post} indexScore={toIndex(post.score ?? 0)} />
         ))}
       </div>
 
