@@ -57,7 +57,8 @@ const ALWAYS_HIDE = [
   'conor benn', 'tyson fury', 'undercard', 'fury-', 'born to fight', 'progais',
   'fight night', 'ring walk', 'dana white', 'usyk', 'canelo', 'weigh-in',
   'boxing', 'bout', 'ronda rousey', 'rousey comeback', 't20 world cup',
-  'west indies cricket', 'south africa cricket', 'nbc network', 'nbc shakeup'
+  'west indies cricket', 'south africa cricket', 'nbc network', 'nbc shakeup',
+  'nbc revamp', 'beloved analyst', 'nbc shakeup'
 ]
 
 const HIDE_KEYWORDS = [
@@ -71,7 +72,10 @@ const HIDE_KEYWORDS = [
   'quarterback', 'touchdown', 'super bowl', 'farewell fight', 'trilogy fight',
   'ronaldo buys', 'spanish second division', 'cameron trilogy',
   'dortmund', 'borussia dortmund', 'bundesliga', 'mls', 'eric ramsay', 'charlton',
-  'qatar league', 'al-sailiya', 'red bull chief', 'sprinkler pitch'
+  'qatar league', 'al-sailiya', 'red bull chief', 'sprinkler pitch',
+  'premflix', 'singapore streaming', 'screen all premier league',
+  'vegas', 'las vegas', 'nfl las vegas',
+  'greatest loss in english football history'
 ]
 
 function filterPLContent(posts: Post[]): Post[] {
@@ -79,7 +83,7 @@ function filterPLContent(posts: Post[]): Post[] {
     // Always show YouTube content (it's curated from PL-specific channels)
     if (post.source === 'youtube') return true
 
-    const text = ((post.title || '') + ' ' + (post.summary || '')).toLowerCase()
+    const text = ((post.title || '') + ' ' + (post.summary || '') + ' ' + (post.content || '')).toLowerCase()
 
     // Always hide betting and boxing regardless of PL club mention
     if (ALWAYS_HIDE.some(kw => text.includes(kw))) return false
@@ -148,17 +152,14 @@ async function getTop5Posts(): Promise<Post[]> {
   }
 }
 
-async function getTrendingPosts(minScore: number = 100): Promise<Post[]> {
+async function getTrendingPosts(): Promise<Post[]> {
   if (noSupabase) return []
   try {
-    const since = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()
     const { data, error } = await supabase
       .from('posts')
       .select('id, external_id, title, url, summary, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, clubs(*)')
-      .gte('published_at', since)
-      .gte('score', minScore)
       .order('score', { ascending: false })
-      .limit(20)
+      .limit(5)
 
     if (error) return []
     return (data as unknown as Post[]) ?? []
@@ -240,7 +241,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   // Top 5, trending, and feed posts
   const [top5Raw, trendingPostsRaw, indexPosts, totalCount] = await Promise.all([
     currentPage === 1 && sort === 'index' && !clubSlug ? getTop5Posts() : Promise.resolve([]),
-    currentPage === 1 && sort === 'index' && !clubSlug ? getTrendingPosts(100) : Promise.resolve([]),
+    currentPage === 1 && sort === 'index' && !clubSlug ? getTrendingPosts() : Promise.resolve([]),
     getIndexPosts(currentPage, sort, clubSlug),
     getIndexCount(sort, clubSlug),
   ])
@@ -267,13 +268,8 @@ export default async function HomePage({ searchParams }: PageProps) {
 
   // Apply filters to all post lists
   const top5 = deduplicatePosts(filterPLContent(top5Raw))
-  let trendingPosts = deduplicatePosts(filterPLContent(trendingPostsRaw))
-
-  // Ensure we always have 5 trending posts with fallback logic
-  if (trendingPosts.length < 5) {
-    const allFiltered = deduplicatePosts(filterPLContent(indexPosts))
-    trendingPosts = [...allFiltered].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5)
-  }
+  const trendingPosts = deduplicatePosts(filterPLContent(trendingPostsRaw))
+    .slice(0, 5)
 
   const filteredIndexPosts = deduplicatePosts(filterPLContent(indexPosts))
 
@@ -430,56 +426,27 @@ export default async function HomePage({ searchParams }: PageProps) {
       ) : (
         <>
           {/* Section 1: Trending Now — page 1 of index sort only, vertical ranked list */}
-          {currentPage === 1 && sort === 'index' && !clubSlug && trendingPosts.length > 0 && (() => {
-            // Filter posts with meaningful movement (abs delta > 3)
-            const movingPosts = trendingPosts
-              .map(post => ({
-                post,
-                delta: (post.score ?? 0) - (post.previous_score ?? post.score ?? 0)
-              }))
-              .filter(({ delta }) => Math.abs(delta) > 3)
-              .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
-              .slice(0, 5)
+          {currentPage === 1 && sort === 'index' && !clubSlug && trendingPosts.length > 0 && (
+            <section className="mb-8" aria-labelledby="trending-heading">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <span className="text-white text-sm">↑</span>
+                <span className="text-sm font-bold text-white">Trending</span>
+              </div>
 
-            // Only show section if at least 2 posts with movement
-            if (movingPosts.length < 2) return null
-
-            return (
-              <section className="mb-8" aria-labelledby="trending-heading">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <span className="text-white text-sm">↑</span>
-                  <span className="text-sm font-bold text-white">Trending</span>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {movingPosts.map(({ post, delta }, idx) => {
-                    const getDelta = (delta: number) => {
-                      if (delta > 10) return { arrow: '↑↑', color: 'text-green-400', bold: true }
-                      if (delta > 0) return { arrow: '↑', color: 'text-green-400', bold: false }
-                      if (delta < -10) return { arrow: '↓↓', color: 'text-red-400', bold: true }
-                      if (delta < 0) return { arrow: '↓', color: 'text-red-400/70', bold: false }
-                      return { arrow: '→', color: 'text-white/20', bold: false }
-                    }
-
-                    const movement = getDelta(delta)
-
-                    return (
-                      <a
-                        key={post.id}
-                        href={`#post-${post.id}`}
-                        className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 cursor-pointer transition-all duration-150 hover:border-l-2 hover:border-[#F5C842] hover:pl-1"
-                      >
-                        <span className="w-6 text-white font-bold text-sm text-center">{idx + 1}</span>
-                        <span className={`text-xs font-bold shrink-0 ${movement.color}`}>{movement.arrow}</span>
-                        <span className="text-white/30 text-[10px] shrink-0">{Math.abs(delta)}</span>
-                        <span className="text-sm text-white line-clamp-1 flex-1">{post.title}</span>
-                      </a>
-                    )
-                  })}
-                </div>
-              </section>
-            )
-          })()}
+              <div className="flex flex-col gap-2">
+                {trendingPosts.map((post, idx) => (
+                  <a
+                    key={post.id}
+                    href={`#post-${post.id}`}
+                    className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 cursor-pointer transition-all duration-150 hover:border-l-2 hover:border-[#F5C842] hover:pl-1"
+                  >
+                    <span className="w-6 text-white font-bold text-sm text-center">{idx + 1}</span>
+                    <span className="text-sm text-white line-clamp-1 flex-1">{post.title}</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Divider */}
           {currentPage === 1 && sort === 'index' && !clubSlug && (trendingPosts.length > 0) && filteredIndexPosts.length > 0 && (

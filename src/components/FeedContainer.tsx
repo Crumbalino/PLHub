@@ -103,7 +103,7 @@ export default function FeedContainer({
             key={key}
             onClick={() => handleSortChange(key)}
             className={`pb-3 text-sm font-medium transition-all duration-200 relative ${
-              sort === key ? 'text-white' : 'text-gray-500 hover:text-gray-300'
+              sort === key ? 'text-white' : 'text-gray-300 hover:text-white'
             }`}
           >
             {label}

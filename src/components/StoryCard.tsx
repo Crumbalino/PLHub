@@ -271,7 +271,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
         <div className="flex items-center gap-2 pt-3 border-t border-white/5 px-5 pb-4">
           {post.club_slug && (
             <img
-              src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug)}.svg`}
+              src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug)}.png`}
               alt=""
               className="w-5 h-5 object-contain"
               onError={(e) => {
