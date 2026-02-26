@@ -1,18 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { Post } from '@/types'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
 import { decodeHtmlEntities } from '@/lib/utils'
-import { calculateIndex, getIndexColor } from '@/lib/plhub-index'
-import JsonLd from './JsonLd'
-import PulseBadge from './PulseBadge'
 
 interface StoryCardProps {
   post: Post
   indexScore?: number | null
   featured?: boolean
+}
+
+const SOURCE_COLORS: Record<string, string> = {
+  'BBC Sport': '#FFD008',
+  'Sky Sports': '#0072BC',
+  'The Guardian': '#052962',
+  'The Athletic': '#D4442E',
+  'talkSPORT': '#E4002B',
+  'Goal': '#00A550',
+  '90min': '#8B5CF6',
+  'The Telegraph': '#1D1D1B',
+  'Mirror': '#E00000',
+  'The Sun': '#C4122F',
+  'Reddit': '#FF4500',
+  'YouTube': '#FF0000',
 }
 
 const getSourceInfo = (post: Post): { src: string | null; name: string } | null => {
@@ -52,20 +63,20 @@ const getTimeDisplay = (post: Post): string => {
 
 const getClubCode = (slug: string): string => {
   const clubCodes: Record<string, string> = {
-    arsenal: '1',
-    'aston-villa': '2',
-    bournemouth: '3',
-    brentford: '4',
-    brighton: '6',
+    arsenal: '3',
+    'aston-villa': '7',
+    bournemouth: '91',
+    brentford: '94',
+    brighton: '36',
     chelsea: '8',
-    'crystal-palace': '9',
+    'crystal-palace': '31',
     everton: '11',
-    fulham: '13',
+    fulham: '54',
     ipswich: '40',
-    leicester: '16',
+    leicester: '13',
     liverpool: '14',
-    'manchester-city': '43',
-    'manchester-united': '1',
+    'man-city': '43',
+    'man-united': '1',
     newcastle: '4',
     'nottingham-forest': '17',
     southampton: '20',
@@ -78,10 +89,9 @@ const getClubCode = (slug: string): string => {
 
 const isValidImageUrl = (url: string | null | undefined, source: string): boolean => {
   if (!url) return false
-  if (source === 'reddit') {
-    const invalidReddits = ['self', 'default', 'nsfw', '']
-    return !invalidReddits.includes(url)
-  }
+  const invalidReddits = ['self', 'default', 'nsfw', '']
+  if (source === 'reddit' && invalidReddits.includes(url)) return false
+  if (source === 'reddit' && url.includes('external-preview')) return false
   return true
 }
 
@@ -90,171 +100,42 @@ const calculateReadTime = (post: Post): string => {
   const summaryWords = post.summary?.split(' ').length ?? 0
   const totalWords = titleWords + summaryWords
   const mins = Math.max(1, Math.ceil(totalWords / 200))
-  return `${mins} min read`
+  return `~${mins} min read`
 }
 
 function getSourceBorderColor(post: Post): string {
   if (post.source === 'youtube') return '#FF0000'
   if (post.source === 'reddit') return '#FF4500'
-
   const sourceInfo = getSourceInfo(post)
-  if (!sourceInfo) return '#00555A'
-
-  switch (sourceInfo.name) {
-    case 'BBC Sport': return '#FFD008'
-    case 'Sky Sports': return '#0072BC'
-    case 'The Guardian': return '#052962'
-    case 'The Athletic': return '#D4442E'
-    case 'talkSPORT': return '#E4002B'
-    case 'Goal': return '#00A550'
-    case '90min': return '#8B5CF6'
-    case 'The Telegraph': return '#1D1D1B'
-    case 'Mirror': return '#E00000'
-    case 'The Sun': return '#C4122F'
-    default: return '#C4A23E'
-  }
+  if (!sourceInfo) return '#C4A23E'
+  return SOURCE_COLORS[sourceInfo.name] || '#C4A23E'
 }
 
 const getCTAText = (post: Post): string => {
-  if (post.source === 'youtube') return 'Watch on YouTube →'
+  if (post.source === 'youtube') return 'Watch →'
   if (post.source === 'reddit') return 'Read thread →'
   return 'Read article →'
 }
 
 export default function StoryCard({ post, indexScore, featured = false }: StoryCardProps) {
   const [expanded, setExpanded] = useState(false)
-  const [summary, setSummary] = useState<string | null>(post.summary ?? null)
-  const [loading, setLoading] = useState(false)
   const [imgError, setImgError] = useState(false)
 
-  const club = post.club_slug ? CLUBS_BY_SLUG[post.club_slug] : null
   const sourceInfo = getSourceInfo(post)
   const sourceName = sourceInfo?.name ?? 'News'
-  const ctaText = getCTAText(post)
-  const borderColor = getSourceBorderColor(post)
   const hasValidImage = isValidImageUrl(post.image_url, post.source)
   const readTime = calculateReadTime(post)
-
-  const handleExpand = async () => {
-    if (summary) {
-      setExpanded(!expanded)
-      return
-    }
-
-    setLoading(true)
-    try {
-      const response = await fetch('/api/summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          postId: post.id,
-          title: post.title,
-          content: post.content,
-        }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setSummary(data.summary)
-        setExpanded(true)
-      } else {
-        console.error('Failed to fetch summary')
-        setLoading(false)
-      }
-    } catch (error) {
-      console.error('Error fetching summary:', error)
-      setLoading(false)
-    }
-  }
-
-  const articleSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'NewsArticle',
-    headline: post.title,
-    url: post.url,
-    datePublished: post.published_at,
-    author: post.author
-      ? { '@type': 'Person', name: post.author }
-      : undefined,
-    publisher: {
-      '@type': 'Organization',
-      name: sourceName,
-    },
-  }
+  const borderColor = getSourceBorderColor(post)
 
   return (
     <article
       id={`post-${post.id}`}
-      className="rounded-xl bg-[#152B2E] border border-white/5 border-l-[3px] p-4 md:p-6 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-black/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+      className="bg-[#152B2E] rounded-xl overflow-hidden border-l-4 hover:brightness-110 transition duration-200"
       style={{ borderLeftColor: borderColor }}
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'NewsArticle',
-            headline: post.title,
-            datePublished: post.published_at,
-            dateModified: post.fetched_at,
-            description: post.summary ?? post.title,
-            url: post.url,
-            publisher: {
-              '@type': 'Organization',
-              name: 'PLHub',
-              url: 'https://plhub.co.uk',
-            },
-            sourceOrganization: {
-              '@type': 'Organization',
-              name: post.subreddit ?? 'PLHub',
-            },
-          }),
-        }}
-      />
-      <JsonLd data={articleSchema} />
-
-      {/* HEADER ROW: Club badge + club name + source logo + source name + timestamp */}
-      <div className="flex items-center gap-3 mb-4">
-        {/* Club badge (24x24) */}
-        {post.club_slug && (
-          <img
-            src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug)}.svg`}
-            alt=""
-            className="w-6 h-6 object-contain shrink-0"
-          />
-        )}
-
-        {/* Source logo or name (20x20) */}
-        {(() => {
-          const source = getSourceInfo(post)
-          if (!source) return null
-          return source.src ? (
-            <img
-              src={source.src}
-              alt={source.name}
-              className="h-5 w-auto max-w-[44px] object-contain opacity-70 shrink-0"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
-          ) : (
-            <span className="text-xs text-gray-400 truncate">{source.name}</span>
-          )
-        })()}
-
-        {/* Source name (if logo exists) */}
-        {sourceInfo?.src && (
-          <span className="text-xs text-gray-400">{sourceName}</span>
-        )}
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Timestamp */}
-        <span className="text-xs text-gray-400 shrink-0">{getTimeDisplay(post)}</span>
-      </div>
-
-      {/* IMAGE: 16:9 aspect ratio, 200px max-height on desktop, 160px on mobile */}
-      {!expanded && hasValidImage && !imgError && (
-        <div className="aspect-[16/9] overflow-hidden rounded-lg mb-4 bg-[#0B1F21] max-h-[160px] md:max-h-[200px] relative">
+      {/* IMAGE BLOCK */}
+      {hasValidImage && !imgError && (
+        <div className="relative w-full h-[180px] md:h-[220px]">
           <img
             src={post.image_url || ''}
             alt=""
@@ -262,102 +143,130 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
             onError={() => setImgError(true)}
             loading="lazy"
           />
-          {post.source === 'youtube' && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* HEADLINE: Dominant element - text-base mobile, text-lg desktop */}
-      <h3 className="text-base md:text-lg font-semibold text-white leading-snug mb-3 line-clamp-3">
-        {decodeHtmlEntities(post.title)}
-      </h3>
+          {/* Gradient overlay */}
+          <div className="absolute bottom-0 left-0 right-0 h-[80px] bg-gradient-to-t from-[#0B1F21cc] to-transparent" />
 
-      {/* AI SUMMARY: Teal left border, if exists */}
-      {!expanded && post.summary && (
-        <div className="mb-4">
-          <p className="text-sm text-gray-200 font-medium mb-2">The Secret Pundit's Take</p>
-          <div className="border-l-2 border-l-[#00555A] pl-4">
-            <p className="text-sm text-gray-300 leading-relaxed line-clamp-3">
-              {decodeHtmlEntities(post.summary)}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* EXPANDED SUMMARY: Show when expanded */}
-      {expanded && (
-        <>
-          {/* Full-width image in expanded state */}
-          {hasValidImage && !imgError && (
-            <div className="aspect-[16/9] overflow-hidden rounded-lg mb-4 bg-[#0B1F21]">
+          {/* Source badge on overlay */}
+          <div className="absolute bottom-3 left-4 flex items-center gap-1.5">
+            {sourceInfo?.src ? (
               <img
-                src={post.image_url || ''}
-                alt=""
-                className="w-full h-full object-cover"
-                onError={() => setImgError(true)}
+                src={sourceInfo.src}
+                alt={sourceName}
+                className="h-4 w-auto object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none'
+                }}
               />
+            ) : (
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: borderColor }} />
+            )}
+            <span className="text-xs font-medium text-white">{sourceName}</span>
+          </div>
+
+          {/* Timestamp */}
+          <div className="absolute bottom-3 right-4 text-xs text-white/70">{getTimeDisplay(post)}</div>
+
+          {/* YouTube play button overlay */}
+          {post.source === 'youtube' && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                <span className="text-2xl text-white">▶</span>
+              </div>
             </div>
           )}
-
-          {loading ? (
-            <div className="rounded-lg border-l-2 border-l-[#00555A] bg-[#1A3538] p-4 mb-4">
-              <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3">
-                AI Summary
-              </div>
-              <div className="text-sm text-white/30 italic">Generating summary...</div>
-            </div>
-          ) : summary ? (
-            <div className="rounded-lg border-l-2 border-l-[#00555A] bg-[#1A3538] p-4 mb-4">
-              <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3">
-                AI Summary
-              </div>
-              <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
-                {decodeHtmlEntities(summary)}
-              </p>
-            </div>
-          ) : null}
-        </>
+        </div>
       )}
 
-      {/* CTA: Read thread / Read article */}
-      <a
-        href={post.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
-        className="inline-block text-sm font-medium text-[#C4A23E] hover:underline mb-4"
-      >
-        {ctaText}
-      </a>
+      {/* Text-only header if no image */}
+      {!hasValidImage && (
+        <div className="flex items-center gap-2 px-5 pt-4 pb-2 text-xs text-gray-400 border-b border-white/5">
+          {sourceInfo?.src ? (
+            <img
+              src={sourceInfo.src}
+              alt={sourceName}
+              className="h-4 w-auto object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none'
+              }}
+            />
+          ) : (
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: borderColor }} />
+          )}
+          <span>{sourceName}</span>
+          <div className="flex-1" />
+          <span>{getTimeDisplay(post)}</span>
+        </div>
+      )}
 
-      {/* FOOTER ROW: Source credibility + upvote count (if Reddit) + reading time */}
-      <div className="flex items-center gap-3 text-xs text-gray-500">
-        {/* Source credibility indicator */}
-        {['BBC Sport', 'Sky Sports', 'The Guardian', 'The Athletic'].includes(
-          sourceName
-        ) && (
-          <span className="inline-block px-2 py-0.5 rounded-full bg-white/5 text-gray-400">
-            Editorial
-          </span>
+      {/* CONTENT AREA */}
+      <div className="px-5 pt-4 pb-5">
+        {/* Headline */}
+        <h3 className="text-lg md:text-xl font-semibold text-white leading-snug tracking-tight mb-3 line-clamp-3">
+          {decodeHtmlEntities(post.title)}
+        </h3>
+
+        {/* Summary toggle */}
+        {post.summary && (
+          <div className="mb-3">
+            <div
+              className="text-sm font-medium text-[#C4A23E] cursor-pointer flex items-center gap-1.5 hover:text-[#d4b24e] transition-colors"
+              onClick={() => setExpanded(!expanded)}
+            >
+              The Secret Pundit's Take {expanded ? '▾' : '▸'}
+            </div>
+
+            {expanded && (
+              <div className="border-l-2 border-l-[#00555A] pl-4 py-2 mt-2">
+                <p className="text-base text-gray-200 leading-relaxed">
+                  {decodeHtmlEntities(post.summary)}
+                </p>
+                <button
+                  className="text-xs text-gray-500 cursor-pointer mt-2 hover:text-gray-400"
+                  onClick={() => setExpanded(false)}
+                >
+                  Close ✕
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
-        {post.source === 'reddit' && post.score && (
-          <span>
-            ↑ {post.score > 1000 ? `${(post.score / 1000).toFixed(1)}k` : post.score}{' '}
-            upvotes
-          </span>
-        )}
+        {/* Footer row */}
+        <div className="flex items-center justify-between pt-3 border-t border-white/5">
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            {post.club_slug && (
+              <>
+                <img
+                  src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug)}.svg`}
+                  alt=""
+                  className="w-[18px] h-[18px] object-contain"
+                />
+                <span>{CLUBS_BY_SLUG[post.club_slug]?.shortName}</span>
+                <span>·</span>
+              </>
+            )}
+            <span>{readTime}</span>
+            {post.source === 'reddit' && post.score && (
+              <>
+                <span>·</span>
+                <span>
+                  ↑ {post.score > 1000 ? `${(post.score / 1000).toFixed(1)}k` : post.score}
+                </span>
+              </>
+            )}
+          </div>
 
-        {/* Reading time with clock icon */}
-        <span className="flex items-center gap-1">
-          <span>⏱</span>
-          <span>{readTime}</span>
-        </span>
+          <a
+            href={post.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-sm font-semibold text-[#C4A23E] hover:underline"
+          >
+            {getCTAText(post)}
+          </a>
+        </div>
       </div>
     </article>
   )

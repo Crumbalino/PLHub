@@ -278,15 +278,12 @@ export default async function HomePage({ searchParams }: PageProps) {
           {/* CENTRE FEED — flex-1, max-w ~720px */}
           <div className="flex-1 min-w-0 lg:max-w-[720px]">
       {/* Hero SEO Section */}
-      <section className="pt-6 pb-4 text-center">
+      <section className="pt-6 pb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
           The Pulse of the Premier League
         </h1>
-        <p className="mt-2 text-base text-gray-200 text-center">
+        <p className="mt-2 text-base text-gray-300 text-center">
           Curated and summarised by The Secret Pundit
-        </p>
-        <p className="mt-3 text-sm text-white text-center">
-          News and views from across the Premier League. Ranked by the community. Constantly updated.
         </p>
       </section>
 
@@ -303,47 +300,33 @@ export default async function HomePage({ searchParams }: PageProps) {
 
         {/* Desktop badge grid */}
         <div className="hidden sm:block">
-          <div className="mx-auto max-w-4xl flex items-center justify-center gap-3 mt-4">
-            {/* Premier League Badge */}
-            <Link
-              href="/"
-              title="All Premier League stories"
-              className="flex flex-col items-center justify-center shrink-0"
-            >
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white p-1 transition-all duration-150 ring-2 ring-transparent ring-offset-2 ring-offset-[#0B1F21] hover:ring-2 hover:ring-[#F5C842] hover:ring-offset-2 hover:ring-offset-[#0B1F21] hover:scale-110">
-                <Image
-                  src="https://upload.wikimedia.org/wikipedia/en/f/f2/Premier_League_Logo.svg"
-                  alt="Premier League"
-                  width={32}
-                  height={32}
-                  unoptimized
-                  className="object-contain"
-                />
-              </div>
-              <span className="text-[9px] text-white/40 mt-1 block text-center">All</span>
-            </Link>
+          <div className="mx-auto max-w-4xl px-4 mt-6">
+            {/* All Clubs pill */}
+            <div className="flex justify-center mb-4">
+              <Link
+                href="/"
+                className="text-xs font-medium text-white bg-white/10 hover:bg-white/20 rounded-full px-4 py-1.5 transition-colors"
+              >
+                All
+              </Link>
+            </div>
 
-            {/* Divider */}
-            <div className="border-r border-white/20 h-6" />
-
-            {/* Club Badges */}
-            <div className="grid grid-cols-5 gap-3 sm:grid-cols-10">
+            {/* Club Badges Grid */}
+            <div className="flex flex-wrap gap-2 justify-center">
               {CLUBS.map((club) => (
                 <Link
                   key={club.slug}
                   href={`/clubs/${club.slug}`}
-                  className="flex items-center justify-center transition-transform hover:scale-110"
+                  className="w-9 h-9 rounded-full bg-white/5 p-1.5 cursor-pointer hover:bg-white/10 transition-colors"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-2 ring-transparent ring-offset-2 ring-offset-[#0B1F21] transition-all duration-150 hover:ring-2 hover:ring-[#F5C842] hover:ring-offset-2 hover:ring-offset-[#0B1F21] hover:scale-110">
-                    <Image
-                      src={club.badgeUrl}
-                      alt={club.name}
-                      width={28}
-                      height={28}
-                      unoptimized
-                      className="object-contain"
-                    />
-                  </span>
+                  <Image
+                    src={club.badgeUrl}
+                    alt={club.name}
+                    width={28}
+                    height={28}
+                    unoptimized
+                    className="w-full h-full object-contain"
+                  />
                 </Link>
               ))}
             </div>
