@@ -21,6 +21,7 @@ export interface Post {
   author: string | null
   score: number
   previous_score?: number
+  num_comments?: number
   subreddit: string | null
   image_url: string | null
   fetched_at: string

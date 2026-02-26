@@ -12,6 +12,7 @@ import PulseBadge from './PulseBadge'
 interface StoryCardProps {
   post: Post
   indexScore?: number | null
+  featured?: boolean
 }
 
 const getSourceInfo = (post: Post): { src: string | null, name: string } | null => {
@@ -75,6 +76,19 @@ const CLUB_FALLBACK_COLORS: Record<string, string> = {
   'wolverhampton': '#4A3728',
 }
 
+const getEngagementLabel = (post: Post): string => {
+  if (post.source === 'reddit') {
+    if (post.num_comments && post.num_comments > 0) {
+      return `${post.num_comments} comments`
+    }
+    if (post.score && post.score > 100) return 'Active thread'
+  }
+  // For articles, estimate read time from title length as proxy
+  const words = post.title?.split(' ').length ?? 0
+  const readMins = Math.max(1, Math.ceil(words / 200))
+  return `${readMins} min read`
+}
+
 type CredibilityTier = 'trusted' | 'community'
 
 const TRUSTED_SOURCES = new Set(['BBC Sport', 'Sky Sports', 'The Guardian'])
@@ -107,7 +121,7 @@ function getCTAText(post: Post): string {
   return post.source === 'reddit' ? 'View thread →' : 'Read article →'
 }
 
-export default function StoryCard({ post, indexScore }: StoryCardProps) {
+export default function StoryCard({ post, indexScore, featured = false }: StoryCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [summary, setSummary] = useState<string | null>(post.summary ?? null)
   const [loading, setLoading] = useState(false)
@@ -174,7 +188,7 @@ export default function StoryCard({ post, indexScore }: StoryCardProps) {
   const fallbackBg = CLUB_FALLBACK_COLORS[post.club_slug ?? ''] ?? '#1A3538'
 
   return (
-    <article id={`post-${post.id}`} onClick={handleExpand} className="flex flex-row gap-3 border-b-2 border-l-[3px] border-white/[0.08] bg-[#152B2E] p-3 transition-colors duration-150 hover:bg-white/5 sm:rounded-lg sm:border sm:border-white/8 cursor-pointer" style={{ borderLeftColor: sourceColor, borderBottomColor: expanded ? 'transparent' : '#F5C84226', boxShadow: `0 0 12px ${sourceColor}26` }}>
+    <article id={`post-${post.id}`} onClick={handleExpand} className={`${featured ? 'flex flex-col' : 'flex flex-row gap-3'} border-b-2 border-l-[3px] border-white/[0.08] bg-[#152B2E] p-3 transition-colors duration-150 hover:bg-white/5 sm:rounded-lg sm:border sm:border-white/8 cursor-pointer`} style={{ borderLeftColor: sourceColor, borderBottomColor: expanded ? 'transparent' : '#F5C84226', boxShadow: `0 0 12px ${sourceColor}26` }}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "NewsArticle",
@@ -195,46 +209,86 @@ export default function StoryCard({ post, indexScore }: StoryCardProps) {
         })}} />
         <JsonLd data={articleSchema} />
 
-        {/* Image — left side, fixed size */}
-        <div className="shrink-0 w-[80px] h-[64px] sm:w-[100px] sm:h-[72px] rounded overflow-hidden bg-[#152B2E]">
-          {!imgError && post.image_url ? (
-            <img
-              src={post.image_url}
-              alt=""
-              className="w-full h-full object-cover"
-              onError={() => setImgError(true)}
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: fallbackBg }}>
+        {/* Image — featured or thumbnail */}
+        {featured ? (
+          // Featured card: full-width image at top
+          !expanded && post.image_url && !imgError && (
+            <div className="w-full h-48 rounded-lg overflow-hidden mb-3 bg-[#152B2E]">
               <img
-                src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug ?? '')}.svg`}
+                src={post.image_url}
                 alt=""
-                className="w-10 h-10 object-contain"
+                className="w-full h-full object-cover object-top"
+                onError={() => setImgError(true)}
+                loading="lazy"
               />
             </div>
-          )}
-        </div>
+          )
+        ) : (
+          // Regular card: side thumbnail, hidden when expanded
+          !expanded && (
+            <div className="shrink-0 w-[88px] h-[66px] rounded-lg overflow-hidden bg-[#152B2E]">
+              {!imgError && post.image_url ? (
+                <img
+                  src={post.image_url}
+                  alt=""
+                  className="w-full h-full object-cover object-top"
+                  onError={() => setImgError(true)}
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: fallbackBg }}>
+                  <img
+                    src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug ?? '')}.svg`}
+                    alt=""
+                    className="w-10 h-10 object-contain"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                </div>
+              )}
+            </div>
+          )
+        )}
 
-        {/* Content — right side */}
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
+        {/* Content — right side or below image if featured */}
+        <div className={`flex min-w-0 flex-1 flex-col gap-2 ${featured ? 'w-full' : ''}`}>
           {/* Headline */}
-          <h3 className="text-sm sm:text-base font-bold text-white leading-snug line-clamp-2">
+          <h3 className={`${featured ? 'text-base' : 'text-sm sm:text-base'} font-bold text-white leading-snug line-clamp-2`}>
             {decodeHtmlEntities(post.title)}
           </h3>
 
+          {/* Summary teaser — shown when collapsed if summary exists */}
+          {!expanded && post.summary && (
+            <p className="text-xs text-white/50 leading-snug line-clamp-1">
+              {post.summary.split('.')[0]}.
+            </p>
+          )}
+
           {/* Expand button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              handleExpand()
-            }}
-            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#F5C842]/30 hover:border-[#F5C842] hover:bg-[#F5C842]/10 transition-all duration-200 cursor-pointer group w-fit"
-          >
-            <span className="text-[#F5C842] text-[10px] font-bold uppercase tracking-wide">
-              {expanded ? 'Close' : '▸ The Take'}
-            </span>
-          </button>
+          {post.summary || expanded ? (
+            // Button when summary exists or is expanded
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleExpand()
+              }}
+              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#F5C842]/40 hover:border-[#F5C842] hover:bg-[#F5C842]/10 transition-all duration-200 w-fit"
+            >
+              <span className="text-[#F5C842] text-[11px] font-bold tracking-wide">
+                {expanded ? '✕ Close' : '▸ The Take'}
+              </span>
+            </button>
+          ) : (
+            // Dimmed button when no summary (will fetch on demand)
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleExpand()
+              }}
+              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/10 hover:border-[#F5C842]/40 transition-all duration-200 w-fit"
+            >
+              <span className="text-white/30 text-[11px]">▸ The Take</span>
+            </button>
+          )}
 
           {/* Summary — only shown when expanded */}
           {expanded && (
@@ -242,7 +296,7 @@ export default function StoryCard({ post, indexScore }: StoryCardProps) {
               {/* Full-width image in expanded state */}
               {post.image_url && !imgError && (
                 <div className="w-full h-40 sm:h-48 rounded-lg overflow-hidden mb-3 animate-fadeIn">
-                  <img src={post.image_url} alt="" className="w-full h-full object-cover" />
+                  <img src={post.image_url} alt="" className="w-full h-full object-cover object-top" />
                 </div>
               )}
 
@@ -304,8 +358,14 @@ export default function StoryCard({ post, indexScore }: StoryCardProps) {
                   <span className="text-[11px] text-white/40 truncate">{source.name}</span>
                 )
               })()}
-              {/* Timestamp */}
-              <span className="text-[11px] text-white/30 shrink-0">· {getTimeDisplay(post)}</span>
+              {/* Engagement metric */}
+              <span className="text-[11px] text-white/30 shrink-0">· {getEngagementLabel(post)}</span>
+              {/* Timestamp in smaller text */}
+              <span className="text-[10px] text-white/20 shrink-0">{getTimeDisplay(post)}</span>
+              {/* Activity indicator for active Reddit threads */}
+              {post.source === 'reddit' && post.num_comments && post.num_comments > 50 && (
+                <span className="text-[10px] text-green-400/60 shrink-0">● active</span>
+              )}
             </div>
             {/* Pulse score - right aligned */}
             {!expanded && (

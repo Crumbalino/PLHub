@@ -6,6 +6,8 @@ import { Post } from '@/types'
 import StoryCard from '@/components/StoryCard'
 import ClubSelector from '@/components/ClubSelector'
 import PulseBadge from '@/components/PulseBadge'
+import PLTable from '@/components/PLTable'
+import NextFixtures from '@/components/NextFixtures'
 import Pagination from '@/components/Pagination'
 import { formatDistanceToNow } from '@/lib/utils'
 import { CLUBS_BY_SLUG, CLUBS } from '@/lib/clubs'
@@ -213,8 +215,36 @@ export default async function HomePage({ searchParams }: PageProps) {
     return null
   }
 
+  // Group posts by time period
+  const groupPostsByTime = (posts: Post[]) => {
+    const now = new Date()
+    const groups: { label: string; posts: Post[] }[] = [
+      { label: 'Just now', posts: [] },
+      { label: 'Today', posts: [] },
+      { label: 'Yesterday', posts: [] },
+      { label: 'This week', posts: [] },
+      { label: 'Earlier', posts: [] },
+    ]
+
+    posts.forEach(post => {
+      const diff = (now.getTime() - new Date(post.published_at).getTime()) / 60000
+      if (diff < 60) groups[0].posts.push(post)
+      else if (diff < 1440) groups[1].posts.push(post)
+      else if (diff < 2880) groups[2].posts.push(post)
+      else if (diff < 10080) groups[3].posts.push(post)
+      else groups[4].posts.push(post)
+    })
+
+    return groups.filter(g => g.posts.length > 0)
+  }
+
+  const groupedPosts = groupPostsByTime(indexPosts)
+
   return (
-    <div className="mx-auto max-w-2xl px-4">
+    <div className="max-w-5xl mx-auto px-4">
+      <div className="flex gap-8">
+        {/* Main feed — left, wider */}
+        <div className="flex-1 min-w-0">
       {/* Hero SEO Section */}
       <section className="pt-6 pb-4 text-center">
         <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
@@ -366,29 +396,22 @@ export default async function HomePage({ searchParams }: PageProps) {
 
             return (
               <section className="mb-8" aria-labelledby="trending-heading">
-                <h2
-                  id="trending-heading"
-                  className="mb-4 text-xs font-semibold uppercase tracking-wider text-[#F5C842]"
-                >
-                  <span className="inline-block w-2 h-2 rounded-full bg-[#F5C842] animate-pulse mr-2" />
-                  Trending Now
-                </h2>
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <span className="text-[#F5C842] text-sm">↑</span>
+                  <span className="text-sm font-bold text-white">Trending</span>
+                </div>
 
                 <div className="flex flex-col gap-2">
                   {movingPosts.map(({ post, delta }, idx) => {
-                    let movementBadge = ''
-                    let movementColor = ''
-
-                    if (delta > 20) {
-                      movementBadge = 'Hot'
-                      movementColor = 'text-orange-400'
-                    } else if (delta > 5) {
-                      movementBadge = '↑'
-                      movementColor = 'text-green-400'
-                    } else if (delta < -5) {
-                      movementBadge = '↓'
-                      movementColor = 'text-red-400/70'
+                    const getDelta = (delta: number) => {
+                      if (delta > 10) return { arrow: '↑↑', color: 'text-green-400', bold: true }
+                      if (delta > 0) return { arrow: '↑', color: 'text-green-400', bold: false }
+                      if (delta < -10) return { arrow: '↓↓', color: 'text-red-400', bold: true }
+                      if (delta < 0) return { arrow: '↓', color: 'text-red-400/70', bold: false }
+                      return { arrow: '→', color: 'text-white/20', bold: false }
                     }
+
+                    const movement = getDelta(delta)
 
                     return (
                       <a
@@ -396,11 +419,10 @@ export default async function HomePage({ searchParams }: PageProps) {
                         href={`#post-${post.id}`}
                         className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 cursor-pointer transition-all duration-150 hover:border-l-2 hover:border-[#F5C842] hover:pl-1"
                       >
-                        <span className="w-6 text-[#F5C842] font-bold text-sm text-center">{idx + 1}</span>
+                        <span className="w-6 text-white font-bold text-sm text-center">{idx + 1}</span>
+                        <span className={`text-xs font-bold shrink-0 ${movement.color}`}>{movement.arrow}</span>
+                        <span className="text-white/30 text-[10px] shrink-0">{Math.abs(delta)}</span>
                         <span className="text-sm text-white line-clamp-1 flex-1">{post.title}</span>
-                        {movementBadge && (
-                          <span className={`text-sm font-semibold shrink-0 ${movementColor}`}>{movementBadge}</span>
-                        )}
                       </a>
                     )
                   })}
@@ -426,15 +448,25 @@ export default async function HomePage({ searchParams }: PageProps) {
               </h2>
 
               <div className="flex flex-col gap-3">
-                {indexPosts.map((post) => {
-                  return (
-                    <StoryCard
-                      key={post.id}
-                      post={post}
-                      indexScore={toIndex(post.score ?? 0)}
-                    />
-                  )
-                })}
+                {groupedPosts.map(group => (
+                  <div key={group.label}>
+                    <div className="flex items-center gap-3 my-4">
+                      <div className="flex-1 h-px bg-white/[0.06]" />
+                      <span className="text-[11px] text-white/30 font-medium uppercase tracking-widest">
+                        {group.label}
+                      </span>
+                      <div className="flex-1 h-px bg-white/[0.06]" />
+                    </div>
+                    {group.posts.map((post, index) => (
+                      <StoryCard
+                        key={post.id}
+                        post={post}
+                        indexScore={toIndex(post.score ?? 0)}
+                        featured={index % 5 === 0}
+                      />
+                    ))}
+                  </div>
+                ))}
               </div>
               <div className="mt-8">
                 <Pagination
@@ -448,6 +480,17 @@ export default async function HomePage({ searchParams }: PageProps) {
           )}
         </>
       )}
+        </div>
+        {/* End of main feed */}
+
+        {/* Sidebar — right, sticky */}
+        <div className="hidden lg:block w-[280px] shrink-0">
+          <div className="sticky top-[70px] space-y-6">
+            <PLTable />
+            <NextFixtures />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
