@@ -8,7 +8,7 @@ import ClubSelector from '@/components/ClubSelector'
 import PulseBadge from '@/components/PulseBadge'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
-import LoadMoreButton from '@/components/LoadMoreButton'
+import FeedContainer from '@/components/FeedContainer'
 import PLTableWidget from '@/components/PLTableWidget'
 import FixturesWidget from '@/components/FixturesWidget'
 import AdPlaceholder from '@/components/AdPlaceholder'
@@ -204,9 +204,30 @@ export default async function HomePage({ searchParams }: PageProps) {
   ])
 
   // Frontend safety net: filter non-PL content
-  const HIDE_KEYWORDS = ['NFL', 'NBA', 'boxing', 'bout', 'Katie Taylor', 'Tua Tagovailoa', 'betting tips', 'free bets', 'Almeria', 'Segunda Division', 'American football', 'Conference League']
+  const HIDE_KEYWORDS = [
+    'NFL', 'NBA', 'boxing', 'bout', 'Katie Taylor', 'Tua Tagovailoa', 'betting tips', 'free bets',
+    'Almeria', 'Segunda Division', 'American football', 'Conference League', 'Tom Brady', 'Raiders',
+    'AFC', 'NFC', 'Super Bowl', 'touchdown', 'quarterback', 'Celtic', 'Rangers', 'Scottish Premiership',
+    'Scottish Cup', 'Carabao Cup', 'Plymouth', 'Championship', 'League One', 'League Two', 'EFL',
+    'Wrexham', 'Sheffield Wednesday', 'Sheffield United', 'Sunderland', 'Leeds', 'Burnley', 'Luton',
+    'Norwich', 'Coventry', 'Middlesbrough', 'Stoke', 'Swansea', 'Hull', 'Millwall', 'Bristol City',
+    'QPR', 'Watford', 'Blackburn', 'Preston', 'Derby', 'Portsmouth', 'Oxford United', 'odds boost',
+    'accumulator', 'MLB', 'NHL', 'UFC', 'MMA', 'tennis', 'golf', 'cricket', 'rugby', 'World Series',
+    'Stanley Cup', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'MLS', 'College football',
+    'March Madness', 'Dolphins', 'Patriots', 'Cowboys', 'Lakers', 'Yankees', 'Packers', 'Chiefs',
+    'Patrick Mahomes', 'LeBron James', 'Super League', 'IPL', 'NRL', 'AFL', 'Olympics', 'Copa America',
+    'Tour de France', 'Wimbledon', 'US Open', 'Ryder Cup', 'Six Nations', 'NFL Draft', 'Jaguars',
+    'Broncos', 'Chargers', 'Bengals', 'Ravens', 'Steelers', 'Browns', 'Texans', 'Colts', 'Titans',
+    'Bills', 'Jets', 'Eagles', 'Commanders', 'Giants', 'Bears', 'Lions', 'Vikings', 'Saints',
+    'Buccaneers', 'Falcons', 'Panthers', '49ers', 'Seahawks', 'Rams', 'Cardinals'
+  ]
   const filteredIndexPosts = indexPosts.filter(post => {
     const t = (post.title || '').toLowerCase()
+    // Check if PL club mentioned - if so, keep it
+    const PL_CLUBS = ['arsenal', 'aston villa', 'bournemouth', 'brentford', 'brighton', 'chelsea', 'crystal palace', 'everton', 'fulham', 'ipswich', 'leicester', 'liverpool', 'man city', 'manchester city', 'man utd', 'manchester united', 'newcastle', 'nottingham forest', 'forest', 'southampton', 'spurs', 'tottenham', 'west ham', 'wolves', 'wolverhampton']
+    const hasPLClub = PL_CLUBS.some(club => t.includes(club))
+    if (hasPLClub) return true
+    // Otherwise filter by hide keywords
     return !HIDE_KEYWORDS.some(kw => t.includes(kw.toLowerCase()))
   })
 
@@ -497,51 +518,11 @@ export default async function HomePage({ searchParams }: PageProps) {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-y-6">
-                {groupedPosts.map(group => {
-                  let cardCount = 0
-                  const postElements: React.ReactNode[] = []
-
-                  group.posts.forEach((post, index) => {
-                    postElements.push(
-                      <StoryCard
-                        key={post.id}
-                        post={post}
-                        indexScore={toIndex(post.score ?? 0)}
-                        featured={index % 5 === 0}
-                      />
-                    )
-                    cardCount++
-
-                    // Insert ad every 5 cards
-                    if (cardCount % 5 === 0 && cardCount < group.posts.length) {
-                      postElements.push(
-                        <div key={`ad-${post.id}`} className="my-2">
-                          <AdPlaceholder size="responsive-leaderboard" />
-                        </div>
-                      )
-                    }
-                  })
-
-                  return (
-                    <div key={group.label}>
-                      <div className="flex items-center gap-3 my-4">
-                        <div className="flex-1 h-px bg-white/[0.06]" />
-                        <span className="text-[11px] text-white/30 font-medium">
-                          {group.label}
-                        </span>
-                        <div className="flex-1 h-px bg-white/[0.06]" />
-                      </div>
-                      <div className="flex flex-col gap-y-6">{postElements}</div>
-                    </div>
-                  )
-                })}
-              </div>
-              <LoadMoreButton
-                currentPage={currentPage}
-                totalPages={totalPages}
+              <FeedContainer
+                initialPosts={filteredIndexPosts}
                 totalCount={totalCount}
-                sortParam={sort !== 'index' ? sort : undefined}
+                sort={sort}
+                club={clubSlug}
               />
             </section>
           )}

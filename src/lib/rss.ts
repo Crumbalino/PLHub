@@ -2,21 +2,50 @@ import Parser from 'rss-parser'
 
 const NON_PL_KEYWORDS = [
   'NFL', 'NBA', 'MLB', 'NHL', 'NASCAR', 'Formula 1', 'F1',
-  'UFC', 'MMA', 'boxing', 'tennis', 'golf', 'cricket',
-  'rugby', 'Super Bowl', 'World Series', 'Stanley Cup',
+  'UFC', 'MMA', 'boxing', 'bout', 'trilogy fight', 'heavyweight', 'middleweight', 'undercard',
+  'tennis', 'golf', 'cricket', 'rugby', 'Super Bowl', 'World Series', 'Stanley Cup',
   'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'MLS',
   'College football', 'March Madness',
-  'Dolphins', 'Patriots', 'Cowboys', 'Lakers', 'Yankees',
+  'Dolphins', 'Patriots', 'Cowboys', 'Lakers', 'Yankees', 'Packers', 'Chiefs',
   'NFL team', 'NBA team', 'American football',
-  'Tua Tagovailoa', 'Patrick Mahomes', 'LeBron James',
+  'Tua Tagovailoa', 'Patrick Mahomes', 'LeBron James', 'Katie Taylor',
   'Super League', 'IPL', 'NRL', 'AFL',
-  'Olympics', 'World Cup 2026', 'Copa America',
-  'Tour de France', 'Wimbledon', 'US Open',
-  'Ryder Cup', 'Six Nations',
+  'Olympics', 'Copa America', 'Tour de France', 'Wimbledon', 'US Open',
+  'Ryder Cup', 'Six Nations', 'Almeria', 'Segunda Division',
+  'Tom Brady', 'Raiders', 'AFC', 'NFC', 'touchdown', 'quarterback',
+  'Celtic', 'Rangers', 'Scottish Premiership', 'Scottish Cup', 'Carabao Cup',
+  'Plymouth', 'Championship', 'League One', 'League Two',
+  'EFL', 'Wrexham', 'Sheffield Wednesday', 'Sheffield United', 'Sunderland',
+  'Leeds', 'Burnley', 'Luton', 'Norwich', 'Coventry', 'Middlesbrough',
+  'Stoke', 'Swansea', 'Hull', 'Millwall', 'Bristol City', 'QPR',
+  'Watford', 'Blackburn', 'Preston', 'Derby', 'Portsmouth', 'Oxford United',
+  'betting tips', 'free bets', 'accumulator', 'odds boost',
+  'Conference League', 'Europa Conference',
+  'NFL Draft', 'Jaguars', 'Broncos', 'Chargers', 'Bengals', 'Ravens',
+  'Steelers', 'Browns', 'Texans', 'Colts', 'Titans', 'Bills', 'Jets',
+  'Eagles', 'Commanders', 'Giants', 'Bears', 'Lions', 'Vikings',
+  'Saints', 'Buccaneers', 'Falcons', 'Panthers', '49ers', 'Seahawks', 'Rams',
+  'Cardinals',
 ]
 
 function isPremierLeagueContent(title: string, description: string): boolean {
   const text = (title + ' ' + (description || '')).toLowerCase()
+
+  // Check if any PL club is mentioned - if so, keep it
+  const PL_CLUBS = [
+    'arsenal', 'aston villa', 'bournemouth', 'brentford', 'brighton', 'chelsea',
+    'crystal palace', 'everton', 'fulham', 'ipswich', 'leicester', 'liverpool',
+    'man city', 'manchester city', 'man utd', 'manchester united', 'newcastle',
+    'nottingham forest', 'forest', 'southampton', 'spurs', 'tottenham',
+    'west ham', 'wolves', 'wolverhampton'
+  ]
+
+  const hasPLClub = PL_CLUBS.some(club => text.includes(club))
+
+  // If a PL club is mentioned, keep the post regardless of other keywords
+  if (hasPLClub) return true
+
+  // Otherwise filter by non-PL keywords
   for (const keyword of NON_PL_KEYWORDS) {
     if (text.includes(keyword.toLowerCase())) return false
   }

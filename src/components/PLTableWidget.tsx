@@ -37,12 +37,12 @@ export default function PLTableWidget() {
         {standings.map((entry) => (
           <div
             key={entry.pos}
-            className="grid grid-cols-[20px_1fr_20px_20px_28px] gap-2 px-4 py-2 hover:bg-white/[0.03] transition-colors items-center text-xs border-l-2"
+            className="grid grid-cols-[20px_1fr_20px_20px_28px] gap-2 px-4 py-2 hover:bg-white/[0.03] transition-colors items-center border-l-2"
             style={{
               borderLeftColor: entry.pos <= 4 ? '#22c55e' : entry.pos >= 18 ? '#ef4444' : 'transparent',
             }}
           >
-            <span className="tabular-nums font-semibold text-white">{entry.pos}</span>
+            <span className="tabular-nums text-sm text-gray-400">{entry.pos}</span>
 
             <div className="flex items-center gap-2 min-w-0">
               <img
@@ -50,12 +50,12 @@ export default function PLTableWidget() {
                 alt=""
                 className="w-4 h-4 object-contain shrink-0"
               />
-              <span className="text-white/80 truncate text-xs">{entry.short}</span>
+              <span className="text-sm text-white truncate">{entry.short}</span>
             </div>
 
-            <span className="text-white/50 tabular-nums text-center">{entry.p}</span>
-            <span className="text-white/50 tabular-nums text-center">{entry.w}</span>
-            <span className="text-white font-bold tabular-nums text-center">{entry.pts}</span>
+            <span className="text-sm text-gray-300 tabular-nums text-center">{entry.p}</span>
+            <span className="text-sm text-gray-300 tabular-nums text-center">{entry.w}</span>
+            <span className="text-sm font-semibold text-white tabular-nums text-center">{entry.pts}</span>
           </div>
         ))}
       </div>

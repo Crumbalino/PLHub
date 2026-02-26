@@ -26,9 +26,9 @@ export default function FixturesWidget() {
       <div className="divide-y divide-white/5">
         {fixtures.map((fixture, idx) => (
           <div key={idx} className="px-4 py-3 hover:bg-white/[0.03] transition-colors">
-            <div className="flex items-center justify-between mb-2 text-[10px]">
-              <span className="text-gray-400 uppercase tracking-widest">{fixture.date}</span>
-              <span className="text-gray-500">{fixture.time}</span>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-gray-400">{fixture.date}</span>
+              <span className="text-xs text-gray-400">{fixture.time}</span>
             </div>
 
             <div className="flex items-center gap-2 justify-between">
@@ -38,11 +38,11 @@ export default function FixturesWidget() {
                   alt=""
                   className="w-4 h-4 object-contain"
                 />
-                <span className="text-[11px] text-white/80 truncate">{fixture.home}</span>
+                <span className="text-sm text-white truncate">{fixture.home}</span>
               </div>
-              <span className="text-[9px] text-white/30 shrink-0 mx-1">vs</span>
+              <span className="text-xs text-white/30 shrink-0 mx-1">vs</span>
               <div className="flex items-center gap-2 flex-1 justify-end">
-                <span className="text-[11px] text-white/80 truncate">{fixture.away}</span>
+                <span className="text-sm text-white truncate">{fixture.away}</span>
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/${fixture.awayBadge}.png`}
                   alt=""
@@ -58,20 +58,20 @@ export default function FixturesWidget() {
         <div className="text-sm font-semibold text-[#C4A23E] mb-3">Recent Results</div>
         <div className="space-y-2">
           {recentResults.map((result, idx) => (
-            <div key={idx} className="flex items-center gap-2 justify-between text-[10px]">
+            <div key={idx} className="flex items-center gap-2 justify-between">
               <div className="flex items-center gap-1 flex-1">
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/${result.homeBadge}.png`}
                   alt=""
                   className="w-3 h-3 object-contain"
                 />
-                <span className="text-white/80 truncate">{result.home}</span>
+                <span className="text-xs text-white truncate">{result.home}</span>
               </div>
-              <span className="text-white font-semibold tabular-nums">{result.homeScore}</span>
+              <span className="text-sm font-semibold text-white tabular-nums">{result.homeScore}</span>
               <span className="text-white/30">-</span>
-              <span className="text-white font-semibold tabular-nums">{result.awayScore}</span>
+              <span className="text-sm font-semibold text-white tabular-nums">{result.awayScore}</span>
               <div className="flex items-center gap-1 flex-1 justify-end">
-                <span className="text-white/80 truncate">{result.away}</span>
+                <span className="text-xs text-white truncate">{result.away}</span>
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/${result.awayBadge}.png`}
                   alt=""

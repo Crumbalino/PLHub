@@ -111,7 +111,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#003DA5',
     secondaryColor: '#FDB913',
     badgeEmoji: '👑',
-    badgeUrl: `${PL_CDN}/t16.png`,
+    badgeUrl: `${PL_CDN}/t13.png`,
   },
   {
     slug: 'liverpool',

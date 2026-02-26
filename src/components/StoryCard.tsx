@@ -82,6 +82,7 @@ const getClubCode = (slug: string): string => {
     southampton: '20',
     tottenham: '6',
     'west-ham': '21',
+    wolves: '39',
     wolverhampton: '39',
   }
   return clubCodes[slug] || slug
