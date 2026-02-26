@@ -206,12 +206,14 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
         {/* Expand button (only if summary exists) */}
         {post.summary && (
           <div className="mb-3">
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] cursor-pointer transition-colors select-none"
-            >
-              {expanded ? 'Less ▾' : 'More ▸'}
-            </button>
+            <div className="text-center mt-3">
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] cursor-pointer transition-colors select-none"
+              >
+                {expanded ? 'Less ▾' : 'More ▸'}
+              </button>
+            </div>
 
             {expanded && (
               <div className="border-l-2 border-l-[#00555A] pl-4 py-2 mt-3 mb-3">
@@ -227,6 +229,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
                 >
                   {getCTAText(post)}
                 </a>
+                <span className="block mt-3 text-sm text-gray-500 italic select-none">.SP</span>
               </div>
             )}
           </div>

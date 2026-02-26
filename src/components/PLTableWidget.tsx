@@ -64,6 +64,7 @@ export default function PLTableWidget() {
         <span className="text-green-400/70">■ UCL</span>
         <span className="text-red-400/70">■ Relegation</span>
       </div>
+      <p className="text-xs text-gray-500 mt-2 text-center pb-2">Correct as of 26 Feb 2026</p>
     </div>
   )
 }

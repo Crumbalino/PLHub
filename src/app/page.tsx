@@ -9,6 +9,7 @@ import PulseBadge from '@/components/PulseBadge'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
 import FeedContainer from '@/components/FeedContainer'
+import Top5Tabs from '@/components/Top5Tabs'
 import PLTableWidget from '@/components/PLTableWidget'
 import FixturesWidget from '@/components/FixturesWidget'
 import AdPlaceholder from '@/components/AdPlaceholder'
@@ -55,7 +56,8 @@ const ALWAYS_HIDE = [
   'get £', 'acca', 'darts night', 'darts live', 'premier league darts',
   'conor benn', 'tyson fury', 'undercard', 'fury-', 'born to fight', 'progais',
   'fight night', 'ring walk', 'dana white', 'usyk', 'canelo', 'weigh-in',
-  'boxing', 'bout'
+  'boxing', 'bout', 'ronda rousey', 'rousey comeback', 't20 world cup',
+  'west indies cricket', 'south africa cricket', 'nbc network', 'nbc shakeup'
 ]
 
 const HIDE_KEYWORDS = [
@@ -360,7 +362,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           The Pulse of the Premier League
         </h1>
         <p className="mt-2 text-sm md:text-base text-gray-200 text-center">
-          Curated and summarised by The Secret Pundit
+          AI-powered Premier League news, ranked by what matters
         </p>
       </section>
 
@@ -433,81 +435,18 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       )}
 
-      {/* Feed sort controls */}
-      <div className="flex items-center justify-center gap-2 mb-6 mx-auto max-w-[1320px] px-4">
-        <a href={clubSlug ? `/?club=${clubSlug}` : '/'} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${sort === 'index' ? 'bg-[#00555A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>Pulse</a>
-        <a href={`/?sort=hot${clubSlug ? `&club=${clubSlug}` : ''}`} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${sort === 'hot' ? 'bg-[#00555A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>Hot</a>
-        <a href={`/?sort=new${clubSlug ? `&club=${clubSlug}` : ''}`} className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${sort === 'new' ? 'bg-[#00555A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>New</a>
-      </div>
-
       {!hasContent ? (
         <EmptyState />
       ) : (
         <>
-          {/* Section 1: Today's Top 5 — page 1 of index sort only */}
+          {/* Section 1: Today's Top 5 with client-side tabs */}
           {currentPage === 1 && sort === 'index' && top5.length > 0 && (
-            <section className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-px flex-1 bg-white/5" />
-                <div>
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
-                    Today's Top 5
-                  </h2>
-                  <p className="text-base text-gray-400 mt-1">What The Secret Pundit is watching right now</p>
-                </div>
-                <div className="h-px flex-1 bg-white/5" />
-              </div>
-              <div className="rounded-xl border border-white/[0.08] overflow-hidden">
-                {top5.map((post, index) => {
-                  const indexScore = toIndex(post.score ?? 0)
-                  return (
-                    <a
-                      key={post.id}
-                      href={`#post-${post.id}`}
-                      className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] last:border-0 hover:bg-white/[0.03] transition-colors group"
-                    >
-                      {/* Rank */}
-                      <span className={`shrink-0 font-black tabular-nums w-5 text-center text-white ${
-                        index === 0 ? 'text-lg' : 'text-white/30 text-sm'
-                      }`}>
-                        {index + 1}
-                      </span>
-                      {/* Thumbnail */}
-                      <div className="shrink-0 w-12 h-10 rounded overflow-hidden bg-[#152B2E]">
-                        {post.image_url && (
-                          <img src={post.image_url} alt="" className="w-full h-full object-cover" />
-                        )}
-                      </div>
-                      {/* Headline + meta */}
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-semibold leading-snug line-clamp-2 group-hover:text-white/60 transition-colors ${
-                          index === 0 ? 'text-base text-white' : 'text-base text-white'
-                        }`}>
-                          {decodeHtmlEntities(post.title)}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          {post.club_slug && (
-                            <img
-                              src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug)}.svg`}
-                              alt=""
-                              className="w-3 h-3 object-contain opacity-60"
-                            />
-                          )}
-                          <span className="text-sm text-gray-400">{getTimeDisplay(post)}</span>
-                        </div>
-                      </div>
-                      {/* Pulse */}
-                      {indexScore && (
-                        <div className="shrink-0">
-                          <PulseBadge score={indexScore} size="sm" />
-                        </div>
-                      )}
-                    </a>
-                  )
-                })}
-              </div>
-            </section>
+            <Top5Tabs
+              posts={top5}
+              getClubCode={getClubCode}
+              getTimeDisplay={getTimeDisplay}
+              toIndex={toIndex}
+            />
           )}
 
           {/* Section 2: Trending Now — page 1 of index sort only, vertical ranked list */}

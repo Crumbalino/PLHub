@@ -19,7 +19,7 @@ export default function FixturesWidget() {
   return (
     <div className="rounded-xl bg-[#152B2E] border border-white/5 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-        <span className="text-base font-semibold text-[#C4A23E]">Upcoming</span>
+        <span className="text-base font-semibold text-[#C4A23E]">Upcoming Fixtures</span>
         <span className="text-[10px] text-gray-400">Next 6</span>
       </div>
 
