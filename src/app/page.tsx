@@ -530,7 +530,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                         </span>
                         <div className="flex-1 h-px bg-white/[0.06]" />
                       </div>
-                      {postElements}
+                      <div className="flex flex-col gap-y-6">{postElements}</div>
                     </div>
                   )
                 })}
