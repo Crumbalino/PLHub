@@ -45,17 +45,28 @@ export async function GET(request: NextRequest) {
   const postsData = (posts as unknown as Post[]) || []
 
   // Filter non-PL content
+  const ALWAYS_HIDE = [
+    'super boost', 'bet365', 'betfair', 'paddy power', 'william hill', 'ladbrokes',
+    'coral', 'skybet', 'sky bet', 'betway', 'unibet', 'betfred', '888sport',
+    'price boost', 'enhanced odds', 'money back', 'betting tips', 'free bets',
+    'odds boost', 'accumulator', 'best football bets', 'betting offer', 'bet £10',
+    'get £', 'acca', 'darts night', 'darts live', 'premier league darts',
+    'conor benn', 'tyson fury', 'undercard', 'fury-', 'born to fight', 'progais',
+    'fight night', 'ring walk', 'dana white', 'usyk', 'canelo', 'weigh-in',
+    'boxing', 'bout'
+  ]
+
   const HIDE_KEYWORDS = [
-    'nfl', 'nba', 'boxing', 'bout', 'katie taylor', 'tom brady', 'raiders',
-    'afc west', 'tua tagovailoa', 'betting tips', 'free bets', 'odds boost',
-    'accumulator', 'best football bets', 'almeria', 'segunda division',
+    'nfl', 'nba', 'katie taylor', 'tom brady', 'raiders',
+    'tua tagovailoa', 'almeria', 'segunda division',
     'american football', 'conference league', 'europa conference',
     'champions league cash', 'world cup', 'carabao cup', 'celtic', 'rangers',
     'scottish', 'championship', 'league one', 'league two', 'efl',
     'plymouth', 'mexico open', 'tennis', 'golf', 'cricket', 'rugby',
-    'mma', 'ufc', 'fenerbahce', 'zrinjski', 'betting offer', 'bet £10',
+    'mma', 'ufc', 'fenerbahce', 'zrinjski',
     'quarterback', 'touchdown', 'super bowl',
   ]
+
   const PL_CLUBS = [
     'arsenal', 'aston villa', 'bournemouth', 'brentford', 'brighton', 'chelsea',
     'crystal palace', 'everton', 'fulham', 'ipswich', 'leicester', 'liverpool',
@@ -63,11 +74,19 @@ export async function GET(request: NextRequest) {
     'nottingham forest', 'forest', 'southampton', 'spurs', 'tottenham',
     'west ham', 'wolves'
   ]
+
   const filteredPosts = postsData.filter(post => {
-    const title = (post.title || '').toLowerCase()
-    const hasPLClub = PL_CLUBS.some(club => title.includes(club))
+    const text = ((post.title || '') + ' ' + (post.summary || '')).toLowerCase()
+
+    // Always hide betting and boxing regardless of PL club mention
+    if (ALWAYS_HIDE.some(kw => text.includes(kw))) return false
+
+    // If PL club mentioned, keep it
+    const hasPLClub = PL_CLUBS.some(club => text.includes(club))
     if (hasPLClub) return true
-    return !HIDE_KEYWORDS.some(kw => title.includes(kw))
+
+    // Otherwise check general non-PL keywords
+    return !HIDE_KEYWORDS.some(kw => text.includes(kw))
   })
 
   // Deduplicate by URL
