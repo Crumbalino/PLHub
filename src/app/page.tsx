@@ -11,7 +11,6 @@ import NextFixtures from '@/components/NextFixtures'
 import FeedPage from '@/components/FeedPage'
 import PLTableWidget from '@/components/PLTableWidget'
 import FixturesWidget from '@/components/FixturesWidget'
-import AdPlaceholder from '@/components/AdPlaceholder'
 import { formatDistanceToNow, decodeHtmlEntities } from '@/lib/utils'
 import { CLUBS_BY_SLUG, CLUBS } from '@/lib/clubs'
 import { calculateIndex } from '@/lib/plhub-index'
@@ -341,144 +340,138 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       </div>
 
-      <div className="max-w-[1320px] mx-auto px-4 py-6">
-        <div className="flex gap-6">
-          {/* LEFT SIDEBAR — 280px fixed */}
-          <div className="hidden lg:block w-[280px] shrink-0">
-            <div className="sticky top-20 space-y-6">
-              {/* PL Table Widget */}
-              <PLTableWidget />
-
-              {/* Ad Placeholder */}
-              <AdPlaceholder size="300x250" />
-            </div>
-          </div>
-
-          {/* CENTRE FEED — flex-1, max-w ~720px */}
-          <div className="flex-1 min-w-0 lg:max-w-[720px]">
-      {/* Hero SEO Section */}
-      <section className="pt-6 pb-8 px-4 text-center">
-        <h1 className="text-2xl md:text-4xl font-bold text-white text-center">
-          The Pulse of the Premier League
-        </h1>
-        <p className="mt-2 text-sm md:text-base text-gray-200 text-center">
-          AI-powered Premier League news, ranked by what matters
-        </p>
-      </section>
-
-      {/* Club Selector Hero */}
-      <section className="border-b border-white/10 py-10 text-center mx-auto" style={{ background: 'radial-gradient(ellipse at center, #0F2D31 0%, #0B1F21 70%)' }}>
-        <p className="text-sm text-gray-400 text-center mb-3">
-          Select your club
-        </p>
-
-        {/* Mobile dropdown */}
-        <div className="px-4">
-          <ClubSelector />
+      <div className="max-w-[1400px] mx-auto px-4 pt-6">
+        {/* Hero SEO Section — Full Width */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-white">The Pulse of the Premier League</h1>
+          <p className="text-base text-gray-400 mt-2">AI-powered Premier League news, ranked by what matters</p>
         </div>
 
-        {/* Desktop badge grid */}
-        <div className="hidden sm:block">
-          <div className="mx-auto max-w-4xl px-4 mt-6">
-            {/* All Clubs pill */}
-            <div className="flex justify-center mb-4">
-              <Link
-                href="/"
-                className={`text-xs font-medium rounded-full px-4 py-1.5 transition-colors ${
-                  !clubSlug
-                    ? 'bg-white/10 text-white ring-2 ring-[#C4A23E]'
-                    : 'text-white bg-white/10 hover:bg-white/20'
-                }`}
-              >
-                All
-              </Link>
-            </div>
+        {/* Club Selector Hero — Full Width */}
+        <section className="border-b border-white/10 py-10 text-center mx-auto mb-8" style={{ background: 'radial-gradient(ellipse at center, #0F2D31 0%, #0B1F21 70%)' }}>
+          <p className="text-sm text-gray-400 text-center mb-3">
+            Select your club
+          </p>
 
-            {/* Club Badges Grid */}
-            <div className="flex flex-wrap gap-3 justify-center">
-              {CLUBS.map((club) => (
+          {/* Mobile dropdown */}
+          <div className="px-4">
+            <ClubSelector />
+          </div>
+
+          {/* Desktop badge grid */}
+          <div className="hidden sm:block">
+            <div className="mx-auto max-w-4xl px-4 mt-6">
+              {/* All Clubs pill */}
+              <div className="flex justify-center mb-4">
                 <Link
-                  key={club.slug}
-                  href={`/?club=${club.slug}${sort !== 'index' ? `&sort=${sort}` : ''}`}
-                  className={`w-10 h-10 md:w-9 md:h-9 rounded-full p-1.5 cursor-pointer transition-colors ${
-                    clubSlug === club.slug
-                      ? 'bg-white/10 ring-2 ring-[#C4A23E]'
-                      : 'bg-white/5 hover:bg-white/10'
+                  href="/"
+                  className={`text-xs font-medium rounded-full px-4 py-1.5 transition-colors ${
+                    !clubSlug
+                      ? 'bg-white/10 text-white ring-2 ring-[#C4A23E]'
+                      : 'text-white bg-white/10 hover:bg-white/20'
                   }`}
                 >
-                  <Image
-                    src={club.badgeUrl}
-                    alt={club.name}
-                    width={28}
-                    height={28}
-                    unoptimized
-                    className="w-full h-full object-contain"
-                  />
+                  All
                 </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {!hasContent ? (
-        <EmptyState />
-      ) : (
-        <>
-          {/* Section 1: Trending Now — page 1 of index sort only, vertical ranked list */}
-          {currentPage === 1 && sort === 'index' && !clubSlug && trendingPosts.length > 0 && (
-            <section className="mb-8" aria-labelledby="trending-heading">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <span className="text-white text-sm">↑</span>
-                <span className="text-sm font-bold text-white">Trending</span>
               </div>
 
-              <div className="flex flex-col gap-2">
-                {trendingPosts.map((post, idx) => (
-                  <a
-                    key={post.id}
-                    href={`#post-${post.id}`}
-                    className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 cursor-pointer transition-all duration-150 hover:border-l-2 hover:border-[#F5C842] hover:pl-1"
+              {/* Club Badges Grid */}
+              <div className="flex flex-wrap gap-3 justify-center">
+                {CLUBS.map((club) => (
+                  <Link
+                    key={club.slug}
+                    href={`/?club=${club.slug}${sort !== 'index' ? `&sort=${sort}` : ''}`}
+                    className={`w-10 h-10 md:w-9 md:h-9 rounded-full p-1.5 cursor-pointer transition-colors ${
+                      clubSlug === club.slug
+                        ? 'bg-white/10 ring-2 ring-[#C4A23E]'
+                        : 'bg-white/5 hover:bg-white/10'
+                    }`}
                   >
-                    <span className="w-6 text-white font-bold text-sm text-center">{idx + 1}</span>
-                    <span className="text-sm text-white line-clamp-1 flex-1">{post.title}</span>
-                  </a>
+                    <Image
+                      src={club.badgeUrl}
+                      alt={club.name}
+                      width={28}
+                      height={28}
+                      unoptimized
+                      className="w-full h-full object-contain"
+                    />
+                  </Link>
                 ))}
               </div>
-            </section>
-          )}
-
-          {/* Divider */}
-          {currentPage === 1 && sort === 'index' && !clubSlug && (trendingPosts.length > 0) && filteredIndexPosts.length > 0 && (
-            <hr className="mb-8 border-white/5" />
-          )}
-
-          {/* Section 2: Feed with client-side sorting and club filter */}
-          {filteredIndexPosts.length > 0 && (
-            <section>
-              <FeedPage
-                initialPosts={filteredIndexPosts}
-                totalCount={totalCount}
-                initialClub={clubSlug || null}
-                top5Posts={top5}
-              />
-            </section>
-          )}
-        </>
-      )}
-          </div>
-          {/* End of centre feed */}
-
-          {/* RIGHT SIDEBAR — 280px fixed */}
-          <div className="hidden lg:block w-[280px] shrink-0">
-            <div className="sticky top-20 space-y-6">
-              {/* Fixtures Widget */}
-              <FixturesWidget />
-
-              {/* Ad Placeholder */}
-              <AdPlaceholder size="300x250" />
             </div>
           </div>
+        </section>
+
+        {/* Three Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-6">
+          {/* LEFT SIDEBAR — PL Table */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide">
+              <PLTableWidget />
+              <div className="bg-[#152B2E] rounded-xl p-4 text-center text-xs text-gray-600 h-[250px] flex items-center justify-center border border-white/5">
+                Ad
+              </div>
+            </div>
+          </aside>
+
+          {/* CENTRE — Feed */}
+          <main className="min-w-0">
+            {!hasContent ? (
+              <EmptyState />
+            ) : (
+              <>
+                {/* Trending section */}
+                {currentPage === 1 && sort === 'index' && !clubSlug && trendingPosts.length > 0 && (
+                  <section className="mb-8" aria-labelledby="trending-heading">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <span className="text-white text-sm">↑</span>
+                      <span className="text-sm font-bold text-white">Trending</span>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      {trendingPosts.map((post, idx) => (
+                        <a
+                          key={post.id}
+                          href={`#post-${post.id}`}
+                          className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 cursor-pointer transition-all duration-150 hover:border-l-2 hover:border-[#F5C842] hover:pl-1"
+                        >
+                          <span className="w-6 text-white font-bold text-sm text-center">{idx + 1}</span>
+                          <span className="text-sm text-white line-clamp-1 flex-1">{post.title}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Divider */}
+                {currentPage === 1 && sort === 'index' && !clubSlug && (trendingPosts.length > 0) && filteredIndexPosts.length > 0 && (
+                  <hr className="mb-8 border-white/5" />
+                )}
+
+                {/* Feed */}
+                {filteredIndexPosts.length > 0 && (
+                  <section>
+                    <FeedPage
+                      initialPosts={filteredIndexPosts}
+                      totalCount={totalCount}
+                      initialClub={clubSlug || null}
+                      top5Posts={top5}
+                    />
+                  </section>
+                )}
+              </>
+            )}
+          </main>
+
+          {/* RIGHT SIDEBAR — Fixtures */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide">
+              <FixturesWidget />
+              <div className="bg-[#152B2E] rounded-xl p-4 text-center text-xs text-gray-600 h-[600px] flex items-center justify-center border border-white/5">
+                Ad
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
