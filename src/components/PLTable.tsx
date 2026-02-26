@@ -84,15 +84,7 @@ export default async function PLTable() {
           className="grid grid-cols-[20px_1fr_24px_24px_24px_30px] gap-2 px-4 py-2 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors items-center"
         >
           <span
-            className={`text-xs tabular-nums ${
-              entry.position <= 4
-                ? 'text-[#F5C842] font-bold'
-                : entry.position === 5
-                  ? 'text-orange-400'
-                  : entry.position >= 18
-                    ? 'text-red-400'
-                    : 'text-white/40'
-            }`}
+            className={`text-xs tabular-nums font-semibold text-white`}
           >
             {entry.position}
           </span>

@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
         club_slug: null,
         content: video.snippet.description.substring(0, 500),
         summary: null,
-        score: 0,
+        score: 30,
       })
 
       if (error) {

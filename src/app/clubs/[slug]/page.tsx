@@ -199,7 +199,7 @@ export default async function ClubPage({ params, searchParams }: PageProps) {
   const toHeat = (score: number, delta: number): { label: string; color: string } | null => {
     if (!score || score <= 0) return null
     if (delta > 20 || score > maxScore * 0.7) return { label: '🔥🔥', color: 'text-orange-400' }
-    if (delta > 5 || score > maxScore * 0.4) return { label: '🔥', color: 'text-[#F5C842]' }
+    if (delta > 5 || score > maxScore * 0.4) return { label: '🔥', color: 'text-yellow-400' }
     if (score > maxScore * 0.1) return { label: '📈', color: 'text-green-400' }
     return null
   }
@@ -451,7 +451,7 @@ export default async function ClubPage({ params, searchParams }: PageProps) {
           <section className="mb-8" aria-labelledby="trending-heading">
             <h2
               id="trending-heading"
-              className="mb-4 text-xs font-semibold uppercase tracking-wider text-[#F5C842]"
+              className="mb-4 text-xs font-semibold text-white"
             >
               <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse mr-2" />
               Trending Now
@@ -479,7 +479,7 @@ export default async function ClubPage({ params, searchParams }: PageProps) {
                     href={`#post-${post.id}`}
                     className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 cursor-pointer transition-all duration-150 hover:border-l-2 hover:border-[#F5C842] hover:pl-1"
                   >
-                    <span className="w-6 text-[#F5C842] font-bold text-sm text-center">{idx + 1}</span>
+                    <span className="w-6 text-white font-bold text-sm text-center">{idx + 1}</span>
                     <span className="text-sm text-white line-clamp-1 flex-1">{post.title}</span>
                     {movementBadge && (
                       <span className={`text-sm font-semibold shrink-0 ${movementColor}`}>{movementBadge}</span>

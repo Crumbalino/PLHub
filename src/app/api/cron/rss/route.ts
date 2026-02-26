@@ -15,6 +15,13 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = createServerClient()
+
+    // Cleanup: delete existing bad posts
+    const CLEANUP = ['NFL', 'NBA', 'boxing', 'bout', 'Katie Taylor', 'Tua Tagovailoa', 'betting tips', 'free bets', 'Almeria', 'Segunda Division', 'American football', 'Conference League']
+    for (const kw of CLEANUP) {
+      await supabase.from('posts').delete().ilike('title', `%${kw}%`)
+    }
+
     const posts = await fetchAllRssFeeds()
 
     let inserted = 0

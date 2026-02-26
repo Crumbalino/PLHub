@@ -5,10 +5,12 @@ export default function SkeletonCard() {
       <div className="w-full h-[200px] bg-white/5 animate-pulse" />
 
       {/* Content area */}
-      <div className="px-5 pt-4 pb-5 space-y-3">
+      <div className="px-5 pt-4 pb-5">
         {/* Headline lines */}
-        <div className="space-y-2">
+        <div className="mb-2">
           <div className="h-6 w-3/4 bg-white/5 rounded animate-pulse" />
+        </div>
+        <div className="mb-3">
           <div className="h-6 w-1/2 bg-white/5 rounded animate-pulse" />
         </div>
 

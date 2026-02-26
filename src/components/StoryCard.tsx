@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Post } from '@/types'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
-import { decodeHtmlEntities } from '@/lib/utils'
+import { decodeHtmlEntities, stripMarkdown } from '@/lib/utils'
 
 interface StoryCardProps {
   post: Post
@@ -180,53 +180,45 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
       {/* Text-only header if no image */}
       {!hasValidImage && (
-        <div className="flex items-center gap-2 px-5 pt-4 pb-2 text-xs text-gray-400 border-b border-white/5">
-          {sourceInfo?.src ? (
-            <img
-              src={sourceInfo.src}
-              alt={sourceName}
-              className="h-4 w-auto object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none'
-              }}
-            />
-          ) : (
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: borderColor }} />
-          )}
-          <span>{sourceName}</span>
+        <div className="flex items-center gap-2 px-5 pt-4 pb-2 text-xs border-b border-white/5">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: borderColor }} />
+          <span className="font-medium text-gray-300">{sourceName}</span>
           <div className="flex-1" />
-          <span>{getTimeDisplay(post)}</span>
+          <span className="text-gray-500">{getTimeDisplay(post)}</span>
         </div>
       )}
 
       {/* CONTENT AREA */}
       <div className="px-5 pt-4 pb-5">
         {/* Headline */}
-        <h3 className="text-lg md:text-xl font-semibold text-white leading-snug tracking-tight mb-3 line-clamp-3">
+        <h3 className="text-xl font-semibold text-white leading-snug tracking-tight mb-3 line-clamp-3">
           {decodeHtmlEntities(post.title)}
         </h3>
 
-        {/* Summary toggle */}
+        {/* Expand button (only if summary exists) */}
         {post.summary && (
           <div className="mb-3">
-            <div
-              className="text-sm font-medium text-[#C4A23E] cursor-pointer flex items-center gap-1.5 hover:text-[#d4b24e] transition-colors"
+            <button
               onClick={() => setExpanded(!expanded)}
+              className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white cursor-pointer transition-colors select-none"
             >
-              The Secret Pundit's Take {expanded ? '▾' : '▸'}
-            </div>
+              {expanded ? 'Less ▾' : 'More ▸'}
+            </button>
 
             {expanded && (
-              <div className="border-l-2 border-l-[#00555A] pl-4 py-2 mt-2">
-                <p className="text-base text-gray-200 leading-relaxed">
-                  {decodeHtmlEntities(post.summary)}
+              <div className="border-l-2 border-l-[#00555A] pl-4 py-2 mt-3 mb-3">
+                <p className="text-base text-gray-200 leading-relaxed mb-3">
+                  {stripMarkdown(decodeHtmlEntities(post.summary))}
                 </p>
-                <button
-                  className="text-xs text-gray-500 cursor-pointer mt-2 hover:text-gray-400"
-                  onClick={() => setExpanded(false)}
+                <a
+                  href={post.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-block text-sm font-semibold text-[#C4A23E] hover:underline"
                 >
-                  Close ✕
-                </button>
+                  {getCTAText(post)}
+                </a>
               </div>
             )}
           </div>
@@ -240,7 +232,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug)}.svg`}
                   alt=""
-                  className="w-[18px] h-[18px] object-contain"
+                  className="w-[16px] h-[16px] object-contain"
                 />
                 <span>{CLUBS_BY_SLUG[post.club_slug]?.shortName}</span>
                 <span>·</span>
@@ -256,16 +248,6 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
               </>
             )}
           </div>
-
-          <a
-            href={post.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-sm font-semibold text-[#C4A23E] hover:underline"
-          >
-            {getCTAText(post)}
-          </a>
         </div>
       </div>
     </article>

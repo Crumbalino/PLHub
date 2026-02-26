@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 
 export const revalidate = 300
 
-const POSTS_PER_PAGE = 50
+const POSTS_PER_PAGE = 20
 
 const noSupabase =
   !process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -125,7 +125,7 @@ async function getTrendingPosts(minScore: number = 100): Promise<Post[]> {
   }
 }
 
-async function getIndexCount(sort: SortOption): Promise<number> {
+async function getIndexCount(sort: SortOption, clubSlug?: string): Promise<number> {
   if (noSupabase) return 0
   try {
     let query = supabase.from('posts').select('*', { count: 'exact', head: true })
@@ -133,6 +133,10 @@ async function getIndexCount(sort: SortOption): Promise<number> {
     if (sort === 'hot') {
       const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
       query = query.gte('published_at', sixHoursAgo)
+    }
+
+    if (clubSlug) {
+      query = query.eq('club_slug', clubSlug)
     }
 
     const { count, error } = await query
@@ -143,13 +147,17 @@ async function getIndexCount(sort: SortOption): Promise<number> {
   }
 }
 
-async function getIndexPosts(page: number, sort: SortOption): Promise<Post[]> {
+async function getIndexPosts(page: number, sort: SortOption, clubSlug?: string): Promise<Post[]> {
   if (noSupabase) return []
   try {
     const offset = (page - 1) * POSTS_PER_PAGE
     let query = supabase
       .from('posts')
       .select('id, external_id, title, url, summary, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, clubs(*)')
+
+    if (clubSlug) {
+      query = query.eq('club_slug', clubSlug)
+    }
 
     if (sort === 'hot') {
       query = query
@@ -179,28 +187,36 @@ async function getIndexPosts(page: number, sort: SortOption): Promise<Post[]> {
 }
 
 interface PageProps {
-  searchParams: { page?: string; sort?: string }
+  searchParams: { page?: string; sort?: string; club?: string }
 }
 
 export default async function HomePage({ searchParams }: PageProps) {
   const currentPage = Math.max(1, parseInt(searchParams.page ?? '1', 10) || 1)
   const sort = parseSortParam(searchParams.sort)
+  const clubSlug = searchParams.club
 
   // Top 5, trending, and feed posts
   const [top5, trendingPosts, indexPosts, totalCount] = await Promise.all([
-    currentPage === 1 && sort === 'index' ? getTop5Posts() : Promise.resolve([]),
-    currentPage === 1 && sort === 'index' ? getTrendingPosts(100) : Promise.resolve([]),
-    getIndexPosts(currentPage, sort),
-    getIndexCount(sort),
+    currentPage === 1 && sort === 'index' && !clubSlug ? getTop5Posts() : Promise.resolve([]),
+    currentPage === 1 && sort === 'index' && !clubSlug ? getTrendingPosts(100) : Promise.resolve([]),
+    getIndexPosts(currentPage, sort, clubSlug),
+    getIndexCount(sort, clubSlug),
   ])
+
+  // Frontend safety net: filter non-PL content
+  const HIDE_KEYWORDS = ['NFL', 'NBA', 'boxing', 'bout', 'Katie Taylor', 'Tua Tagovailoa', 'betting tips', 'free bets', 'Almeria', 'Segunda Division', 'American football', 'Conference League']
+  const filteredIndexPosts = indexPosts.filter(post => {
+    const t = (post.title || '').toLowerCase()
+    return !HIDE_KEYWORDS.some(kw => t.includes(kw.toLowerCase()))
+  })
 
   const totalPages = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE))
   const lastFetched =
-    indexPosts.length > 0 ? formatDistanceToNow(indexPosts[0].fetched_at) : null
+    filteredIndexPosts.length > 0 ? formatDistanceToNow(filteredIndexPosts[0].fetched_at) : null
   const hasContent = true
 
   // Two metrics: PLHub Index (logarithmic) and Heat (velocity-based)
-  const allScores = [...indexPosts.map(p => p.score ?? 1), ...top5.map(p => p.score ?? 1)]
+  const allScores = [...filteredIndexPosts.map(p => p.score ?? 1), ...top5.map(p => p.score ?? 1)]
   const maxScore = Math.max(...allScores, 1)
 
   // Logarithmic Index score (0-100) — prevents clustering at 0
@@ -215,7 +231,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   const toHeat = (score: number, delta: number): { label: string; color: string } | null => {
     if (!score || score <= 0) return null
     if (delta > 20 || score > maxScore * 0.7) return { label: 'Hot', color: 'text-orange-400' }
-    if (delta > 5 || score > maxScore * 0.4) return { label: 'Warm', color: 'text-[#F5C842]' }
+    if (delta > 5 || score > maxScore * 0.4) return { label: 'Warm', color: 'text-yellow-400' }
     if (score > maxScore * 0.1) return { label: 'Trending', color: 'text-green-400' }
     return null
   }
@@ -243,7 +259,7 @@ export default async function HomePage({ searchParams }: PageProps) {
     return groups.filter(g => g.posts.length > 0)
   }
 
-  const groupedPosts = groupPostsByTime(indexPosts)
+  const groupedPosts = groupPostsByTime(filteredIndexPosts)
 
   return (
     <div className="min-h-screen bg-[#0B1F21]">
@@ -251,13 +267,13 @@ export default async function HomePage({ searchParams }: PageProps) {
       <div className="lg:hidden border-b border-white/10 px-4 py-4 space-y-4">
         {/* Compact PL Table Strip */}
         <div>
-          <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-3">League Table</h3>
+          <h3 className="text-xs font-bold text-white mb-3">League Table</h3>
           <PLTableWidget />
         </div>
 
         {/* Compact Fixtures Strip */}
         <div>
-          <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-3">Next Matches</h3>
+          <h3 className="text-xs font-bold text-white mb-3">Next Matches</h3>
           <FixturesWidget />
         </div>
       </div>
@@ -289,7 +305,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
       {/* Club Selector Hero */}
       <section className="border-b border-white/10 py-10 text-center mx-auto" style={{ background: 'radial-gradient(ellipse at center, #0F2D31 0%, #0B1F21 70%)' }}>
-        <p className="text-sm uppercase tracking-widest text-white">
+        <p className="text-sm text-white">
           Select your club
         </p>
 
@@ -422,7 +438,7 @@ export default async function HomePage({ searchParams }: PageProps) {
             return (
               <section className="mb-8" aria-labelledby="trending-heading">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <span className="text-[#F5C842] text-sm">↑</span>
+                  <span className="text-white text-sm">↑</span>
                   <span className="text-sm font-bold text-white">Trending</span>
                 </div>
 
@@ -457,12 +473,12 @@ export default async function HomePage({ searchParams }: PageProps) {
           })()}
 
           {/* Divider */}
-          {currentPage === 1 && sort === 'index' && (top5.length > 0 || trendingPosts.length > 0) && indexPosts.length > 0 && (
+          {currentPage === 1 && sort === 'index' && (top5.length > 0 || trendingPosts.length > 0) && filteredIndexPosts.length > 0 && (
             <hr className="mb-8 border-white/5" />
           )}
 
           {/* Section 3: Feed with sort toggle */}
-          {indexPosts.length > 0 && (
+          {filteredIndexPosts.length > 0 && (
             <section aria-labelledby="index-heading">
               {/* Section heading with description and update time */}
               <div className="mb-8">
@@ -511,7 +527,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                     <div key={group.label}>
                       <div className="flex items-center gap-3 my-4">
                         <div className="flex-1 h-px bg-white/[0.06]" />
-                        <span className="text-[11px] text-white/30 font-medium uppercase tracking-widest">
+                        <span className="text-[11px] text-white/30 font-medium">
                           {group.label}
                         </span>
                         <div className="flex-1 h-px bg-white/[0.06]" />
