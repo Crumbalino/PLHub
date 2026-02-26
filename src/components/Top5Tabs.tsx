@@ -34,9 +34,9 @@ export default function Top5Tabs({ posts }: Top5TabsProps) {
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
-            Today's Top 5
+            Trending
           </h2>
-          <p className="text-base text-gray-400 mt-1">The stories driving the conversation</p>
+          <p className="text-base text-gray-400 mt-1">Most talked about right now</p>
         </div>
         <div className="h-px flex-1 bg-white/5" />
       </div>

@@ -53,7 +53,8 @@ export async function GET(request: NextRequest) {
     'get £', 'acca', 'darts night', 'darts live', 'premier league darts',
     'conor benn', 'tyson fury', 'undercard', 'fury-', 'born to fight', 'progais',
     'fight night', 'ring walk', 'dana white', 'usyk', 'canelo', 'weigh-in',
-    'boxing', 'bout'
+    'boxing', 'bout', 'ronda rousey', 'rousey comeback', 't20 world cup',
+    'west indies cricket', 'south africa cricket', 'nbc network', 'nbc shakeup'
   ]
 
   const HIDE_KEYWORDS = [
@@ -65,6 +66,8 @@ export async function GET(request: NextRequest) {
     'plymouth', 'mexico open', 'tennis', 'golf', 'cricket', 'rugby',
     'mma', 'ufc', 'fenerbahce', 'zrinjski',
     'quarterback', 'touchdown', 'super bowl',
+    'dortmund', 'borussia dortmund', 'bundesliga', 'mls', 'eric ramsay', 'charlton',
+    'qatar league', 'al-sailiya', 'red bull chief', 'sprinkler pitch'
   ]
 
   const PL_CLUBS = [

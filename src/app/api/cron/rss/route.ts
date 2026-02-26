@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fetchAllRssFeeds } from "@/lib/rss"
 import { generateSummary, delay } from '@/lib/claude'
 import { createServerClient } from '@/lib/supabase'
+import { upgradeImageUrl } from '@/lib/utils'
 
 export const maxDuration = 120
 
@@ -84,7 +85,7 @@ export async function GET(req: NextRequest) {
         author: post.author,
         score: post.score,
         subreddit: post.subreddit,
-        image_url: post.image_url,
+        image_url: upgradeImageUrl(post.image_url) || null,
         published_at: post.published_at,
       })
 

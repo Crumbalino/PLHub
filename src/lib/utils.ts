@@ -60,3 +60,50 @@ export function formatDistanceToNow(dateString: string): string {
 
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
+
+export function upgradeImageUrl(url: string | null | undefined): string | null | undefined {
+  if (!url) return url
+
+  // BBC: replace small crops with larger ones
+  if (url.includes('bbc.co.uk') || url.includes('bbci.co.uk')) {
+    url = url.replace(/\/\d+x\d+\.(jpg|png|webp)/i, '/976x549.$1')
+    url = url.replace(/\/\d+\/cpsprodpb/i, '/800/cpsprodpb')
+  }
+
+  // Sky Sports: request larger image
+  if (url.includes('skysports.com') || url.includes('skysports')) {
+    url = url.replace(/width=\d+/i, 'width=800')
+    url = url.replace(/height=\d+/i, 'height=450')
+  }
+
+  // Guardian: i.guim.co.uk — replace width parameter
+  if (url.includes('guim.co.uk')) {
+    url = url.replace(/width=\d+/i, 'width=800')
+    url = url.replace(/\/\d+\.jpg/i, '/800.jpg')
+  }
+
+  // talkSPORT / News UK: replace crop sizes
+  if (url.includes('talksport.com') || url.includes('talkSPORT')) {
+    url = url.replace(/-\d+x\d+\.(jpg|png|webp)/i, '.$1')
+  }
+
+  // Generic WordPress: remove -WIDTHxHEIGHT from filename
+  url = url.replace(/-\d{2,4}x\d{2,4}\.(jpg|jpeg|png|webp)/i, '.$1')
+
+  // Reddit: use preview.redd.it instead of thumbs
+  if (url.includes('thumbs.redd.it')) {
+    url = url.replace('thumbs.redd.it', 'preview.redd.it')
+  }
+  // Reddit external previews: request larger size
+  if (url.includes('preview.redd.it') && url.includes('width=')) {
+    url = url.replace(/width=\d+/i, 'width=800')
+  }
+
+  // Generic: if URL has ?w= or ?width= parameter, increase it
+  url = url.replace(/([?&])w=\d+/i, '$1w=800')
+  url = url.replace(/([?&])width=\d+/i, '$1width=800')
+  url = url.replace(/([?&])h=\d+/i, '$1h=450')
+  url = url.replace(/([?&])quality=\d+/i, '$1quality=85')
+
+  return url
+}

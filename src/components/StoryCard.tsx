@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Post } from '@/types'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
-import { decodeHtmlEntities, stripMarkdown } from '@/lib/utils'
+import { decodeHtmlEntities, stripMarkdown, upgradeImageUrl } from '@/lib/utils'
 
 interface StoryCardProps {
   post: Post
@@ -138,11 +138,13 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
       {hasValidImage && !imgError && (
         <div className="relative w-full h-[160px] md:h-[220px]">
           <img
-            src={post.image_url || ''}
+            src={(upgradeImageUrl(post.image_url) as string) || ''}
             alt=""
             className="w-full h-full object-cover object-top"
             onError={() => setImgError(true)}
             loading="lazy"
+            decoding="async"
+            sizes="(max-width: 768px) 100vw, 600px"
           />
 
           {/* Gradient overlay */}

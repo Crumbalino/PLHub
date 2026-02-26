@@ -70,7 +70,9 @@ const HIDE_KEYWORDS = [
   'plymouth', 'mexico open', 'tennis', 'golf', 'cricket', 'rugby',
   'mma', 'ufc', 'fenerbahce', 'zrinjski',
   'quarterback', 'touchdown', 'super bowl', 'farewell fight', 'trilogy fight',
-  'ronaldo buys', 'spanish second division', 'cameron trilogy'
+  'ronaldo buys', 'spanish second division', 'cameron trilogy',
+  'dortmund', 'borussia dortmund', 'bundesliga', 'mls', 'eric ramsay', 'charlton',
+  'qatar league', 'al-sailiya', 'red bull chief', 'sprinkler pitch'
 ]
 
 function filterPLContent(posts: Post[]): Post[] {
