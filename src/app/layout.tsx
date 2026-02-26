@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { Atkinson_Hyperlegible } from 'next/font/google'
+import { Atkinson_Hyperlegible, Lexend } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import MatchTicker from '@/components/MatchTicker'
@@ -9,6 +9,12 @@ import GoogleAnalytics from '@/components/GoogleAnalytics'
 import BackToTopButton from '@/components/BackToTopButton'
 
 const atkinson = Atkinson_Hyperlegible({ subsets: ['latin'], weight: ['400', '700'] })
+const lexend = Lexend({
+  subsets: ['latin'],
+  weight: ['300', '400'],
+  display: 'swap',
+  variable: '--font-lexend',
+})
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
 
@@ -86,7 +92,7 @@ export default function RootLayout({
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
       </head>
-      <body className={`${atkinson.className} bg-[#0B1F21] text-white antialiased`} style={{ fontSize: '18px', lineHeight: '1.65', letterSpacing: '0.01em' }}>
+      <body className={`${atkinson.className} ${lexend.variable} bg-[#0B1F21] text-white antialiased`} style={{ fontSize: '18px', lineHeight: '1.65', letterSpacing: '0.01em' }}>
         {gaMeasurementId && (
           <GoogleAnalytics measurementId={gaMeasurementId} />
         )}

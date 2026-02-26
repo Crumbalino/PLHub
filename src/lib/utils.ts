@@ -118,13 +118,12 @@ export function calculateHotScore(post: any): number {
 }
 
 export function formatSummaryForDisplay(text: string): string {
-  let cleaned = stripMarkdown(decodeHtmlEntities(text))
-
+  if (!text) return ''
+  const cleaned = stripMarkdown(decodeHtmlEntities(text))
   const sentences = cleaned.split(/(?<=\.)\s+(?=[A-Z])/)
-  const paragraphs: string[] = []
-  for (let i = 0; i < sentences.length; i += 3) {
-    paragraphs.push(sentences.slice(i, i + 3).join(' '))
+  const chunks: string[] = []
+  for (let i = 0; i < sentences.length; i += 2) {
+    chunks.push(sentences.slice(i, i + 2).join(' '))
   }
-
-  return paragraphs.join('\n\n')
+  return chunks.join('\n\n')
 }

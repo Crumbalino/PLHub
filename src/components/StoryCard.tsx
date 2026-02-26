@@ -197,6 +197,14 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: borderColor }} />
           <span className="font-medium text-gray-200">{sourceName}</span>
           <div className="flex-1" />
+          {post.score > 0 && (
+            <div className="inline-flex items-center gap-1.5 bg-[#00555A] text-white text-xs font-bold px-2.5 py-1 rounded-full mr-2">
+              <svg width="12" height="12" viewBox="0 0 32 32" fill="none">
+                <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span>{post.score > 100 ? Math.round(post.score / 10) : post.score}</span>
+            </div>
+          )}
           <span className="text-sm text-gray-400">{getTimeDisplay(post)}</span>
         </div>
       )}
@@ -221,17 +229,17 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
             </div>
 
             {expanded && (
-              <div className="border-l-2 border-l-[#00555A] pl-4 py-2 mb-3 mt-3">
-                <p className="text-sm italic text-gray-300 leading-[1.85] tracking-wide whitespace-pre-line">
+              <div className="border-l-2 border-l-[#00555A] pl-4 py-3 mb-3 mt-3">
+                <div className="summary-text text-sm text-gray-300 leading-[2] tracking-wide whitespace-pre-line space-y-4">
                   {formatSummaryForDisplay(post.summary || '')}
-                </p>
-                <span className="block mt-3 text-xs text-gray-500 not-italic select-none">.SP</span>
+                </div>
+                <span className="block mt-4 text-xs text-gray-500 select-none">.SP</span>
                 <a
                   href={post.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-block mt-2 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] hover:underline transition-colors not-italic"
+                  className="inline-block mt-2 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] hover:underline transition-colors"
                 >
                   {post.source === 'youtube' ? 'Watch on YouTube →' :
                    post.source === 'reddit' ? 'Read thread →' : 'Read article →'}

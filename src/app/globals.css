@@ -45,3 +45,8 @@ body {
 .animate-fadeIn {
   animation: fadeIn 0.25s ease-out forwards;
 }
+
+.summary-text {
+  font-family: var(--font-lexend), sans-serif;
+  font-weight: 300;
+}

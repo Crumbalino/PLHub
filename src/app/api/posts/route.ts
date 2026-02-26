@@ -79,6 +79,9 @@ export async function GET(request: NextRequest) {
   ]
 
   const filteredPosts = postsData.filter(post => {
+    // Always show YouTube content (it's curated from PL-specific channels)
+    if (post.source === 'youtube') return true
+
     const text = ((post.title || '') + ' ' + (post.summary || '')).toLowerCase()
 
     // Always hide betting and boxing regardless of PL club mention
