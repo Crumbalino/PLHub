@@ -75,6 +75,7 @@ export async function GET(req: NextRequest) {
 
       // Insert post without summary — summaries will be generated separately
       const { error } = await supabase.from('posts').insert({
+        external_id: videoId,
         title: decodeHtmlEntities(video.snippet.title),
         url,
         source: 'youtube',
