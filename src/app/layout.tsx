@@ -21,10 +21,16 @@ export const metadata: Metadata = {
   description:
     'The pulse of the Premier League. News and views from all 20 clubs, ranked by the community. Transfer rumours, match reports and fan discussion. Constantly updated.',
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'PLHub',
+  },
+  manifest: '/manifest.json',
   openGraph: {
     type: 'website',
     url: siteUrl,

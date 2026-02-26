@@ -12,7 +12,7 @@ import LoadMoreButton from '@/components/LoadMoreButton'
 import PLTableWidgetServer from '@/components/PLTableWidgetServer'
 import FixturesWidgetServer from '@/components/FixturesWidgetServer'
 import AdPlaceholder from '@/components/AdPlaceholder'
-import { formatDistanceToNow } from '@/lib/utils'
+import { formatDistanceToNow, decodeHtmlEntities } from '@/lib/utils'
 import { CLUBS_BY_SLUG, CLUBS } from '@/lib/clubs'
 import { calculateIndex } from '@/lib/plhub-index'
 
@@ -392,7 +392,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                         <p className={`font-semibold leading-snug line-clamp-2 group-hover:text-white/60 transition-colors ${
                           index === 0 ? 'text-sm text-white' : 'text-xs text-white/80'
                         }`}>
-                          {post.title}
+                          {decodeHtmlEntities(post.title)}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           {post.club_slug && (
@@ -515,7 +515,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                     if (cardCount % 5 === 0 && cardCount < group.posts.length) {
                       postElements.push(
                         <div key={`ad-${post.id}`} className="my-2">
-                          <AdPlaceholder size="728x90" />
+                          <AdPlaceholder size="responsive-leaderboard" />
                         </div>
                       )
                     }

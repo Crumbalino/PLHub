@@ -181,7 +181,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
   return (
     <article
       id={`post-${post.id}`}
-      className="rounded-lg bg-[#152B2E] border border-white/5 border-l-[3px] p-6 md:p-6 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-black/20 transition-all duration-200 cursor-pointer"
+      className="rounded-lg bg-[#152B2E] border border-white/5 border-l-[3px] p-4 md:p-6 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-black/20 active:scale-[0.98] transition-all duration-200 cursor-pointer"
       style={{ borderLeftColor: borderColor }}
     >
       <script
@@ -260,8 +260,8 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
         </div>
       )}
 
-      {/* HEADLINE: Dominant element - text-lg font-semibold */}
-      <h3 className="text-lg font-semibold text-white leading-snug mb-3 line-clamp-3">
+      {/* HEADLINE: Dominant element - text-base mobile, text-lg desktop */}
+      <h3 className="text-base md:text-lg font-semibold text-white leading-snug mb-3 line-clamp-3">
         {decodeHtmlEntities(post.title)}
       </h3>
 

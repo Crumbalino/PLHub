@@ -1,0 +1,27 @@
+{
+  "name": "PLHub — Premier League News",
+  "short_name": "PLHub",
+  "description": "The pulse of the Premier League. News and views from all 20 clubs, ranked by the community.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0B1F21",
+  "background_color": "#0B1F21",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/PLHlogowhite_1x1.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}
