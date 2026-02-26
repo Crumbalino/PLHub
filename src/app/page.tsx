@@ -424,21 +424,34 @@ export default async function HomePage({ searchParams }: PageProps) {
                 {currentPage === 1 && sort === 'index' && !clubSlug && trendingPosts.length > 0 && (
                   <section className="mb-8">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-green-400 text-sm">▲</span>
+                      <svg width="16" height="16" viewBox="0 0 32 32" fill="none">
+                        <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
                       <span className="text-sm font-bold text-white">Trending</span>
                     </div>
                     <div className="flex flex-col gap-2">
-                      {trendingPosts.slice(0, 5).map((post, idx) => (
-                        <a
-                          key={post.id}
-                          href={`#post-${post.id}`}
-                          className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2 hover:bg-white/10 transition-colors"
-                        >
-                          <span className="w-5 text-sm font-bold text-white">{idx + 1}</span>
-                          <span className="text-green-400 text-xs">▲</span>
-                          <span className="text-sm text-white line-clamp-1 flex-1">{post.title}</span>
-                        </a>
-                      ))}
+                      {trendingPosts.slice(0, 5).map((post, idx) => {
+                        const indexScore = toIndex(post.score ?? 0)
+                        return (
+                          <a
+                            key={post.id}
+                            href={`#post-${post.id}`}
+                            className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 hover:bg-white/10 transition-colors group"
+                          >
+                            <span className="w-5 text-sm font-bold text-white/60">{idx + 1}</span>
+                            <span className="text-green-400 text-xs font-bold">▲</span>
+                            <span className="text-sm text-white line-clamp-1 flex-1 group-hover:text-[#C4A23E] transition-colors">{post.title}</span>
+                            {indexScore && (
+                              <div className="flex items-center gap-1 shrink-0 bg-white/5 rounded-full px-2 py-0.5">
+                                <svg width="12" height="12" viewBox="0 0 32 32" fill="none">
+                                  <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                                <span className="text-xs font-bold text-[#C4A23E] tabular-nums">{indexScore}</span>
+                              </div>
+                            )}
+                          </a>
+                        )
+                      })}
                     </div>
                   </section>
                 )}
