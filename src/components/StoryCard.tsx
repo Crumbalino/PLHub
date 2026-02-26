@@ -170,8 +170,8 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
           {/* Score badge */}
           {indexScore && (
-            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
-              ↑ {indexScore}
+            <div className="absolute top-3 right-3 bg-[#00555A] text-white text-xs font-bold px-2 py-1 rounded-full">
+              <span className="text-[#C4A23E]">↑</span> {indexScore}
             </div>
           )}
 
@@ -260,8 +260,8 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
             )}
           </div>
           {!hasValidImage && indexScore && (
-            <div className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">
-              ↑ {indexScore}
+            <div className="bg-[#00555A] text-white text-xs font-bold px-2 py-1 rounded-full">
+              <span className="text-[#C4A23E]">↑</span> {indexScore}
             </div>
           )}
         </div>
