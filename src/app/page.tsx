@@ -9,8 +9,8 @@ import PulseBadge from '@/components/PulseBadge'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
 import LoadMoreButton from '@/components/LoadMoreButton'
-import PLTableWidgetServer from '@/components/PLTableWidgetServer'
-import FixturesWidgetServer from '@/components/FixturesWidgetServer'
+import PLTableWidget from '@/components/PLTableWidget'
+import FixturesWidget from '@/components/FixturesWidget'
 import AdPlaceholder from '@/components/AdPlaceholder'
 import { formatDistanceToNow, decodeHtmlEntities } from '@/lib/utils'
 import { CLUBS_BY_SLUG, CLUBS } from '@/lib/clubs'
@@ -252,13 +252,13 @@ export default async function HomePage({ searchParams }: PageProps) {
         {/* Compact PL Table Strip */}
         <div>
           <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-3">League Table</h3>
-          <PLTableWidgetServer compact={true} />
+          <PLTableWidget />
         </div>
 
         {/* Compact Fixtures Strip */}
         <div>
           <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-3">Next Matches</h3>
-          <FixturesWidgetServer compact={true} />
+          <FixturesWidget />
         </div>
       </div>
 
@@ -268,7 +268,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <div className="hidden lg:block w-[280px] shrink-0">
             <div className="sticky top-20 space-y-6">
               {/* PL Table Widget */}
-              <PLTableWidgetServer compact={false} />
+              <PLTableWidget />
 
               {/* Ad Placeholder */}
               <AdPlaceholder size="300x250" />
@@ -555,7 +555,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <div className="hidden lg:block w-[280px] shrink-0">
             <div className="sticky top-20 space-y-6">
               {/* Fixtures Widget */}
-              <FixturesWidgetServer compact={false} />
+              <FixturesWidget />
 
               {/* Ad Placeholder */}
               <AdPlaceholder size="300x250" />
