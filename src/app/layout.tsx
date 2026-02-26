@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: 'PLHub',
     locale: 'en_GB',
-    images: [{ url: '/PLHlogowhite_1x1.png', width: 1000, height: 1000 }],
+    images: [{ url: '/logo.png', width: 4000, height: 1000 }],
   },
   twitter: {
     card: 'summary',
