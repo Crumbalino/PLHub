@@ -93,29 +93,26 @@ const calculateReadTime = (post: Post): string => {
   return `${mins} min read`
 }
 
-const getSourceBorderColor = (post: Post): string => {
-  // YouTube red
-  if (post.source === 'youtube') {
-    return '#FF0000'
-  }
+function getSourceBorderColor(post: Post): string {
+  if (post.source === 'youtube') return '#FF0000'
+  if (post.source === 'reddit') return '#FF4500'
 
   const sourceInfo = getSourceInfo(post)
   if (!sourceInfo) return '#00555A'
 
-  // Gold border for editorial sources
-  if (
-    ['BBC Sport', 'Sky Sports', 'The Guardian', 'The Athletic'].includes(sourceInfo.name)
-  ) {
-    return '#C4A23E'
+  switch (sourceInfo.name) {
+    case 'BBC Sport': return '#FFD008'
+    case 'Sky Sports': return '#0072BC'
+    case 'The Guardian': return '#052962'
+    case 'The Athletic': return '#D4442E'
+    case 'talkSPORT': return '#E4002B'
+    case 'Goal': return '#00A550'
+    case '90min': return '#8B5CF6'
+    case 'The Telegraph': return '#1D1D1B'
+    case 'Mirror': return '#E00000'
+    case 'The Sun': return '#C4122F'
+    default: return '#C4A23E'
   }
-
-  // Teal border for community (Reddit)
-  if (sourceInfo.name === 'Reddit') {
-    return '#00555A'
-  }
-
-  // Gold as default for other news sources
-  return '#C4A23E'
 }
 
 const getCTAText = (post: Post): string => {
@@ -236,6 +233,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
               src={source.src}
               alt={source.name}
               className="h-5 w-auto max-w-[44px] object-contain opacity-70 shrink-0"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
           ) : (
             <span className="text-xs text-gray-400 truncate">{source.name}</span>
@@ -285,7 +283,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
           <p className="text-sm text-gray-200 font-medium mb-2">The Secret Pundit's Take</p>
           <div className="border-l-2 border-l-[#00555A] pl-4">
             <p className="text-sm text-gray-300 leading-relaxed line-clamp-3">
-              {post.summary}
+              {decodeHtmlEntities(post.summary)}
             </p>
           </div>
         </div>
@@ -319,7 +317,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
                 AI Summary
               </div>
               <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
-                {summary}
+                {decodeHtmlEntities(summary)}
               </p>
             </div>
           ) : null}
