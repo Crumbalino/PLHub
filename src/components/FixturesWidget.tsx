@@ -1,5 +1,29 @@
 'use client'
 
+import Link from 'next/link'
+
+const teamNameToSlug: Record<string, string> = {
+  'Arsenal': 'arsenal',
+  'Bournemouth': 'bournemouth',
+  'Brentford': 'brentford',
+  'Brighton': 'brighton',
+  'Chelsea': 'chelsea',
+  'Crystal Palace': 'crystal-palace',
+  'Everton': 'everton',
+  'Forest': 'nottingham-forest',
+  'Fulham': 'fulham',
+  'Ipswich': 'ipswich',
+  'Leicester': 'leicester',
+  'Liverpool': 'liverpool',
+  'Man City': 'manchester-city',
+  'Man Utd': 'manchester-united',
+  'Newcastle': 'newcastle',
+  'Southampton': 'southampton',
+  'Spurs': 'tottenham',
+  'West Ham': 'west-ham',
+  'Wolves': 'wolverhampton',
+}
+
 const fixtures = [
   { home: "Arsenal", homeBadge: "t3", away: "Bournemouth", awayBadge: "t91", date: "Sat 1 Mar", time: "15:00" },
   { home: "Liverpool", homeBadge: "t14", away: "Man City", awayBadge: "t43", date: "Sun 2 Mar", time: "16:30" },
@@ -32,23 +56,29 @@ export default function FixturesWidget() {
             </div>
 
             <div className="flex items-center gap-2 justify-between">
-              <div className="flex items-center gap-2 flex-1">
+              <Link
+                href={`/?club=${teamNameToSlug[fixture.home] || ''}`}
+                className="flex items-center gap-2 flex-1 hover:text-[#C4A23E] transition-colors"
+              >
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/${fixture.homeBadge}.png`}
                   alt=""
                   className="w-4 h-4 object-contain"
                 />
                 <span className="text-sm text-white truncate">{fixture.home}</span>
-              </div>
+              </Link>
               <span className="text-xs text-white/30 shrink-0 mx-1">vs</span>
-              <div className="flex items-center gap-2 flex-1 justify-end">
+              <Link
+                href={`/?club=${teamNameToSlug[fixture.away] || ''}`}
+                className="flex items-center gap-2 flex-1 justify-end hover:text-[#C4A23E] transition-colors"
+              >
                 <span className="text-sm text-white truncate">{fixture.away}</span>
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/${fixture.awayBadge}.png`}
                   alt=""
                   className="w-4 h-4 object-contain"
                 />
-              </div>
+              </Link>
             </div>
           </div>
         ))}
@@ -59,25 +89,31 @@ export default function FixturesWidget() {
         <div className="space-y-2">
           {recentResults.map((result, idx) => (
             <div key={idx} className="flex items-center gap-2 justify-between">
-              <div className="flex items-center gap-1 flex-1">
+              <Link
+                href={`/?club=${teamNameToSlug[result.home] || ''}`}
+                className="flex items-center gap-1 flex-1 hover:text-[#C4A23E] transition-colors"
+              >
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/${result.homeBadge}.png`}
                   alt=""
                   className="w-3 h-3 object-contain"
                 />
                 <span className="text-xs text-white truncate">{result.home}</span>
-              </div>
+              </Link>
               <span className="text-sm font-semibold text-white tabular-nums">{result.homeScore}</span>
               <span className="text-white/30">-</span>
               <span className="text-sm font-semibold text-white tabular-nums">{result.awayScore}</span>
-              <div className="flex items-center gap-1 flex-1 justify-end">
+              <Link
+                href={`/?club=${teamNameToSlug[result.away] || ''}`}
+                className="flex items-center gap-1 flex-1 justify-end hover:text-[#C4A23E] transition-colors"
+              >
                 <span className="text-xs text-white truncate">{result.away}</span>
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/${result.awayBadge}.png`}
                   alt=""
                   className="w-3 h-3 object-contain"
                 />
-              </div>
+              </Link>
             </div>
           ))}
         </div>

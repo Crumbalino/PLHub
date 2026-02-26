@@ -1,5 +1,30 @@
 'use client'
 
+import Link from 'next/link'
+
+const badgeToSlug: Record<string, string> = {
+  't14': 'liverpool',
+  't3': 'arsenal',
+  't17': 'nottingham-forest',
+  't43': 'manchester-city',
+  't8': 'chelsea',
+  't7': 'aston-villa',
+  't36': 'brighton',
+  't91': 'bournemouth',
+  't4': 'newcastle',
+  't54': 'fulham',
+  't94': 'brentford',
+  't1': 'manchester-united',
+  't21': 'west-ham',
+  't6': 'tottenham',
+  't11': 'everton',
+  't31': 'crystal-palace',
+  't39': 'wolverhampton',
+  't13': 'leicester',
+  't40': 'ipswich',
+  't20': 'southampton',
+}
+
 const standings = [
   { pos: 1, name: "Liverpool", short: "Liverpool", badge: "t14", p: 28, w: 22, d: 4, l: 2, pts: 70 },
   { pos: 2, name: "Arsenal", short: "Arsenal", badge: "t3", p: 28, w: 19, d: 5, l: 4, pts: 62 },
@@ -34,14 +59,17 @@ export default function PLTableWidget() {
       </div>
 
       <div className="divide-y divide-white/5">
-        {standings.map((entry) => (
-          <div
-            key={entry.pos}
-            className="grid grid-cols-[20px_1fr_20px_20px_28px] gap-2 px-4 py-2 hover:bg-white/[0.03] transition-colors items-center border-l-2"
-            style={{
-              borderLeftColor: entry.pos <= 4 ? '#22c55e' : entry.pos >= 18 ? '#ef4444' : 'transparent',
-            }}
-          >
+        {standings.map((entry) => {
+          const clubSlug = badgeToSlug[entry.badge] || ''
+          return (
+            <Link
+              key={entry.pos}
+              href={clubSlug ? `/?club=${clubSlug}` : '#'}
+              className="grid grid-cols-[20px_1fr_20px_20px_28px] gap-2 px-4 py-2 hover:bg-white/[0.05] transition-colors items-center border-l-2"
+              style={{
+                borderLeftColor: entry.pos <= 4 ? '#22c55e' : entry.pos >= 18 ? '#ef4444' : 'transparent',
+              }}
+            >
             <span className="tabular-nums text-sm text-gray-400">{entry.pos}</span>
 
             <div className="flex items-center gap-2 min-w-0">
@@ -56,8 +84,9 @@ export default function PLTableWidget() {
             <span className="text-sm text-gray-300 tabular-nums text-center">{entry.p}</span>
             <span className="text-sm text-gray-300 tabular-nums text-center">{entry.w}</span>
             <span className="text-sm font-semibold text-white tabular-nums text-center">{entry.pts}</span>
-          </div>
-        ))}
+            </Link>
+          )
+        })}
       </div>
 
       <div className="flex gap-3 px-4 py-2 border-t border-white/5 text-[10px]">

@@ -8,8 +8,7 @@ import ClubSelector from '@/components/ClubSelector'
 import PulseBadge from '@/components/PulseBadge'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
-import FeedContainer from '@/components/FeedContainer'
-import Top5Tabs from '@/components/Top5Tabs'
+import FeedPage from '@/components/FeedPage'
 import PLTableWidget from '@/components/PLTableWidget'
 import FixturesWidget from '@/components/FixturesWidget'
 import AdPlaceholder from '@/components/AdPlaceholder'
@@ -426,33 +425,12 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      {/* Club filter indicator */}
-      {clubSlug && (
-        <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center gap-2 text-sm text-gray-200">
-          <span>Showing: <span className="font-semibold text-white">{CLUBS_BY_SLUG[clubSlug]?.name || clubSlug}</span></span>
-          <Link
-            href="/"
-            className="ml-2 text-gray-400 hover:text-white transition-colors"
-            title="Clear club filter"
-          >
-            ✕ Clear
-          </Link>
-        </div>
-      )}
-
       {!hasContent ? (
         <EmptyState />
       ) : (
         <>
-          {/* Section 1: Today's Top 5 with client-side tabs */}
-          {currentPage === 1 && sort === 'index' && top5.length > 0 && (
-            <Top5Tabs
-              posts={top5}
-            />
-          )}
-
-          {/* Section 2: Trending Now — page 1 of index sort only, vertical ranked list */}
-          {currentPage === 1 && sort === 'index' && trendingPosts.length > 0 && (() => {
+          {/* Section 1: Trending Now — page 1 of index sort only, vertical ranked list */}
+          {currentPage === 1 && sort === 'index' && !clubSlug && trendingPosts.length > 0 && (() => {
             // Filter posts with meaningful movement (abs delta > 3)
             const movingPosts = trendingPosts
               .map(post => ({
@@ -504,16 +482,18 @@ export default async function HomePage({ searchParams }: PageProps) {
           })()}
 
           {/* Divider */}
-          {currentPage === 1 && sort === 'index' && (top5.length > 0 || trendingPosts.length > 0) && filteredIndexPosts.length > 0 && (
+          {currentPage === 1 && sort === 'index' && !clubSlug && (trendingPosts.length > 0) && filteredIndexPosts.length > 0 && (
             <hr className="mb-8 border-white/5" />
           )}
 
-          {/* Section 3: Feed with client-side sorting */}
+          {/* Section 2: Feed with client-side sorting and club filter */}
           {filteredIndexPosts.length > 0 && (
             <section>
-              <FeedContainer
+              <FeedPage
                 initialPosts={filteredIndexPosts}
                 totalCount={totalCount}
+                initialClub={clubSlug || null}
+                top5Posts={top5}
               />
             </section>
           )}
