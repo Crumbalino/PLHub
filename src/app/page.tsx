@@ -479,7 +479,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                 {SECTION_HEADINGS[sort]}
               </h2>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-y-5">
                 {groupedPosts.map(group => {
                   let cardCount = 0
                   const postElements: React.ReactNode[] = []
