@@ -221,22 +221,21 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
             </div>
 
             {expanded && (
-              <div className="summary-font border-l-2 border-l-[#00555A] pl-4 py-2 mt-3 mb-3">
-                <p className="text-base text-gray-200 leading-[1.85] tracking-wide whitespace-pre-line mb-3">
+              <div className="border-l-2 border-l-[#00555A] pl-4 py-2 mb-3 mt-3">
+                <p className="text-sm italic text-gray-300 leading-[1.85] tracking-wide whitespace-pre-line">
                   {formatSummaryForDisplay(post.summary || '')}
                 </p>
+                <span className="block mt-3 text-xs text-gray-500 not-italic select-none">.SP</span>
                 <a
                   href={post.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-block mt-2 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] hover:underline transition-colors"
-                  style={{ fontFamily: 'inherit' }}
+                  className="inline-block mt-2 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] hover:underline transition-colors not-italic"
                 >
                   {post.source === 'youtube' ? 'Watch on YouTube →' :
                    post.source === 'reddit' ? 'Read thread →' : 'Read article →'}
                 </a>
-                <span className="block mt-3 text-xs text-gray-500 italic select-none">.SP</span>
               </div>
             )}
           </div>

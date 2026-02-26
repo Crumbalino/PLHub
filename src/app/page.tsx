@@ -251,7 +251,14 @@ export default async function HomePage({ searchParams }: PageProps) {
 
   // Apply filters to all post lists
   const top5 = deduplicatePosts(filterPLContent(top5Raw))
-  const trendingPosts = deduplicatePosts(filterPLContent(trendingPostsRaw))
+  let trendingPosts = deduplicatePosts(filterPLContent(trendingPostsRaw))
+
+  // Ensure we always have 5 trending posts with fallback logic
+  if (trendingPosts.length < 5) {
+    const allFiltered = deduplicatePosts(filterPLContent(indexPosts))
+    trendingPosts = [...allFiltered].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 5)
+  }
+
   const filteredIndexPosts = deduplicatePosts(filterPLContent(indexPosts))
 
   const totalPages = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE))
@@ -487,6 +494,23 @@ export default async function HomePage({ searchParams }: PageProps) {
           {/* Section 3: Feed with sort toggle */}
           {filteredIndexPosts.length > 0 && (
             <section aria-labelledby="index-heading">
+              {/* Sort pills */}
+              <div className="flex items-center justify-center gap-2 mb-6">
+                {['Pulse', 'Hot', 'New'].map(tab => (
+                  <a
+                    key={tab}
+                    href={`/?sort=${tab.toLowerCase()}${clubSlug ? `&club=${clubSlug}` : ''}`}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      sort === tab.toLowerCase()
+                        ? 'bg-white text-[#0B1F21] font-semibold'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {tab}
+                  </a>
+                ))}
+              </div>
+
               {/* Section heading with description and update time */}
               <div className="mb-8">
                 <h2
@@ -494,10 +518,10 @@ export default async function HomePage({ searchParams }: PageProps) {
                   className="text-xl font-bold tracking-tight text-white flex items-center gap-2 mb-2"
                 >
                   <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
-                  Ranked by the PLHub Index
+                  {sort === 'hot' ? "What's heating up" : sort === 'new' ? 'Latest stories' : 'Ranked by the PLHub Index'}
                 </h2>
                 <p className="text-base text-gray-200 mb-2">
-                  Stories ranked by source credibility, recency, and community engagement — not paid placement, ever.
+                  {sort === 'hot' ? 'Posts gaining momentum right now.' : sort === 'new' ? 'The newest stories from the Premier League.' : 'Stories ranked by source credibility, recency, and community engagement — not paid placement, ever.'}
                 </p>
                 <p className="text-xs text-gray-400">
                   Updated {lastFetched || 'just now'}

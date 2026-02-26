@@ -1,9 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
 import { Post } from '@/types'
-import { decodeHtmlEntities, calculateHotScore } from '@/lib/utils'
-import { calculateIndex } from '@/lib/plhub-index'
+import { decodeHtmlEntities } from '@/lib/utils'
 import { getClubCode, getTimeDisplay, toIndex } from '@/lib/card-utils'
 
 interface Top5TabsProps {
@@ -11,46 +9,18 @@ interface Top5TabsProps {
 }
 
 export default function Top5Tabs({ posts }: Top5TabsProps) {
-  const [activeTab, setActiveTab] = useState<'pulse' | 'hot' | 'new'>('pulse')
-
-  const sortedPosts = useMemo(() => {
-    const sorted = [...posts]
-
-    if (activeTab === 'pulse') {
-      sorted.sort((a, b) => calculateIndex(b) - calculateIndex(a))
-    } else if (activeTab === 'hot') {
-      sorted.sort((a, b) => calculateHotScore(b) - calculateHotScore(a))
-    } else if (activeTab === 'new') {
-      sorted.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime())
-    }
-
-    return sorted.slice(0, 5)
-  }, [posts, activeTab])
+  // Simple sort by score descending, then slice to 5
+  const sortedPosts = [...posts]
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+    .slice(0, 5)
 
   return (
     <section className="mb-8">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white inline-flex items-center gap-2">
+        <h2 className="text-xl font-bold text-white inline-flex items-center justify-center gap-2">
           <div className="w-1 h-6 bg-[#C4A23E] rounded-full"></div>
           Trending
         </h2>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex items-center justify-center gap-2 mb-4">
-        {['Pulse', 'Hot', 'New'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab.toLowerCase() as 'pulse' | 'hot' | 'new')}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
-              activeTab === tab.toLowerCase()
-                ? 'bg-white text-[#0B1F21] font-semibold shadow-sm'
-                : 'bg-transparent text-gray-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
       </div>
 
       <div className="rounded-xl border border-white/[0.08] overflow-hidden">
