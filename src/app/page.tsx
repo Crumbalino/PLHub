@@ -16,6 +16,7 @@ import AdPlaceholder from '@/components/AdPlaceholder'
 import { formatDistanceToNow, decodeHtmlEntities } from '@/lib/utils'
 import { CLUBS_BY_SLUG, CLUBS } from '@/lib/clubs'
 import { calculateIndex } from '@/lib/plhub-index'
+import { getClubCode, getTimeDisplay, toIndex } from '@/lib/card-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -125,28 +126,6 @@ const SECTION_HEADINGS: Record<SortOption, string> = {
   new:   'Latest Stories',
 }
 
-const getTimeDisplay = (post: Post): string => {
-  const published = new Date(post.published_at)
-  const now = new Date()
-  const diffMins = Math.floor((now.getTime() - published.getTime()) / 60000)
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`
-  if (diffMins < 2880) return 'Yesterday'
-  return published.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-}
-
-const getClubCode = (slug: string): string => {
-  const clubCodes: Record<string, string> = {
-    'arsenal': '1', 'aston-villa': '2', 'bournemouth': '3', 'brentford': '4',
-    'brighton': '6', 'chelsea': '8', 'crystal-palace': '9', 'everton': '11',
-    'fulham': '13', 'ipswich': '40', 'leicester': '16', 'liverpool': '14',
-    'manchester-city': '43', 'manchester-united': '1', 'newcastle': '4',
-    'nottingham-forest': '17', 'southampton': '20', 'tottenham': '6',
-    'west-ham': '21', 'wolverhampton': '39',
-  }
-  return clubCodes[slug] || slug
-}
 
 async function getTop5Posts(): Promise<Post[]> {
   if (noSupabase) return []
@@ -443,9 +422,6 @@ export default async function HomePage({ searchParams }: PageProps) {
           {currentPage === 1 && sort === 'index' && top5.length > 0 && (
             <Top5Tabs
               posts={top5}
-              getClubCode={getClubCode}
-              getTimeDisplay={getTimeDisplay}
-              toIndex={toIndex}
             />
           )}
 

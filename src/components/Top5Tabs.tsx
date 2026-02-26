@@ -4,16 +4,13 @@ import { useState, useMemo } from 'react'
 import { Post } from '@/types'
 import { decodeHtmlEntities } from '@/lib/utils'
 import { calculateIndex } from '@/lib/plhub-index'
-import PulseBadge from './PulseBadge'
+import { getClubCode, getTimeDisplay, toIndex } from '@/lib/card-utils'
 
 interface Top5TabsProps {
   posts: Post[]
-  getClubCode: (slug: string) => string
-  getTimeDisplay: (post: Post) => string
-  toIndex: (score: number) => number | null
 }
 
-export default function Top5Tabs({ posts, getClubCode, getTimeDisplay, toIndex }: Top5TabsProps) {
+export default function Top5Tabs({ posts }: Top5TabsProps) {
   const [activeTab, setActiveTab] = useState<'pulse' | 'hot' | 'new'>('pulse')
 
   const sortedPosts = useMemo(() => {
