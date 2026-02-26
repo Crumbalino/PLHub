@@ -3,7 +3,7 @@ import { fetchAllRssFeeds } from "@/lib/rss"
 import { createServerClient } from '@/lib/supabase'
 import { upgradeImageUrl } from '@/lib/utils'
 
-export const maxDuration = 30
+export const maxDuration = 10
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')

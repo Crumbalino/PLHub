@@ -3,7 +3,7 @@ import { fetchAllRedditPosts } from '@/lib/reddit'
 import { generateSummary, delay } from '@/lib/claude'
 import { createServerClient } from '@/lib/supabase'
 
-export const maxDuration = 300
+export const maxDuration = 10
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
