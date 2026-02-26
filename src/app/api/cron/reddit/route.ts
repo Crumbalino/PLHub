@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     let errors = 0
 
     for (const post of posts) {
-      // Check for duplicate
+      // Check for duplicate by external_id
       const { data: existing } = await supabase
         .from('posts')
         .select('id, score')
@@ -46,6 +46,20 @@ export async function GET(req: NextRequest) {
           skipped++
         }
         continue
+      }
+
+      // Also check by URL to prevent duplicates
+      if (post.url) {
+        const { data: existingByUrl } = await supabase
+          .from('posts')
+          .select('id')
+          .eq('url', post.url)
+          .limit(1)
+
+        if (existingByUrl && existingByUrl.length > 0) {
+          skipped++
+          continue
+        }
       }
 
       // Generate AI summary for new posts

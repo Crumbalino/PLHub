@@ -205,30 +205,28 @@ export default async function HomePage({ searchParams }: PageProps) {
 
   // Frontend safety net: filter non-PL content
   const HIDE_KEYWORDS = [
-    'NFL', 'NBA', 'boxing', 'bout', 'Katie Taylor', 'Tua Tagovailoa', 'betting tips', 'free bets',
-    'Almeria', 'Segunda Division', 'American football', 'Conference League', 'Tom Brady', 'Raiders',
-    'AFC', 'NFC', 'Super Bowl', 'touchdown', 'quarterback', 'Celtic', 'Rangers', 'Scottish Premiership',
-    'Scottish Cup', 'Carabao Cup', 'Plymouth', 'Championship', 'League One', 'League Two', 'EFL',
-    'Wrexham', 'Sheffield Wednesday', 'Sheffield United', 'Sunderland', 'Leeds', 'Burnley', 'Luton',
-    'Norwich', 'Coventry', 'Middlesbrough', 'Stoke', 'Swansea', 'Hull', 'Millwall', 'Bristol City',
-    'QPR', 'Watford', 'Blackburn', 'Preston', 'Derby', 'Portsmouth', 'Oxford United', 'odds boost',
-    'accumulator', 'MLB', 'NHL', 'UFC', 'MMA', 'tennis', 'golf', 'cricket', 'rugby', 'World Series',
-    'Stanley Cup', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'MLS', 'College football',
-    'March Madness', 'Dolphins', 'Patriots', 'Cowboys', 'Lakers', 'Yankees', 'Packers', 'Chiefs',
-    'Patrick Mahomes', 'LeBron James', 'Super League', 'IPL', 'NRL', 'AFL', 'Olympics', 'Copa America',
-    'Tour de France', 'Wimbledon', 'US Open', 'Ryder Cup', 'Six Nations', 'NFL Draft', 'Jaguars',
-    'Broncos', 'Chargers', 'Bengals', 'Ravens', 'Steelers', 'Browns', 'Texans', 'Colts', 'Titans',
-    'Bills', 'Jets', 'Eagles', 'Commanders', 'Giants', 'Bears', 'Lions', 'Vikings', 'Saints',
-    'Buccaneers', 'Falcons', 'Panthers', '49ers', 'Seahawks', 'Rams', 'Cardinals'
+    'nfl', 'nba', 'boxing', 'bout', 'katie taylor', 'tom brady', 'raiders',
+    'afc west', 'tua tagovailoa', 'betting tips', 'free bets', 'odds boost',
+    'accumulator', 'best football bets', 'almeria', 'segunda division',
+    'american football', 'conference league', 'europa conference',
+    'champions league cash', 'world cup', 'carabao cup', 'celtic', 'rangers',
+    'scottish', 'championship', 'league one', 'league two', 'efl',
+    'plymouth', 'mexico open', 'tennis', 'golf', 'cricket', 'rugby',
+    'mma', 'ufc', 'fenerbahce', 'zrinjski', 'betting offer', 'bet £10',
+    'quarterback', 'touchdown', 'super bowl',
+  ]
+  const PL_CLUBS = [
+    'arsenal', 'aston villa', 'bournemouth', 'brentford', 'brighton', 'chelsea',
+    'crystal palace', 'everton', 'fulham', 'ipswich', 'leicester', 'liverpool',
+    'man city', 'manchester city', 'man utd', 'manchester united', 'newcastle',
+    'nottingham forest', 'forest', 'southampton', 'spurs', 'tottenham',
+    'west ham', 'wolves'
   ]
   const filteredIndexPosts = indexPosts.filter(post => {
-    const t = (post.title || '').toLowerCase()
-    // Check if PL club mentioned - if so, keep it
-    const PL_CLUBS = ['arsenal', 'aston villa', 'bournemouth', 'brentford', 'brighton', 'chelsea', 'crystal palace', 'everton', 'fulham', 'ipswich', 'leicester', 'liverpool', 'man city', 'manchester city', 'man utd', 'manchester united', 'newcastle', 'nottingham forest', 'forest', 'southampton', 'spurs', 'tottenham', 'west ham', 'wolves', 'wolverhampton']
-    const hasPLClub = PL_CLUBS.some(club => t.includes(club))
+    const title = (post.title || '').toLowerCase()
+    const hasPLClub = PL_CLUBS.some(club => title.includes(club))
     if (hasPLClub) return true
-    // Otherwise filter by hide keywords
-    return !HIDE_KEYWORDS.some(kw => t.includes(kw.toLowerCase()))
+    return !HIDE_KEYWORDS.some(kw => title.includes(kw))
   })
 
   const totalPages = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE))
