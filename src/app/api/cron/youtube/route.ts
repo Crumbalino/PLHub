@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { Anthropic } from '@anthropic-ai/sdk'
 import { decodeHtmlEntities } from '@/lib/utils'
 
-export const maxDuration = 300
+export const maxDuration = 30
 
 const YOUTUBE_CHANNELS = [
   { id: 'UCGHiEMsKFaFdjJJudmXis0A', name: 'Adam Cleary', slug: 'adam-cleary' },
@@ -15,39 +14,6 @@ const YOUTUBE_CHANNELS = [
   { id: 'UCddiUEpeqJcYeBxX1IVBKvQ', name: 'The Premier League', slug: 'premier-league' },
   { id: 'UCKy1dAqELo0zrOtPkf0eTMw', name: '442oons', slug: '442oons' },
 ]
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-async function generateSecretPunditSummary(title: string, channelName: string, description: string): Promise<string> {
-  const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  })
-
-  const message = await anthropic.messages.create({
-    model: 'claude-opus-4-6',
-    max_tokens: 300,
-    messages: [
-      {
-        role: 'user',
-        content: `Summarise this YouTube football video for PLHub readers. Write as The Secret Pundit in 3 short paragraphs (100-150 words total).
-
-Format: Paragraph 1 is what the video covers. Paragraph 2 is the key insight. Paragraph 3 is your take.
-
-Title: ${title}
-Channel: ${channelName}
-Description: ${description}
-
-Write plain text, no formatting. Be conversational, occasionally wry. Admit uncertainty if you have it.`,
-      },
-    ],
-  })
-
-  const content = message.content[0]
-  if (content.type === 'text') {
-    return content.text
-  }
-  return ''
-}
 
 async function fetchYouTubeVideos(channelId: string, apiKey: string) {
   const url = new URL('https://www.googleapis.com/youtube/v3/search')
@@ -80,62 +46,59 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = createServerClient()
+
+    // Process only one channel per request, rotating by hour
+    const channelIndex = new Date().getHours() % YOUTUBE_CHANNELS.length
+    const channel = YOUTUBE_CHANNELS[channelIndex]
+
+    const videos = await fetchYouTubeVideos(channel.id, youtubeApiKey)
+
     let inserted = 0
     let skipped = 0
     let errors = 0
 
-    for (const channel of YOUTUBE_CHANNELS) {
-      const videos = await fetchYouTubeVideos(channel.id, youtubeApiKey)
+    for (const video of videos) {
+      const videoId = video.id.videoId
+      const url = `https://www.youtube.com/watch?v=${videoId}`
 
-      for (const video of videos) {
-        const videoId = video.id.videoId
-        const url = `https://www.youtube.com/watch?v=${videoId}`
+      // Check for duplicate
+      const { data: existing } = await supabase
+        .from('posts')
+        .select('id')
+        .eq('url', url)
+        .single()
 
-        // Check for duplicate
-        const { data: existing } = await supabase
-          .from('posts')
-          .select('id')
-          .eq('url', url)
-          .single()
+      if (existing) {
+        skipped++
+        continue
+      }
 
-        if (existing) {
-          skipped++
-          continue
-        }
+      // Insert post without summary — summaries will be generated separately
+      const { error } = await supabase.from('posts').insert({
+        title: decodeHtmlEntities(video.snippet.title),
+        url,
+        source: 'youtube',
+        author: channel.name,
+        image_url: video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.default?.url,
+        published_at: video.snippet.publishedAt,
+        club_slug: null,
+        content: video.snippet.description.substring(0, 500),
+        summary: null,
+        score: 0,
+      })
 
-        // Generate summary
-        const summary = await generateSecretPunditSummary(
-          video.snippet.title,
-          channel.name,
-          video.snippet.description
-        )
-        await delay(500) // Rate limiting for Claude API
-
-        // Insert post
-        const { error } = await supabase.from('posts').insert({
-          title: decodeHtmlEntities(video.snippet.title),
-          url,
-          source: 'youtube',
-          author: channel.name,
-          image_url: video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.default?.url,
-          published_at: video.snippet.publishedAt,
-          club_slug: null,
-          content: video.snippet.description.substring(0, 500),
-          summary,
-          score: 0,
-        })
-
-        if (error) {
-          console.error('Insert error for', url, error)
-          errors++
-        } else {
-          inserted++
-        }
+      if (error) {
+        console.error('Insert error for', url, error)
+        errors++
+      } else {
+        inserted++
       }
     }
 
     return NextResponse.json({
       success: true,
+      channel: channel.name,
+      channelIndex,
       inserted,
       skipped,
       errors,
