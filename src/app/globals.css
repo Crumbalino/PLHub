@@ -51,10 +51,10 @@ body {
   font-weight: 300;
 }
 
-@keyframes fadeInUp {
+@keyframes summaryReveal {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -62,16 +62,31 @@ body {
   }
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 400ms ease-out forwards;
+@keyframes cardGlow {
+  0% { box-shadow: 0 0 0 rgba(0,85,90,0); }
+  50% { box-shadow: 0 0 30px rgba(0,85,90,0.12); }
+  100% { box-shadow: 0 0 15px rgba(0,85,90,0.06); }
 }
 
 @keyframes badgePulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  40% { transform: scale(1.12); }
   100% { transform: scale(1); }
 }
 
+.animate-summary-reveal {
+  animation: summaryReveal 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-card-glow {
+  animation: cardGlow 600ms ease-out forwards;
+}
+
 .animate-badge-pulse {
-  animation: badgePulse 400ms ease-out;
+  animation: badgePulse 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }

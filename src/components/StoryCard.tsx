@@ -131,13 +131,11 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
   return (
     <article
       id={`post-${post.id}`}
-      className={`bg-[#152B2E] rounded-xl overflow-hidden border-l-4 transition-all duration-300 ${
-        expanded
-          ? 'shadow-[0_0_20px_rgba(0,85,90,0.15)]'
-          : 'shadow-none hover:brightness-110'
+      className={`bg-[#152B2E] rounded-xl overflow-hidden border-l-4 transition-all duration-500 ${
+        expanded ? 'animate-card-glow' : ''
       }`}
       style={{
-        borderLeftColor: expanded ? '#00555A' : borderColor,
+        borderLeftColor: borderColor,
       }}
     >
       {/* IMAGE BLOCK */}
@@ -156,21 +154,13 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
           {/* Gradient overlay */}
           <div className="absolute bottom-0 left-0 right-0 h-[80px] bg-gradient-to-t from-[#0B1F21cc] to-transparent" />
 
-          {/* Source badge on overlay */}
-          <div className="absolute bottom-3 left-4 flex items-center gap-1.5">
-            {sourceInfo?.src ? (
-              <img
-                src={sourceInfo.src}
-                alt={sourceName}
-                className="h-4 w-auto object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none'
-                }}
-              />
-            ) : (
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: borderColor }} />
-            )}
-            <span className="text-sm font-medium text-white">{sourceName}</span>
+          {/* Source label on overlay */}
+          <div className="absolute bottom-3 left-4 flex items-center gap-2 z-10">
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ backgroundColor: borderColor }}
+            ></span>
+            <span className="text-sm font-medium text-white drop-shadow-md">{sourceName}</span>
           </div>
 
           {/* Timestamp */}
@@ -178,11 +168,14 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
           {/* Score badge */}
           {indexScore && (
-            <div className={`absolute top-3 right-3 bg-[#00555A]/90 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 z-10 ${expanded ? 'animate-badge-pulse' : ''}`}>
+            <div
+              className={`absolute top-3 right-3 bg-[#00555A] text-white text-xs font-bold px-2.5 py-1.5 rounded-md flex items-center gap-1.5 z-10 shadow-lg tabular-nums ${expanded ? 'animate-badge-pulse' : ''}`}
+              style={{ animationDelay: expanded ? '200ms' : '0ms' }}
+            >
               <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
                 <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span className="text-white">{indexScore}</span>
+              <span>{indexScore}</span>
             </div>
           )}
 
@@ -199,19 +192,22 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
       {/* Text-only header if no image */}
       {!hasValidImage && (
-        <div className="flex items-center gap-2 px-5 pt-4 pb-2 text-xs border-b border-white/5">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: borderColor }} />
-          <span className="font-medium text-gray-200">{sourceName}</span>
-          <div className="flex-1" />
-          {post.score > 0 && (
-            <div className="inline-flex items-center gap-1.5 bg-[#00555A] text-white text-xs font-bold px-2.5 py-1 rounded-full mr-2">
+        <div className="flex items-center gap-2 px-5 pt-4 pb-2">
+          <span
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: borderColor }}
+          ></span>
+          <span className="text-xs font-medium text-gray-300">{sourceName}</span>
+          <span className="flex-1"></span>
+          {indexScore && (
+            <div className="bg-[#00555A] text-white text-xs font-bold px-2.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm tabular-nums mr-2">
               <svg width="12" height="12" viewBox="0 0 32 32" fill="none">
                 <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span>{post.score > 100 ? Math.round(post.score / 10) : post.score}</span>
+              <span>{indexScore}</span>
             </div>
           )}
-          <span className="text-sm text-gray-400">{getTimeDisplay(post)}</span>
+          <span className="text-xs text-gray-500">{getTimeDisplay(post)}</span>
         </div>
       )}
 
@@ -241,12 +237,16 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
             </div>
 
             <div
-              className={`overflow-hidden transition-all duration-300 ease-out ${
-                expanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
-              }`}
+              className="overflow-hidden transition-all ease-out"
+              style={{
+                maxHeight: expanded ? '800px' : '0px',
+                opacity: expanded ? 1 : 0,
+                transitionDuration: expanded ? '600ms' : '300ms',
+                transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
             >
-              <div className="border-l-2 border-l-[#00555A] pl-4 py-3 mb-3 mt-3">
-                <div className={expanded ? 'animate-fade-in-up' : ''}>
+              <div className={expanded ? 'animate-summary-reveal' : ''} style={{ animationDelay: '150ms' }}>
+                <div className="border-l-2 border-l-[#00555A] pl-4 py-3 mb-3 mt-3">
                   <div className="summary-text text-sm text-gray-300 leading-[2] tracking-wide whitespace-pre-line">
                     {formatSummaryForDisplay(post.summary || '')}
                   </div>
@@ -268,34 +268,21 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
         )}
 
         {/* Footer row */}
-        <div className="flex items-center justify-between pt-3 border-t border-white/5">
-          <div className="flex items-center gap-2 text-sm text-gray-400">
-            {post.club_slug && (
-              <>
-                <img
-                  src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug)}.svg`}
-                  alt=""
-                  className="w-[16px] h-[16px] object-contain"
-                />
-                <span>{CLUBS_BY_SLUG[post.club_slug]?.shortName}</span>
-                <span>·</span>
-              </>
-            )}
-            <span>{readTime}</span>
-            {post.source === 'reddit' && post.score && (
-              <>
-                <span>·</span>
-                <span>
-                  ↑ {post.score > 1000 ? `${(post.score / 1000).toFixed(1)}k` : post.score}
-                </span>
-              </>
-            )}
-          </div>
-          {!hasValidImage && indexScore && (
-            <div className="bg-[#00555A] text-white text-xs font-bold px-2 py-1 rounded-full">
-              <span className="text-[#C4A23E]">↑</span> {indexScore}
-            </div>
+        <div className="flex items-center gap-2 pt-3 border-t border-white/5 px-5 pb-4">
+          {post.club_slug && (
+            <img
+              src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug)}.svg`}
+              alt=""
+              className="w-5 h-5 object-contain"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = 'none'
+              }}
+            />
           )}
+          {post.club_slug && (
+            <span className="text-xs text-gray-400">{CLUBS_BY_SLUG[post.club_slug]?.shortName}</span>
+          )}
+          <span className="text-xs text-gray-500 ml-auto tabular-nums">{readTime}</span>
         </div>
       </div>
     </article>

@@ -96,19 +96,20 @@ export default function FeedContainer({
 
   return (
     <>
-      {/* Sort Pills */}
-      <div className="flex items-center justify-center gap-2 mb-6">
+      {/* Sort Tabs - Underline Style */}
+      <div className="flex items-center justify-center gap-8 mb-6 border-b border-white/10 pb-0">
         {sortLabels.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => handleSortChange(key)}
-            className={`min-h-[44px] px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-              sort === key
-                ? 'bg-white text-[#0B1F21] font-semibold shadow-md'
-                : 'text-gray-400 hover:text-white hover:bg-white/10'
+            className={`pb-3 text-sm font-medium transition-all duration-200 relative ${
+              sort === key ? 'text-white' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             {label}
+            {sort === key && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4A23E] rounded-full" />
+            )}
           </button>
         ))}
       </div>

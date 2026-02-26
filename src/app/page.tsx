@@ -246,10 +246,24 @@ export default async function HomePage({ searchParams }: PageProps) {
     getIndexCount(sort, clubSlug),
   ])
 
-  // Diagnostic: Check YouTube posts in database
+  // YOUTUBE NUCLEAR DIAGNOSTIC
   if (!noSupabase) {
-    const { data: ytPosts, count: ytCount } = await supabase.from('posts').select('*', { count: 'exact' }).eq('source', 'youtube').limit(5)
-    console.log('YouTube posts in DB:', ytCount, ytPosts?.map(p => p.title))
+    const { data: ytCheck } = await supabase
+      .from('posts')
+      .select('id, title, source, score')
+      .eq('source', 'youtube')
+      .limit(5)
+    console.log('=== YOUTUBE DEBUG ===')
+    console.log('YouTube posts found:', ytCheck?.length || 0)
+    if (ytCheck?.length) console.log('Sample:', ytCheck[0])
+
+    // Check all sources in database
+    const { data: allPosts } = await supabase
+      .from('posts')
+      .select('source')
+      .limit(100)
+    const sources = Array.from(new Set(allPosts?.map(p => p.source) || []))
+    console.log('All sources in DB:', sources)
   }
 
   // Apply filters to all post lists

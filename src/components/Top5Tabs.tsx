@@ -16,8 +16,8 @@ export default function Top5Tabs({ posts }: Top5TabsProps) {
 
   return (
     <section className="mb-8">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-white inline-flex items-center justify-center gap-2">
+      <div className="mb-8 mt-4">
+        <h2 className="text-xl font-bold text-white text-center mb-5 flex items-center justify-center gap-2">
           <div className="w-1 h-6 bg-[#C4A23E] rounded-full"></div>
           Trending
         </h2>
@@ -64,11 +64,11 @@ export default function Top5Tabs({ posts }: Top5TabsProps) {
               </div>
               {/* Score Badge */}
               {indexScore && (
-                <div className="shrink-0 bg-[#00555A]/90 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                  <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
+                <div className="bg-[#00555A] text-white text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 ml-auto shrink-0 shadow-sm tabular-nums">
+                  <svg width="12" height="12" viewBox="0 0 32 32" fill="none">
                     <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  <span className="text-white">{indexScore}</span>
+                  <span>{indexScore}</span>
                 </div>
               )}
             </a>
