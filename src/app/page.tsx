@@ -347,6 +347,9 @@ export default async function HomePage({ searchParams }: PageProps) {
                     <div className="flex flex-col gap-2">
                       {trendingPosts.slice(0, 5).map((post, idx) => {
                         const indexScore = toIndex(post.score ?? 0)
+                        // Heat-based opacity: #1 is brightest, #5 is most muted
+                        const scoreOpacity = idx === 0 ? 'text-white' : idx <= 2 ? 'text-white/80' : 'text-white/55'
+                        const isTop = idx === 0
                         return (
                           <a
                             key={post.id}
@@ -357,11 +360,17 @@ export default async function HomePage({ searchParams }: PageProps) {
                             <span className="text-green-400 text-xs font-bold">▲</span>
                             <span className="text-sm text-white line-clamp-1 flex-1 group-hover:text-[#C4A23E] transition-colors">{post.title}</span>
                             {indexScore && (
-                              <div className="flex items-center gap-1 shrink-0 bg-white/5 rounded-full px-2 py-0.5">
-                                <svg width="12" height="12" viewBox="0 0 32 32" fill="none">
+                              <div className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1 ${isTop ? 'bg-[#C4A23E]/10' : 'bg-white/5'}`}>
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 32 32"
+                                  fill="none"
+                                  className={isTop ? 'animate-trending-pulse' : ''}
+                                >
                                   <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
-                                <span className="text-xs font-bold text-[#C4A23E] tabular-nums">{indexScore}</span>
+                                <span className={`text-sm font-bold tabular-nums ${scoreOpacity}`}>{indexScore}</span>
                               </div>
                             )}
                           </a>

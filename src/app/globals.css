@@ -91,6 +91,16 @@ body {
   animation: badgePulse 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+/* Trending #1 heartbeat */
+@keyframes trendingPulse {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 0px #C4A23E); }
+  50% { opacity: 0.8; filter: drop-shadow(0 0 6px #C4A23E); }
+}
+
+.animate-trending-pulse {
+  animation: trendingPulse 2s ease-in-out infinite;
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
