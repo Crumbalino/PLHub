@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { decodeHtmlEntities } from '@/lib/utils'
 
-export const maxDuration = 30
+export const maxDuration = 60
 
 const YOUTUBE_CHANNELS = [
   { id: 'UCGHiEMsKFaFdjJJudmXis0A', name: 'Adam Cleary', slug: 'adam-cleary' },
@@ -47,62 +47,70 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createServerClient()
 
-    // Process only one channel per request, rotating by hour
-    const channelIndex = new Date().getHours() % YOUTUBE_CHANNELS.length
-    const channel = YOUTUBE_CHANNELS[channelIndex]
+    let totalInserted = 0
+    let totalSkipped = 0
+    let totalErrors = 0
+    const channelResults: { name: string; inserted: number }[] = []
 
-    const videos = await fetchYouTubeVideos(channel.id, youtubeApiKey)
+    // Process ALL channels in one run
+    for (const channel of YOUTUBE_CHANNELS) {
+      const videos = await fetchYouTubeVideos(channel.id, youtubeApiKey)
 
-    let inserted = 0
-    let skipped = 0
-    let errors = 0
+      let inserted = 0
+      let skipped = 0
+      let errors = 0
 
-    for (const video of videos) {
-      const videoId = video.id.videoId
-      const url = `https://www.youtube.com/watch?v=${videoId}`
+      for (const video of videos) {
+        const videoId = video.id.videoId
+        const url = `https://www.youtube.com/watch?v=${videoId}`
 
-      // Check for duplicate
-      const { data: existing } = await supabase
-        .from('posts')
-        .select('id')
-        .eq('url', url)
-        .single()
+        // Check for duplicate
+        const { data: existing } = await supabase
+          .from('posts')
+          .select('id')
+          .eq('url', url)
+          .single()
 
-      if (existing) {
-        skipped++
-        continue
+        if (existing) {
+          skipped++
+          continue
+        }
+
+        // Insert post without summary — summaries will be generated separately
+        const { error } = await supabase.from('posts').insert({
+          external_id: videoId,
+          title: decodeHtmlEntities(video.snippet.title),
+          url,
+          source: 'youtube',
+          author: channel.name,
+          image_url: video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.default?.url,
+          published_at: video.snippet.publishedAt,
+          club_slug: null,
+          content: video.snippet.description.substring(0, 500),
+          summary: null,
+          score: 30,
+        })
+
+        if (error) {
+          console.error('Insert error for', url, error)
+          errors++
+        } else {
+          inserted++
+        }
       }
 
-      // Insert post without summary — summaries will be generated separately
-      const { error } = await supabase.from('posts').insert({
-        external_id: videoId,
-        title: decodeHtmlEntities(video.snippet.title),
-        url,
-        source: 'youtube',
-        author: channel.name,
-        image_url: video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.default?.url,
-        published_at: video.snippet.publishedAt,
-        club_slug: null,
-        content: video.snippet.description.substring(0, 500),
-        summary: null,
-        score: 30,
-      })
-
-      if (error) {
-        console.error('Insert error for', url, error)
-        errors++
-      } else {
-        inserted++
-      }
+      totalInserted += inserted
+      totalSkipped += skipped
+      totalErrors += errors
+      channelResults.push({ name: channel.name, inserted })
     }
 
     return NextResponse.json({
       success: true,
-      channel: channel.name,
-      channelIndex,
-      inserted,
-      skipped,
-      errors,
+      channels: channelResults,
+      totalInserted,
+      totalSkipped,
+      totalErrors,
     })
   } catch (err) {
     console.error('YouTube cron error:', err)

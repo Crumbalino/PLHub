@@ -104,7 +104,7 @@ export default function FeedContainer({
             key={key}
             onClick={() => handleSortChange(key)}
             className={`pb-3 text-sm font-medium transition-all duration-200 relative ${
-              sort === key ? 'text-white' : 'text-gray-300 hover:text-white'
+              sort === key ? 'text-white' : 'text-white/70 hover:text-white'
             }`}
           >
             {label}
@@ -121,7 +121,7 @@ export default function FeedContainer({
           <div className="w-1 h-6 bg-[#C4A23E] rounded-full"></div>
           {headingText}
         </h2>
-        <p className="text-sm text-gray-400 mt-1 ml-3">{subText}</p>
+        <p className="text-sm text-white/60 mt-1 ml-3">{subText}</p>
       </div>
 
       {/* Feed with transition */}
@@ -141,7 +141,7 @@ export default function FeedContainer({
       {/* Load More */}
       {posts.length < totalCount && (
         <div className="text-center mt-8">
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs text-white/50 mb-3">
             Showing {sortedPosts.length} of {totalCount} stories
           </p>
           <button

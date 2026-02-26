@@ -32,13 +32,13 @@ export default function FeedPage({
     <>
       {/* Club filter indicator */}
       {clubFilter && (
-        <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center gap-2 text-sm text-gray-200">
+        <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center gap-2 text-sm text-white/80">
           <span>
             Showing: <span className="font-semibold text-white capitalize">{clubFilter.replace('-', ' ')}</span>
           </span>
           <button
             onClick={() => setClubFilter(null)}
-            className="ml-2 text-gray-400 hover:text-white transition-colors"
+            className="ml-2 text-white/60 hover:text-white transition-colors"
             title="Clear club filter"
           >
             ✕ Clear
@@ -54,7 +54,7 @@ export default function FeedPage({
           {headingText}
         </h2>
         {!clubFilter && (
-          <p className="text-sm text-gray-400 mt-1 ml-3">
+          <p className="text-sm text-white/60 mt-1 ml-3">
             Stories ranked by source credibility, recency, and community engagement — not paid placement, ever.
           </p>
         )}

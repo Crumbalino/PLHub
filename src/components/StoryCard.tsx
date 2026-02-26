@@ -5,7 +5,7 @@ import { Post } from '@/types'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
 import { decodeHtmlEntities, stripMarkdown, upgradeImageUrl, formatSummaryForDisplay } from '@/lib/utils'
 
-// Detect club from post text when club_slug is missing (e.g. RSS posts)
+// Detect ALL clubs from post text (not just the first match)
 const CLUB_PATTERNS: [RegExp, string][] = [
   [/\barsenal\b/i, 'arsenal'],
   [/\baston villa\b/i, 'aston-villa'],
@@ -29,17 +29,15 @@ const CLUB_PATTERNS: [RegExp, string][] = [
   [/\bwolv(?:es|erhampton)\b/i, 'wolves'],
 ]
 
-function detectClubSlug(post: Post): string | null {
-  const text = ((post.title || '') + ' ' + (post.summary || '')).toLowerCase()
-  // Return the first match — if multiple clubs mentioned, pick the one in the title first
-  const titleText = (post.title || '').toLowerCase()
+function detectAllClubs(post: Post): string[] {
+  const text = ((post.title || '') + ' ' + (post.summary || '') + ' ' + (post.content || '')).toLowerCase()
+  const found: string[] = []
   for (const [pattern, slug] of CLUB_PATTERNS) {
-    if (pattern.test(titleText)) return slug
+    if (pattern.test(text) && !found.includes(slug)) {
+      found.push(slug)
+    }
   }
-  for (const [pattern, slug] of CLUB_PATTERNS) {
-    if (pattern.test(text)) return slug
-  }
-  return null
+  return found
 }
 
 interface StoryCardProps {
@@ -74,6 +72,7 @@ const getSourceInfo = (post: Post): { src: string | null; name: string } | null 
       })()
     : ''
   if (post.source === 'reddit') return { src: '/sources/reddit.png', name: 'Reddit' }
+  if (post.source === 'youtube') return { src: null, name: 'YouTube' }
   if (domain.includes('bbc')) return { src: '/sources/bbc.png', name: 'BBC Sport' }
   if (domain.includes('sky')) return { src: '/sources/skysports.png', name: 'Sky Sports' }
   if (domain.includes('guardian')) return { src: '/sources/guardian.png', name: 'The Guardian' }
@@ -133,12 +132,11 @@ const isValidImageUrl = (url: string | null | undefined, source: string): boolea
   return true
 }
 
-const calculateReadTime = (post: Post): string => {
-  const titleWords = post.title?.split(' ').length ?? 0
+const getReadTimeLabel = (post: Post): string => {
   const summaryWords = post.summary?.split(' ').length ?? 0
-  const totalWords = titleWords + summaryWords
-  const mins = Math.max(1, Math.ceil(totalWords / 200))
-  return `~${mins} min read`
+  const mins = Math.max(1, Math.ceil(summaryWords / 200))
+  if (mins <= 1) return 'Quick read'
+  return `${mins} min read`
 }
 
 function getSourceBorderColor(post: Post): string {
@@ -149,10 +147,23 @@ function getSourceBorderColor(post: Post): string {
   return SOURCE_COLORS[sourceInfo.name] || '#C4A23E'
 }
 
-const getCTAText = (post: Post): string => {
-  if (post.source === 'youtube') return 'Watch →'
-  if (post.source === 'reddit') return 'Read thread →'
-  return 'Read article →'
+// Extract a clean preview blurb from content
+function getPreviewBlurb(post: Post): string | null {
+  // Don't show blurb if we have a summary — the expand handles that
+  const raw = post.content || ''
+  if (!raw) return null
+  const cleaned = raw
+    .replace(/<[^>]*>/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[#*_~`>]/g, '')
+    .replace(/https?:\/\/\S+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (cleaned.length < 30) return null
+  if (cleaned.length <= 140) return cleaned
+  const truncated = cleaned.substring(0, 140)
+  const lastSpace = truncated.lastIndexOf(' ')
+  return truncated.substring(0, lastSpace) + '…'
 }
 
 export default function StoryCard({ post, indexScore, featured = false }: StoryCardProps) {
@@ -161,15 +172,21 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
   const sourceInfo = getSourceInfo(post)
   const sourceName = sourceInfo?.name ?? 'News'
+  const sourceLogo = sourceInfo?.src ?? null
   const hasValidImage = isValidImageUrl(post.image_url, post.source)
-  const readTime = calculateReadTime(post)
+  const readTimeLabel = getReadTimeLabel(post)
   const borderColor = getSourceBorderColor(post)
-  const effectiveClubSlug = post.club_slug || detectClubSlug(post)
+  const previewBlurb = getPreviewBlurb(post)
+
+  // Multi-club detection
+  const detectedClubs = post.club_slug ? [post.club_slug, ...detectAllClubs(post).filter(s => s !== post.club_slug)] : detectAllClubs(post)
+  const uniqueClubs = Array.from(new Set(detectedClubs))
+  const isMatchReport = uniqueClubs.length === 2
 
   return (
     <article
       id={`post-${post.id}`}
-      className={`bg-[#152B2E] rounded-xl overflow-hidden border-l-4 transition-all duration-500 ${
+      className={`bg-[#183538] rounded-xl overflow-hidden border-l-4 transition-all duration-500 ${
         expanded ? 'animate-card-glow' : ''
       }`}
       style={{
@@ -192,28 +209,37 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
           {/* Gradient overlay */}
           <div className="absolute bottom-0 left-0 right-0 h-[80px] bg-gradient-to-t from-[#0B1F21cc] to-transparent" />
 
-          {/* Source label on overlay */}
+          {/* Source badge + name on overlay */}
           <div className="absolute bottom-3 left-4 flex items-center gap-2 z-10">
-            <span
-              className="w-2.5 h-2.5 rounded-full shrink-0"
-              style={{ backgroundColor: borderColor }}
-            ></span>
+            {sourceLogo ? (
+              <img
+                src={sourceLogo}
+                alt=""
+                className="w-5 h-5 rounded-full object-cover bg-white/10 shrink-0"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+              />
+            ) : (
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: borderColor }}
+              />
+            )}
             <span className="text-sm font-medium text-white drop-shadow-md">{sourceName}</span>
           </div>
 
           {/* Timestamp */}
           <div className="absolute bottom-3 right-4 text-sm text-white/70">{getTimeDisplay(post)}</div>
 
-          {/* Score badge */}
+          {/* Score badge — gold icon + white number */}
           {indexScore && (
             <div
-              className={`absolute top-3 right-3 bg-[#00555A] text-white text-xs font-bold px-2.5 py-1.5 rounded-md flex items-center gap-1.5 z-10 shadow-lg tabular-nums ${expanded ? 'animate-badge-pulse' : ''}`}
+              className={`absolute top-3 right-3 bg-[#00555A] text-white text-sm font-bold px-2.5 py-1.5 rounded-md flex items-center gap-1.5 z-10 shadow-lg tabular-nums ${expanded ? 'animate-badge-pulse' : ''}`}
               style={{ animationDelay: expanded ? '200ms' : '0ms' }}
             >
               <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
                 <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span>{indexScore}</span>
+              <span className="text-white">{indexScore}</span>
             </div>
           )}
 
@@ -231,46 +257,68 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
       {/* Text-only header if no image */}
       {!hasValidImage && (
         <div className="flex items-center gap-2 px-5 pt-4 pb-2">
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ backgroundColor: borderColor }}
-          ></span>
-          <span className="text-xs font-medium text-gray-300">{sourceName}</span>
+          {sourceLogo ? (
+            <img
+              src={sourceLogo}
+              alt=""
+              className="w-5 h-5 rounded-full object-cover bg-white/10 shrink-0"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+            />
+          ) : (
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ backgroundColor: borderColor }}
+            />
+          )}
+          <span className="text-xs font-medium text-white/70">{sourceName}</span>
           <span className="flex-1"></span>
           {indexScore && (
-            <div className="bg-[#00555A] text-white text-xs font-bold px-2.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm tabular-nums mr-2">
+            <div className="bg-[#00555A] text-white text-sm font-bold px-2.5 py-1.5 rounded-md flex items-center gap-1.5 shadow-sm tabular-nums mr-2">
               <svg width="12" height="12" viewBox="0 0 32 32" fill="none">
                 <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span>{indexScore}</span>
+              <span className="text-white">{indexScore}</span>
             </div>
           )}
-          <span className="text-xs text-gray-500">{getTimeDisplay(post)}</span>
+          <span className="text-xs text-white/50">{getTimeDisplay(post)}</span>
         </div>
       )}
 
       {/* CONTENT AREA */}
       <div className="px-4 md:px-5 pt-4 pb-5">
         {/* Headline */}
-        <h3 className="text-xl md:text-2xl font-bold text-white leading-tight tracking-tight mb-3 line-clamp-3">
+        <h3 className="text-xl md:text-2xl font-bold text-white leading-tight tracking-tight mb-2 line-clamp-3">
           {decodeHtmlEntities(post.title)}
         </h3>
+
+        {/* Preview blurb — 2 lines of context before expand */}
+        {previewBlurb && !expanded && (
+          <p className="text-sm text-white/60 leading-relaxed line-clamp-2 mb-3">
+            {previewBlurb}
+          </p>
+        )}
 
         {/* Expand button (only if summary exists) */}
         {post.summary && (
           <div className="mb-3">
-            <div className="text-center mt-3">
+            <div className="text-center mt-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   setExpanded(!expanded)
                 }}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] transition-all duration-200 cursor-pointer select-none"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] transition-all duration-200 cursor-pointer select-none group"
               >
-                <span className={`inline-block transition-transform duration-200 ${expanded ? 'rotate-90' : 'rotate-0'}`}>
-                  ▸
-                </span>
-                {expanded ? 'Less' : 'More'}
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 32 32"
+                  fill="none"
+                  className={`transition-all duration-300 ${expanded ? 'animate-badge-pulse' : 'group-hover:scale-110'}`}
+                >
+                  <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {expanded ? 'Less' : 'Get the summary'}
               </button>
             </div>
 
@@ -284,20 +332,28 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
               }}
             >
               <div className={expanded ? 'animate-summary-reveal' : ''} style={{ animationDelay: '150ms' }}>
-                <div className="border-l-2 border-l-[#00555A] pl-4 py-3 mb-3 mt-3">
-                  <div className="summary-text text-sm text-gray-300 leading-[2] tracking-wide whitespace-pre-line">
+                <div className="border-l-2 border-l-[#C4A23E] pl-4 py-3 mb-3 mt-3 bg-white/[0.03] rounded-r-lg">
+                  {/* Summary text — white, larger, high line-height for readability */}
+                  <div className="summary-text text-[15px] text-white leading-[2.1] tracking-wide whitespace-pre-line">
                     {formatSummaryForDisplay(post.summary || '')}
                   </div>
-                  <span className="block mt-4 text-xs text-gray-500 select-none">.SP</span>
+
+                  {/* Reading time + .SP sign-off */}
+                  <div className="flex items-center justify-between mt-4">
+                    <span className="text-xs text-white/50">{readTimeLabel}</span>
+                    <span className="text-xs text-white/30 select-none font-mono">.SP</span>
+                  </div>
+
+                  {/* Source link — secondary, muted */}
                   <a
                     href={post.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="inline-block mt-2 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] hover:underline transition-colors"
+                    className="inline-block mt-3 text-xs text-white/40 hover:text-white/70 transition-colors"
                   >
-                    {post.source === 'youtube' ? 'Watch on YouTube →' :
-                     post.source === 'reddit' ? 'Read thread →' : 'Read article →'}
+                    {post.source === 'youtube' ? 'Watch on YouTube ↗' :
+                     post.source === 'reddit' ? 'View original thread ↗' : 'Read full article ↗'}
                   </a>
                 </div>
               </div>
@@ -305,22 +361,31 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
           </div>
         )}
 
-        {/* Footer row */}
-        <div className="flex items-center gap-2 pt-3 border-t border-white/5 px-5 pb-4">
-          {effectiveClubSlug && (
-            <img
-              src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(effectiveClubSlug)}.png`}
-              alt=""
-              className="w-5 h-5 object-contain"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = 'none'
-              }}
-            />
+        {/* Footer row — clubs */}
+        <div className="flex items-center gap-2 pt-3 border-t border-white/5">
+          {uniqueClubs.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              {uniqueClubs.slice(0, 4).map((slug, idx) => (
+                <div key={slug} className="flex items-center gap-1">
+                  {idx === 1 && isMatchReport && (
+                    <span className="text-[10px] text-white/30 mx-0.5">vs</span>
+                  )}
+                  {idx > 0 && !isMatchReport && (
+                    <span className="text-[10px] text-white/20 mx-0.5">·</span>
+                  )}
+                  <img
+                    src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(slug)}.png`}
+                    alt=""
+                    className="w-5 h-5 object-contain"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = 'none'
+                    }}
+                  />
+                  <span className="text-xs text-white/70">{CLUBS_BY_SLUG[slug]?.shortName}</span>
+                </div>
+              ))}
+            </div>
           )}
-          {effectiveClubSlug && (
-            <span className="text-xs text-gray-400">{CLUBS_BY_SLUG[effectiveClubSlug]?.shortName}</span>
-          )}
-          <span className="text-xs text-gray-500 ml-auto tabular-nums">{readTime}</span>
         </div>
       </div>
     </article>

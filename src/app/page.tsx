@@ -9,8 +9,6 @@ import PulseBadge from '@/components/PulseBadge'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
 import FeedPage from '@/components/FeedPage'
-import PLTableWidget from '@/components/PLTableWidget'
-import FixturesWidget from '@/components/FixturesWidget'
 import { formatDistanceToNow, decodeHtmlEntities } from '@/lib/utils'
 import { CLUBS_BY_SLUG, CLUBS } from '@/lib/clubs'
 import { calculateIndex } from '@/lib/plhub-index'
@@ -245,13 +243,13 @@ export default async function HomePage({ searchParams }: PageProps) {
         {/* Compact PL Table Strip */}
         <div>
           <h3 className="text-xs font-bold text-white mb-3">League Table</h3>
-          <PLTableWidget />
+          <PLTable />
         </div>
 
         {/* Compact Fixtures Strip */}
         <div>
           <h3 className="text-xs font-bold text-white mb-3">Next Matches</h3>
-          <FixturesWidget />
+          <NextFixtures />
         </div>
       </div>
 
@@ -259,12 +257,12 @@ export default async function HomePage({ searchParams }: PageProps) {
         {/* Hero SEO Section — Full Width */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-white">The Pulse of the Premier League</h1>
-          <p className="text-base text-gray-400 mt-2">AI-powered Premier League news, ranked by what matters</p>
+          <p className="text-base text-white/60 mt-2">AI-powered Premier League news, ranked by what matters</p>
         </div>
 
         {/* Club Selector Hero — Full Width */}
         <section className="border-b border-white/10 py-10 text-center mx-auto mb-8" style={{ background: 'radial-gradient(ellipse at center, #0F2D31 0%, #0B1F21 70%)' }}>
-          <p className="text-sm text-gray-400 text-center mb-3">
+          <p className="text-sm text-white/60 text-center mb-3">
             Select your club
           </p>
 
@@ -322,8 +320,8 @@ export default async function HomePage({ searchParams }: PageProps) {
           {/* LEFT SIDEBAR — PL Table */}
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide">
-              <PLTableWidget />
-              <div className="bg-[#152B2E] rounded-xl p-4 text-center text-xs text-gray-600 h-[250px] flex items-center justify-center border border-white/5">
+              <PLTable />
+              <div className="bg-[#183538] rounded-xl p-4 text-center text-xs text-white/30 h-[250px] flex items-center justify-center border border-white/5">
                 Ad
               </div>
             </div>
@@ -402,8 +400,8 @@ export default async function HomePage({ searchParams }: PageProps) {
           {/* RIGHT SIDEBAR — Fixtures */}
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide">
-              <FixturesWidget />
-              <div className="bg-[#152B2E] rounded-xl p-4 text-center text-xs text-gray-600 h-[600px] flex items-center justify-center border border-white/5">
+              <NextFixtures />
+              <div className="bg-[#183538] rounded-xl p-4 text-center text-xs text-white/30 h-[600px] flex items-center justify-center border border-white/5">
                 Ad
               </div>
             </div>

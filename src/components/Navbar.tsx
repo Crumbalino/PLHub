@@ -9,7 +9,7 @@ function NavbarContent() {
         </a>
         <a
           href="/auth/signin"
-          className="absolute right-4 text-sm text-gray-400 hover:text-white transition-colors cursor-pointer"
+          className="absolute right-4 text-sm text-white/60 hover:text-white transition-colors cursor-pointer"
         >
           Sign in
         </a>
