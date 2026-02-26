@@ -14,12 +14,12 @@ export const getTimeDisplay = (post: Post): string => {
 
 export const getClubCode = (slug: string): string => {
   const clubCodes: Record<string, string> = {
-    'arsenal': '1', 'aston-villa': '2', 'bournemouth': '3', 'brentford': '4',
-    'brighton': '6', 'chelsea': '8', 'crystal-palace': '9', 'everton': '11',
-    'fulham': '13', 'ipswich': '40', 'leicester': '16', 'liverpool': '14',
-    'manchester-city': '43', 'manchester-united': '1', 'newcastle': '4',
+    'arsenal': '3', 'aston-villa': '7', 'bournemouth': '91', 'brentford': '94',
+    'brighton': '36', 'chelsea': '8', 'crystal-palace': '31', 'everton': '11',
+    'fulham': '54', 'ipswich': '40', 'leicester': '13', 'liverpool': '14',
+    'man-city': '43', 'man-united': '1', 'newcastle': '4',
     'nottingham-forest': '17', 'southampton': '20', 'tottenham': '6',
-    'west-ham': '21', 'wolverhampton': '39',
+    'west-ham': '21', 'wolves': '39', 'wolverhampton': '39',
   }
   return clubCodes[slug] || slug
 }

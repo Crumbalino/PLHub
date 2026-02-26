@@ -5,6 +5,43 @@ import { Post } from '@/types'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
 import { decodeHtmlEntities, stripMarkdown, upgradeImageUrl, formatSummaryForDisplay } from '@/lib/utils'
 
+// Detect club from post text when club_slug is missing (e.g. RSS posts)
+const CLUB_PATTERNS: [RegExp, string][] = [
+  [/\barsenal\b/i, 'arsenal'],
+  [/\baston villa\b/i, 'aston-villa'],
+  [/\bbournemouth\b/i, 'bournemouth'],
+  [/\bbrentford\b/i, 'brentford'],
+  [/\bbrighton\b/i, 'brighton'],
+  [/\bchelsea\b/i, 'chelsea'],
+  [/\bcrystal palace\b/i, 'crystal-palace'],
+  [/\beverton\b/i, 'everton'],
+  [/\bfulham\b/i, 'fulham'],
+  [/\bipswich\b/i, 'ipswich'],
+  [/\bleicester\b/i, 'leicester'],
+  [/\bliverpool\b/i, 'liverpool'],
+  [/\bman(?:chester)?\s*city\b/i, 'man-city'],
+  [/\bman(?:chester)?\s*(?:utd|united)\b/i, 'man-united'],
+  [/\bnewcastle\b/i, 'newcastle'],
+  [/\bnott(?:ingham)?\s*forest\b/i, 'nottingham-forest'],
+  [/\bsouthampton\b/i, 'southampton'],
+  [/\b(?:spurs|tottenham)\b/i, 'tottenham'],
+  [/\bwest ham\b/i, 'west-ham'],
+  [/\bwolv(?:es|erhampton)\b/i, 'wolves'],
+]
+
+function detectClubSlug(post: Post): string | null {
+  const text = ((post.title || '') + ' ' + (post.summary || '')).toLowerCase()
+  // Return the first match — if multiple clubs mentioned, pick the one in the title first
+  const titleText = (post.title || '').toLowerCase()
+  for (const [pattern, slug] of CLUB_PATTERNS) {
+    if (pattern.test(titleText)) return slug
+  }
+  for (const [pattern, slug] of CLUB_PATTERNS) {
+    if (pattern.test(text)) return slug
+  }
+  return null
+}
+
 interface StoryCardProps {
   post: Post
   indexScore?: number | null
@@ -127,6 +164,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
   const hasValidImage = isValidImageUrl(post.image_url, post.source)
   const readTime = calculateReadTime(post)
   const borderColor = getSourceBorderColor(post)
+  const effectiveClubSlug = post.club_slug || detectClubSlug(post)
 
   return (
     <article
@@ -269,9 +307,9 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
         {/* Footer row */}
         <div className="flex items-center gap-2 pt-3 border-t border-white/5 px-5 pb-4">
-          {post.club_slug && (
+          {effectiveClubSlug && (
             <img
-              src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(post.club_slug)}.png`}
+              src={`https://resources.premierleague.com/premierleague/badges/t${getClubCode(effectiveClubSlug)}.png`}
               alt=""
               className="w-5 h-5 object-contain"
               onError={(e) => {
@@ -279,8 +317,8 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
               }}
             />
           )}
-          {post.club_slug && (
-            <span className="text-xs text-gray-400">{CLUBS_BY_SLUG[post.club_slug]?.shortName}</span>
+          {effectiveClubSlug && (
+            <span className="text-xs text-gray-400">{CLUBS_BY_SLUG[effectiveClubSlug]?.shortName}</span>
           )}
           <span className="text-xs text-gray-500 ml-auto tabular-nums">{readTime}</span>
         </div>

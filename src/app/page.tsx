@@ -53,11 +53,15 @@ const ALWAYS_HIDE = [
   'price boost', 'enhanced odds', 'money back', 'betting tips', 'free bets',
   'odds boost', 'accumulator', 'best football bets', 'betting offer', 'bet £10',
   'get £', 'acca', 'darts night', 'darts live', 'premier league darts',
+  'darts', 'oche', 'stephen bunting', 'luke humphries', 'luke littler',
   'conor benn', 'tyson fury', 'undercard', 'fury-', 'born to fight', 'progais',
   'fight night', 'ring walk', 'dana white', 'usyk', 'canelo', 'weigh-in',
   'boxing', 'bout', 'ronda rousey', 'rousey comeback', 't20 world cup',
   'west indies cricket', 'south africa cricket', 'nbc network', 'nbc shakeup',
-  'nbc revamp', 'beloved analyst', 'nbc shakeup'
+  'nbc revamp', 'beloved analyst', 'nbc shakeup',
+  'nwsl', 'saudi pro league', 'al-nassr', 'al nassr', 'al-fayha',
+  'al-hilal', 'al hilal', 'al-ittihad', 'al ittihad',
+  'singapore streaming', 'streaming service in singapore'
 ]
 
 const HIDE_KEYWORDS = [
@@ -74,7 +78,11 @@ const HIDE_KEYWORDS = [
   'qatar league', 'al-sailiya', 'red bull chief', 'sprinkler pitch',
   'premflix', 'singapore streaming', 'screen all premier league',
   'vegas', 'las vegas', 'nfl las vegas',
-  'greatest loss in english football history'
+  'greatest loss in english football history',
+  'singapore', 'streaming service in',
+  'direct-to-consumer', 'ronaldo live', 'al-fayha vs',
+  'wnba', 'mlb', 'nhl', 'ligue 1', 'serie a',
+  'la liga', 'eredivisie', 'liga nos'
 ]
 
 function filterPLContent(posts: Post[]): Post[] {
@@ -141,7 +149,7 @@ async function getTop5Posts(): Promise<Post[]> {
       .from('posts')
       .select('id, external_id, title, url, summary, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, clubs(*)')
       .order('score', { ascending: false })
-      .limit(5)
+      .limit(30)
 
     if (error) return []
     const posts = (data as unknown as Post[]) ?? []
@@ -154,11 +162,12 @@ async function getTop5Posts(): Promise<Post[]> {
 async function getTrendingPosts(): Promise<Post[]> {
   if (noSupabase) return []
   try {
+    // Fetch more than 5 so filtering still yields 5 PL-relevant items
     const { data, error } = await supabase
       .from('posts')
       .select('id, external_id, title, url, summary, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, clubs(*)')
       .order('score', { ascending: false })
-      .limit(5)
+      .limit(30)
 
     if (error) return []
     return (data as unknown as Post[]) ?? []

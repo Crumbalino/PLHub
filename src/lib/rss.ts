@@ -26,10 +26,23 @@ const NON_PL_KEYWORDS = [
   'Eagles', 'Commanders', 'Giants', 'Bears', 'Lions', 'Vikings',
   'Saints', 'Buccaneers', 'Falcons', 'Panthers', '49ers', 'Seahawks', 'Rams',
   'Cardinals',
+  'darts', 'oche', 'PDC', 'NWSL',
+  'Saudi Pro League', 'Al-Nassr', 'Al Nassr', 'Al-Hilal', 'Al-Fayha', 'Al-Ittihad',
+  'WNBA', 'Eredivisie',
+]
+
+// Keywords that should ALWAYS cause filtering, even if a PL club is mentioned
+const ALWAYS_BLOCK = [
+  'darts', 'oche', 'pdc', 'betting tips', 'free bets', 'accumulator', 'odds boost',
+  'boxing', 'bout', 'trilogy fight', 'undercard', 'ring walk', 'weigh-in',
+  'nwsl', 'saudi pro league', 'al-nassr', 'al nassr', 'al-hilal', 'al-fayha',
 ]
 
 function isPremierLeagueContent(title: string, description: string): boolean {
   const text = (title + ' ' + (description || '')).toLowerCase()
+
+  // Always block these regardless of PL club mentions
+  if (ALWAYS_BLOCK.some(kw => text.includes(kw))) return false
 
   // Check if any PL club is mentioned - if so, keep it
   const PL_CLUBS = [
