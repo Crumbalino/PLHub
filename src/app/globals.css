@@ -50,3 +50,28 @@ body {
   font-family: var(--font-lexend), sans-serif;
   font-weight: 300;
 }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 400ms ease-out forwards;
+}
+
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.animate-badge-pulse {
+  animation: badgePulse 400ms ease-out;
+}

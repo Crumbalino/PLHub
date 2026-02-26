@@ -494,48 +494,12 @@ export default async function HomePage({ searchParams }: PageProps) {
             <hr className="mb-8 border-white/5" />
           )}
 
-          {/* Section 3: Feed with sort toggle */}
+          {/* Section 3: Feed with client-side sorting */}
           {filteredIndexPosts.length > 0 && (
-            <section aria-labelledby="index-heading">
-              {/* Sort pills */}
-              <div className="flex items-center justify-center gap-2 mb-6">
-                {['Pulse', 'Hot', 'New'].map(tab => (
-                  <a
-                    key={tab}
-                    href={`/?sort=${tab.toLowerCase()}${clubSlug ? `&club=${clubSlug}` : ''}`}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                      sort === tab.toLowerCase()
-                        ? 'bg-white text-[#0B1F21] font-semibold'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    {tab}
-                  </a>
-                ))}
-              </div>
-
-              {/* Section heading with description and update time */}
-              <div className="mb-8">
-                <h2
-                  id="index-heading"
-                  className="text-xl font-bold tracking-tight text-white flex items-center gap-2 mb-2"
-                >
-                  <span className="inline-block w-1 h-6 bg-[#C4A23E] rounded-full" />
-                  {sort === 'hot' ? "What's heating up" : sort === 'new' ? 'Latest stories' : 'Ranked by the PLHub Index'}
-                </h2>
-                <p className="text-base text-gray-200 mb-2">
-                  {sort === 'hot' ? 'Posts gaining momentum right now.' : sort === 'new' ? 'The newest stories from the Premier League.' : 'Stories ranked by source credibility, recency, and community engagement — not paid placement, ever.'}
-                </p>
-                <p className="text-xs text-gray-400">
-                  Updated {lastFetched || 'just now'}
-                </p>
-              </div>
-
+            <section>
               <FeedContainer
                 initialPosts={filteredIndexPosts}
                 totalCount={totalCount}
-                sort={sort}
-                club={clubSlug}
               />
             </section>
           )}

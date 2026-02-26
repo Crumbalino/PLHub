@@ -131,8 +131,14 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
   return (
     <article
       id={`post-${post.id}`}
-      className="bg-[#152B2E] rounded-xl overflow-hidden border-l-4 hover:brightness-110 transition duration-200"
-      style={{ borderLeftColor: borderColor }}
+      className={`bg-[#152B2E] rounded-xl overflow-hidden border-l-4 transition-all duration-300 ${
+        expanded
+          ? 'shadow-[0_0_20px_rgba(0,85,90,0.15)]'
+          : 'shadow-none hover:brightness-110'
+      }`}
+      style={{
+        borderLeftColor: expanded ? '#00555A' : borderColor,
+      }}
     >
       {/* IMAGE BLOCK */}
       {hasValidImage && !imgError && (
@@ -172,7 +178,7 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
 
           {/* Score badge */}
           {indexScore && (
-            <div className="absolute top-3 right-3 bg-[#00555A]/90 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5">
+            <div className={`absolute top-3 right-3 bg-[#00555A]/90 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 z-10 ${expanded ? 'animate-badge-pulse' : ''}`}>
               <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
                 <path d="M4 16h7l2.5-7 5 14 2.5-7H28" stroke="#C4A23E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -221,31 +227,43 @@ export default function StoryCard({ post, indexScore, featured = false }: StoryC
           <div className="mb-3">
             <div className="text-center mt-3">
               <button
-                onClick={() => setExpanded(!expanded)}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] cursor-pointer transition-colors select-none"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setExpanded(!expanded)
+                }}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] transition-all duration-200 cursor-pointer select-none"
               >
-                {expanded ? 'Less ▾' : 'More ▸'}
+                <span className={`inline-block transition-transform duration-200 ${expanded ? 'rotate-90' : 'rotate-0'}`}>
+                  ▸
+                </span>
+                {expanded ? 'Less' : 'More'}
               </button>
             </div>
 
-            {expanded && (
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-out ${
+                expanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
               <div className="border-l-2 border-l-[#00555A] pl-4 py-3 mb-3 mt-3">
-                <div className="summary-text text-sm text-gray-300 leading-[2] tracking-wide whitespace-pre-line space-y-4">
-                  {formatSummaryForDisplay(post.summary || '')}
+                <div className={expanded ? 'animate-fade-in-up' : ''}>
+                  <div className="summary-text text-sm text-gray-300 leading-[2] tracking-wide whitespace-pre-line">
+                    {formatSummaryForDisplay(post.summary || '')}
+                  </div>
+                  <span className="block mt-4 text-xs text-gray-500 select-none">.SP</span>
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-block mt-2 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] hover:underline transition-colors"
+                  >
+                    {post.source === 'youtube' ? 'Watch on YouTube →' :
+                     post.source === 'reddit' ? 'Read thread →' : 'Read article →'}
+                  </a>
                 </div>
-                <span className="block mt-4 text-xs text-gray-500 select-none">.SP</span>
-                <a
-                  href={post.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-block mt-2 text-sm font-semibold text-[#C4A23E] hover:text-[#d4b24e] hover:underline transition-colors"
-                >
-                  {post.source === 'youtube' ? 'Watch on YouTube →' :
-                   post.source === 'reddit' ? 'Read thread →' : 'Read article →'}
-                </a>
               </div>
-            )}
+            </div>
           </div>
         )}
 
