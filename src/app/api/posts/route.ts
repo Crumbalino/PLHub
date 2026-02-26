@@ -70,13 +70,24 @@ export async function GET(request: NextRequest) {
     return !HIDE_KEYWORDS.some(kw => title.includes(kw))
   })
 
+  // Deduplicate by URL
+  const deduplicatedPosts = (() => {
+    const seen = new Set<string>()
+    return filteredPosts.filter(post => {
+      if (!post.url) return true
+      if (seen.has(post.url)) return false
+      seen.add(post.url)
+      return true
+    })
+  })()
+
   // For index sort, sort client-side by calculated index
   if (sort === 'index') {
-    filteredPosts.sort((a, b) => calculateIndex(b) - calculateIndex(a))
+    deduplicatedPosts.sort((a, b) => calculateIndex(b) - calculateIndex(a))
   }
 
   return NextResponse.json({
-    posts: filteredPosts,
+    posts: deduplicatedPosts,
     total: count || 0,
     page,
     pageSize: POSTS_PER_PAGE,

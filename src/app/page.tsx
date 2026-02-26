@@ -39,6 +39,46 @@ const noSupabase =
 
 type SortOption = 'index' | 'hot' | 'new'
 
+const PL_CLUBS = [
+  'arsenal', 'aston villa', 'bournemouth', 'brentford', 'brighton', 'chelsea',
+  'crystal palace', 'everton', 'fulham', 'ipswich', 'leicester', 'liverpool',
+  'man city', 'manchester city', 'man utd', 'manchester united', 'newcastle',
+  'nottingham forest', 'forest', 'southampton', 'spurs', 'tottenham',
+  'west ham', 'wolves'
+]
+
+const HIDE_KEYWORDS = [
+  'nfl', 'nba', 'boxing', 'bout', 'katie taylor', 'tom brady', 'raiders',
+  'tua tagovailoa', 'betting tips', 'free bets', 'odds boost',
+  'accumulator', 'best football bets', 'almeria', 'segunda division',
+  'american football', 'conference league', 'europa conference',
+  'champions league cash', 'world cup', 'carabao cup', 'celtic', 'rangers',
+  'scottish', 'championship goal', 'league one', 'league two', 'efl',
+  'plymouth', 'mexico open', 'tennis', 'golf', 'cricket', 'rugby',
+  'mma', 'ufc', 'fenerbahce', 'zrinjski', 'betting offer', 'bet £10',
+  'quarterback', 'touchdown', 'super bowl', 'farewell fight', 'trilogy fight',
+  'ronaldo buys', 'spanish second division', 'cameron trilogy'
+]
+
+function filterPLContent(posts: Post[]): Post[] {
+  return posts.filter(post => {
+    const title = (post.title || '').toLowerCase()
+    const hasPLClub = PL_CLUBS.some(club => title.includes(club))
+    if (hasPLClub) return true
+    return !HIDE_KEYWORDS.some(kw => title.includes(kw))
+  })
+}
+
+function deduplicatePosts(posts: Post[]): Post[] {
+  const seen = new Set<string>()
+  return posts.filter(post => {
+    if (!post.url) return true
+    if (seen.has(post.url)) return false
+    seen.add(post.url)
+    return true
+  })
+}
+
 function parseSortParam(raw: string | undefined): SortOption {
   if (raw === 'hot' || raw === 'new') return raw
   return 'index'
@@ -196,38 +236,17 @@ export default async function HomePage({ searchParams }: PageProps) {
   const clubSlug = searchParams.club
 
   // Top 5, trending, and feed posts
-  const [top5, trendingPosts, indexPosts, totalCount] = await Promise.all([
+  const [top5Raw, trendingPostsRaw, indexPosts, totalCount] = await Promise.all([
     currentPage === 1 && sort === 'index' && !clubSlug ? getTop5Posts() : Promise.resolve([]),
     currentPage === 1 && sort === 'index' && !clubSlug ? getTrendingPosts(100) : Promise.resolve([]),
     getIndexPosts(currentPage, sort, clubSlug),
     getIndexCount(sort, clubSlug),
   ])
 
-  // Frontend safety net: filter non-PL content
-  const HIDE_KEYWORDS = [
-    'nfl', 'nba', 'boxing', 'bout', 'katie taylor', 'tom brady', 'raiders',
-    'afc west', 'tua tagovailoa', 'betting tips', 'free bets', 'odds boost',
-    'accumulator', 'best football bets', 'almeria', 'segunda division',
-    'american football', 'conference league', 'europa conference',
-    'champions league cash', 'world cup', 'carabao cup', 'celtic', 'rangers',
-    'scottish', 'championship', 'league one', 'league two', 'efl',
-    'plymouth', 'mexico open', 'tennis', 'golf', 'cricket', 'rugby',
-    'mma', 'ufc', 'fenerbahce', 'zrinjski', 'betting offer', 'bet £10',
-    'quarterback', 'touchdown', 'super bowl',
-  ]
-  const PL_CLUBS = [
-    'arsenal', 'aston villa', 'bournemouth', 'brentford', 'brighton', 'chelsea',
-    'crystal palace', 'everton', 'fulham', 'ipswich', 'leicester', 'liverpool',
-    'man city', 'manchester city', 'man utd', 'manchester united', 'newcastle',
-    'nottingham forest', 'forest', 'southampton', 'spurs', 'tottenham',
-    'west ham', 'wolves'
-  ]
-  const filteredIndexPosts = indexPosts.filter(post => {
-    const title = (post.title || '').toLowerCase()
-    const hasPLClub = PL_CLUBS.some(club => title.includes(club))
-    if (hasPLClub) return true
-    return !HIDE_KEYWORDS.some(kw => title.includes(kw))
-  })
+  // Apply filters to all post lists
+  const top5 = deduplicatePosts(filterPLContent(top5Raw))
+  const trendingPosts = deduplicatePosts(filterPLContent(trendingPostsRaw))
+  const filteredIndexPosts = deduplicatePosts(filterPLContent(indexPosts))
 
   const totalPages = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE))
   const lastFetched =
