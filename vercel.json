@@ -2,15 +2,15 @@
   "crons": [
     {
       "path": "/api/cron/rss",
-      "schedule": "0 * * * *"
+      "schedule": "0 0 * * *"
     },
     {
       "path": "/api/cron/reddit",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 1 * * *"
     },
     {
       "path": "/api/cron/youtube",
-      "schedule": "0 */3 * * *"
+      "schedule": "0 2 * * *"
     }
   ]
 }
