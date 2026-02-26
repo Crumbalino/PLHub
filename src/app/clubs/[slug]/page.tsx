@@ -12,6 +12,8 @@ import Pagination from '@/components/Pagination'
 import Breadcrumb from '@/components/Breadcrumb'
 import { formatDistanceToNow } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
 
 const POSTS_PER_PAGE = 20
