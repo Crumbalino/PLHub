@@ -316,7 +316,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <div className="flex-1 min-w-0 lg:max-w-[720px]">
       {/* Hero SEO Section */}
       <section className="pt-6 pb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl text-center">
+        <h1 className="text-3xl md:text-4xl font-bold text-white text-center">
           The Pulse of the Premier League
         </h1>
         <p className="mt-2 text-base text-gray-300 text-center">
@@ -326,7 +326,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
       {/* Club Selector Hero */}
       <section className="border-b border-white/10 py-10 text-center mx-auto" style={{ background: 'radial-gradient(ellipse at center, #0F2D31 0%, #0B1F21 70%)' }}>
-        <p className="text-sm text-white">
+        <p className="text-sm text-gray-400 text-center mb-3">
           Select your club
         </p>
 
@@ -342,7 +342,11 @@ export default async function HomePage({ searchParams }: PageProps) {
             <div className="flex justify-center mb-4">
               <Link
                 href="/"
-                className="text-xs font-medium text-white bg-white/10 hover:bg-white/20 rounded-full px-4 py-1.5 transition-colors"
+                className={`text-xs font-medium rounded-full px-4 py-1.5 transition-colors ${
+                  !clubSlug
+                    ? 'bg-white/10 text-white ring-2 ring-[#C4A23E]'
+                    : 'text-white bg-white/10 hover:bg-white/20'
+                }`}
               >
                 All
               </Link>
@@ -353,8 +357,12 @@ export default async function HomePage({ searchParams }: PageProps) {
               {CLUBS.map((club) => (
                 <Link
                   key={club.slug}
-                  href={`/clubs/${club.slug}`}
-                  className="w-9 h-9 rounded-full bg-white/5 p-1.5 cursor-pointer hover:bg-white/10 transition-colors"
+                  href={`/?club=${club.slug}${sort !== 'index' ? `&sort=${sort}` : ''}`}
+                  className={`w-9 h-9 rounded-full p-1.5 cursor-pointer transition-colors ${
+                    clubSlug === club.slug
+                      ? 'bg-white/10 ring-2 ring-[#C4A23E]'
+                      : 'bg-white/5 hover:bg-white/10'
+                  }`}
                 >
                   <Image
                     src={club.badgeUrl}
@@ -370,6 +378,20 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
         </div>
       </section>
+
+      {/* Club filter indicator */}
+      {clubSlug && (
+        <div className="mx-auto max-w-[1320px] px-4 py-4 flex items-center gap-2 text-sm text-gray-300">
+          <span>Showing: <span className="font-semibold text-white">{CLUBS_BY_SLUG[clubSlug]?.name || clubSlug}</span></span>
+          <Link
+            href="/"
+            className="ml-2 text-gray-400 hover:text-white transition-colors"
+            title="Clear club filter"
+          >
+            ✕ Clear
+          </Link>
+        </div>
+      )}
 
       {!hasContent ? (
         <EmptyState />
