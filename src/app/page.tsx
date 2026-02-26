@@ -260,6 +260,12 @@ export default async function HomePage({ searchParams }: PageProps) {
     getIndexCount(sort, clubSlug),
   ])
 
+  // Diagnostic: Check YouTube posts in database
+  if (!noSupabase) {
+    const { data: ytPosts, count: ytCount } = await supabase.from('posts').select('*', { count: 'exact' }).eq('source', 'youtube').limit(5)
+    console.log('YouTube posts in DB:', ytCount, ytPosts?.map(p => p.title))
+  }
+
   // Apply filters to all post lists
   const top5 = deduplicatePosts(filterPLContent(top5Raw))
   const trendingPosts = deduplicatePosts(filterPLContent(trendingPostsRaw))
