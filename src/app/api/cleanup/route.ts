@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 
-export const maxDuration = 120
+export const maxDuration = 10
 
 const NON_PL = [
   'NFL', 'NBA', 'boxing', 'bout', 'Katie Taylor', 'Tom Brady', 'Raiders', 'AFC West',

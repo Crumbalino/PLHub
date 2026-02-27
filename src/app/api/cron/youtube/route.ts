@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { decodeHtmlEntities } from '@/lib/utils'
+import { decodeHtmlEntities } from '@/lib/formatting'
 
-export const maxDuration = 30
+export const maxDuration = 10
 
 const YOUTUBE_CHANNELS = [
   { id: 'UCGHiEMsKFaFdjJJudmXis0A', name: 'Adam Cleary', slug: 'adam-cleary' },
@@ -47,8 +47,10 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createServerClient()
 
-    // Process only one channel per request, rotating by hour
-    const channelIndex = new Date().getHours() % YOUTUBE_CHANNELS.length
+    // Rotate one channel per run — spreads videos throughout the day
+    // With 8 channels on a 15-min cron, each channel checked every ~2 hours
+    const runIndex = Math.floor(Date.now() / (15 * 60 * 1000))
+    const channelIndex = runIndex % YOUTUBE_CHANNELS.length
     const channel = YOUTUBE_CHANNELS[channelIndex]
 
     const videos = await fetchYouTubeVideos(channel.id, youtubeApiKey)
@@ -61,7 +63,6 @@ export async function GET(req: NextRequest) {
       const videoId = video.id.videoId
       const url = `https://www.youtube.com/watch?v=${videoId}`
 
-      // Check for duplicate
       const { data: existing } = await supabase
         .from('posts')
         .select('id')
@@ -73,7 +74,6 @@ export async function GET(req: NextRequest) {
         continue
       }
 
-      // Insert post without summary — summaries will be generated separately
       const { error } = await supabase.from('posts').insert({
         external_id: videoId,
         title: decodeHtmlEntities(video.snippet.title),

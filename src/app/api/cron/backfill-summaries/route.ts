@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateSummary, delay } from '@/lib/claude'
 import { createServerClient } from '@/lib/supabase'
 
-export const maxDuration = 300
+export const maxDuration = 10
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -13,7 +13,8 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url)
-  const limit = Math.min(parseInt(searchParams.get('limit') ?? '25', 10), 50)
+  // Hobby plan = 10s limit. 1 Anthropic call ≈ 3-4s, so max 2 per run.
+  const limit = Math.min(parseInt(searchParams.get('limit') ?? '2', 10), 5)
 
   try {
     const supabase = createServerClient()
@@ -38,7 +39,6 @@ export async function GET(req: NextRequest) {
 
     for (const post of posts) {
       const summary = await generateSummary(post.title, post.content)
-      await delay(200)
 
       if (!summary) {
         failed++

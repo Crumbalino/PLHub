@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fetchAllRssFeeds } from "@/lib/rss"
-import { generateSummary, delay } from '@/lib/claude'
 import { createServerClient } from '@/lib/supabase'
-import { upgradeImageUrl } from '@/lib/utils'
+import { upgradeImageUrl } from '@/lib/formatting'
 
-export const maxDuration = 120
+export const maxDuration = 10
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
@@ -70,16 +69,13 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      // Generate AI summary for new posts
-      const summary = await generateSummary(post.title, post.content)
-      await delay(200)
-
+      // Insert without summary — backfill-summaries cron will generate them
       const { error } = await supabase.from('posts').insert({
         external_id: post.external_id,
         title: post.title,
         url: post.url,
         content: post.content,
-        summary,
+        summary: null,
         source: post.source,
         club_slug: post.club_slug,
         author: post.author,

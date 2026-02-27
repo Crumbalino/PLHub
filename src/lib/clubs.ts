@@ -212,3 +212,100 @@ export const CLUBS_BY_SLUG: Record<string, Club> = Object.fromEntries(
 export const CLUBS_BY_SUBREDDIT: Record<string, string> = Object.fromEntries(
   CLUBS.map((c) => [c.subreddit.toLowerCase(), c.slug])
 )
+
+// --- Club Codes (PL CDN badge IDs) ---
+
+export const CLUB_CODES: Record<string, string> = {
+  arsenal: '3',
+  'aston-villa': '7',
+  bournemouth: '91',
+  brentford: '94',
+  brighton: '36',
+  chelsea: '8',
+  'crystal-palace': '31',
+  everton: '11',
+  fulham: '54',
+  ipswich: '40',
+  leicester: '13',
+  liverpool: '14',
+  'man-city': '43',
+  'man-united': '1',
+  newcastle: '4',
+  'nottingham-forest': '17',
+  southampton: '20',
+  tottenham: '6',
+  'west-ham': '21',
+  wolves: '39',
+}
+
+export function getClubCode(slug: string): string {
+  return CLUB_CODES[slug] || slug
+}
+
+// --- Multi-Club Detection ---
+
+const CLUB_PATTERNS: [RegExp, string][] = [
+  [/\barsenal\b/i, 'arsenal'],
+  [/\baston villa\b/i, 'aston-villa'],
+  [/\bbournemouth\b/i, 'bournemouth'],
+  [/\bbrentford\b/i, 'brentford'],
+  [/\bbrighton\b/i, 'brighton'],
+  [/\bchelsea\b/i, 'chelsea'],
+  [/\bcrystal palace\b/i, 'crystal-palace'],
+  [/\beverton\b/i, 'everton'],
+  [/\bfulham\b/i, 'fulham'],
+  [/\bipswich\b/i, 'ipswich'],
+  [/\bleicester\b/i, 'leicester'],
+  [/\bliverpool\b/i, 'liverpool'],
+  [/\bman(?:chester)?\s*city\b/i, 'man-city'],
+  [/\bman(?:chester)?\s*(?:utd|united)\b/i, 'man-united'],
+  [/\bnewcastle\b/i, 'newcastle'],
+  [/\bnott(?:ingham)?\s*forest\b/i, 'nottingham-forest'],
+  [/\bsouthampton\b/i, 'southampton'],
+  [/\b(?:spurs|tottenham)\b/i, 'tottenham'],
+  [/\bwest ham\b/i, 'west-ham'],
+  [/\bwolv(?:es|erhampton)\b/i, 'wolves'],
+]
+
+/**
+ * Detect all PL clubs mentioned in a post's text.
+ * Primary club (from club_slug) is listed first.
+ */
+export function detectAllClubs(
+  title: string,
+  content: string | null,
+  summary: string | null,
+  primaryClubSlug: string | null
+): string[] {
+  const text = `${title || ''} ${summary || ''} ${content || ''}`.toLowerCase()
+  const found: string[] = []
+
+  // Primary club first
+  if (primaryClubSlug) found.push(primaryClubSlug)
+
+  for (const [pattern, slug] of CLUB_PATTERNS) {
+    if (pattern.test(text) && !found.includes(slug)) {
+      found.push(slug)
+    }
+  }
+
+  return found
+}
+
+/**
+ * Convert club slugs to ClubBadge objects for the API response.
+ */
+export function toClubBadges(slugs: string[]): import('./types').ClubBadge[] {
+  return slugs
+    .map(slug => {
+      const club = CLUBS_BY_SLUG[slug]
+      if (!club) return null
+      return {
+        slug,
+        shortName: club.shortName,
+        code: getClubCode(slug),
+        badgeUrl: club.badgeUrl,
+      }
+    })
+    .filter((b): b is import('./types').ClubBadge => b !== null)
+}

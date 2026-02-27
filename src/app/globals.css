@@ -7,6 +7,8 @@
   --foreground: #ededed;
   --brand-teal: #00555A;
   --brand-gold: #C4A23E;
+  --card-bg: #183538;
+  --card-bg-hover: #1c3d41;
 }
 
 html {
@@ -14,11 +16,18 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Anchor targets clear the sticky navbar */
+article[id^="post-"] {
+  scroll-margin-top: 5rem;
+}
+
 body {
-  background: #0B1F21 !important;
+  background: var(--background) !important;
   color: var(--foreground);
   letter-spacing: 0.01em;
   line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Hide scrollbar but allow scrolling */
@@ -26,15 +35,27 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-@keyframes fadeIn {
+/* ============================================
+   SUMMARY TEXT
+   ============================================ */
+.summary-text {
+  font-family: var(--font-lexend), sans-serif;
+  font-weight: 300;
+}
+
+/* ============================================
+   CARD ANIMATIONS
+   ============================================ */
+
+/* Feed stagger — cards fade in one by one */
+@keyframes cardEnter {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -42,15 +63,23 @@ body {
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.25s ease-out forwards;
+.animate-card-enter {
+  opacity: 0;
+  animation: cardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.summary-text {
-  font-family: var(--font-lexend), sans-serif;
-  font-weight: 300;
+/* Card glow on expand */
+@keyframes cardGlow {
+  0% { box-shadow: 0 0 0 rgba(196,162,62,0); }
+  40% { box-shadow: 0 0 30px rgba(196,162,62,0.12); }
+  100% { box-shadow: 0 0 10px rgba(196,162,62,0.04); }
 }
 
+.animate-card-glow {
+  animation: cardGlow 600ms ease-out forwards;
+}
+
+/* Summary reveal inside card */
 @keyframes summaryReveal {
   from {
     opacity: 0;
@@ -62,31 +91,219 @@ body {
   }
 }
 
-@keyframes cardGlow {
-  0% { box-shadow: 0 0 0 rgba(0,85,90,0); }
-  50% { box-shadow: 0 0 30px rgba(0,85,90,0.12); }
-  100% { box-shadow: 0 0 15px rgba(0,85,90,0.06); }
-}
-
-@keyframes badgePulse {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.12); }
-  100% { transform: scale(1); }
-}
-
 .animate-summary-reveal {
   animation: summaryReveal 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-card-glow {
-  animation: cardGlow 600ms ease-out forwards;
+/* Score badge bounce */
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
 .animate-badge-pulse {
   animation: badgePulse 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+/* Trending #1 heartbeat glow */
+@keyframes trendingPulse {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 0px #C4A23E); }
+  50% { opacity: 0.8; filter: drop-shadow(0 0 8px #C4A23E); }
+}
+
+.animate-trending-pulse {
+  animation: trendingPulse 2s ease-in-out infinite;
+}
+
+/* Sort tab content crossfade */
+@keyframes feedFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-feed-enter {
+  animation: feedFadeIn 0.3s ease-out forwards;
+}
+
+/* Generic fade in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* ============================================
+   SKELETON SHIMMER
+   ============================================ */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 25%,
+    rgba(255,255,255,0.06) 50%,
+    rgba(255,255,255,0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ============================================
+   HEAT BADGES
+   ============================================ */
+.heat-hot {
+  background: linear-gradient(135deg, #C4A23E 0%, #E8C84A 100%);
+  color: #0B1F21;
+}
+
+.heat-warm {
+  background: rgba(196, 162, 62, 0.15);
+  color: #C4A23E;
+}
+
+.heat-rising {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================
+   CARD HOVER + PRESS STATES
+   ============================================ */
+.story-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.story-card:hover {
+  background-color: var(--card-bg-hover);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Active/press state for mobile — subtle scale */
+@media (hover: none) {
+  .story-card:active {
+    transform: scale(0.985);
+  }
+}
+
+/* ============================================
+   TRENDING ITEM HOVER
+   ============================================ */
+.trending-item {
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.trending-item:hover {
+  transform: translateX(2px);
+}
+
+/* ============================================
+   SORT TAB INDICATOR
+   ============================================ */
+.sort-tab-indicator {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================
+   LOAD MORE BUTTON
+   ============================================ */
+.load-more-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.load-more-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(196,162,62,0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.load-more-btn:hover::after {
+  opacity: 1;
+}
+
+/* ============================================
+   MOBILE-FIRST SPACING
+   ============================================ */
+
+/* Tighter padding on small screens */
+@media (max-width: 640px) {
+  .feed-card-padding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Touch-friendly tap targets */
+@media (hover: none) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* But not inline links within text */
+  p a, span a, .summary-text a {
+    min-height: unset;
+    min-width: unset;
+  }
+}
+
+/* ============================================
+   UTILITY
+   ============================================ */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+/* Subtle divider line between sections */
+.section-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+}
+
+/* ============================================
+   MOBILE COLLAPSIBLE SECTIONS
+   ============================================ */
+details summary {
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details[open] summary {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   FOCUS STYLES (accessibility)
+   ============================================ */
+:focus-visible {
+  outline: 2px solid #C4A23E;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove focus ring for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
 }

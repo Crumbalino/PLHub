@@ -2,14 +2,18 @@
 
 function NavbarContent() {
   return (
-    <nav className="sticky top-0 z-50 bg-[#0B1F21] border-b border-white/5">
-      <div className="max-w-[1320px] mx-auto px-4 flex items-center justify-center h-24 relative">
+    <nav className="sticky top-0 z-50 bg-[#0B1F21]/95 backdrop-blur-md border-b border-white/5">
+      <div className="max-w-[1400px] mx-auto px-4 flex items-center justify-center h-16 relative">
         <a href="/" className="flex items-center">
-          <img src="/plhub-logo-v2.png?v=2" alt="PLhub" className="h-14 w-auto" />
+          <img
+            src="/plhub-logo-v2.png?v=2"
+            alt="PLhub"
+            className="h-10 w-auto"
+          />
         </a>
         <a
           href="/auth/signin"
-          className="absolute right-4 text-sm text-gray-400 hover:text-white transition-colors cursor-pointer"
+          className="absolute right-4 text-xs text-white/40 hover:text-white/80 transition-colors cursor-pointer px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20"
         >
           Sign in
         </a>
