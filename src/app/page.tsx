@@ -46,14 +46,14 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           {/* CENTRE — Feed */}
           <main className="min-w-0">
-            {/* Club Filter Bar */}
-            <ClubFilterBar currentClub={clubSlug ?? undefined} />
-
             {/* Trending — only on unfiltered home */}
             {!clubSlug && <TrendingStrip />}
 
-            {/* Divider between trending and feed */}
-            {!clubSlug && <hr className="section-divider mb-6" />}
+            {/* Club Filter Bar — between Trending and Feed */}
+            <ClubFilterBar currentClub={clubSlug ?? undefined} />
+
+            {/* Divider between filter/trending and feed */}
+            <hr className="section-divider mb-6" />
 
             {/* Club filter indicator */}
             {clubSlug && (
@@ -73,8 +73,10 @@ export default async function HomePage({ searchParams }: PageProps) {
               </div>
             )}
 
-            {/* Feed */}
-            <FeedList club={clubSlug} />
+            {/* Feed with fade transition */}
+            <div className="transition-opacity duration-300" key={clubSlug || 'all'}>
+              <FeedList club={clubSlug} />
+            </div>
 
             {/* Mobile: Table + Fixtures below feed */}
             <div className="lg:hidden mt-10 space-y-6">
