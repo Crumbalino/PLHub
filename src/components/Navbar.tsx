@@ -6,7 +6,7 @@ function NavbarContent() {
       <div className="max-w-[1400px] mx-auto px-4 flex items-center justify-center h-16 relative">
         <a href="/" className="flex items-center">
           <img
-            src="/plhub-logo-v2.png?v=2"
+            src="/plhub-logo-v3.png"
             alt="PLhub"
             className="h-10 w-auto"
           />
