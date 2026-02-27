@@ -3,12 +3,12 @@
 function NavbarContent() {
   return (
     <nav className="sticky top-0 z-50 bg-[#0B1F21]/95 backdrop-blur-md border-b border-white/5">
-      <div className="max-w-[1400px] mx-auto px-4 flex items-center justify-center h-16 relative">
+      <div className="max-w-[1400px] mx-auto px-4 flex items-center justify-center h-20 relative">
         <a href="/" className="flex items-center">
           <img
             src="/plhub-logo-v3.png"
             alt="PLhub"
-            className="h-[52px] w-auto"
+            className="h-16 w-auto"
           />
         </a>
         <a
