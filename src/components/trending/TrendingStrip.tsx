@@ -23,11 +23,8 @@ export default function TrendingStrip() {
   if (posts.length === 0) return null
 
   return (
-    <section className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        <PulseIcon size={16} />
-        <span className="text-sm font-bold text-white">Trending</span>
-      </div>
+    <section className="mb-8 border-l-3 border-l-[#C4A23E] pl-3">
+      <h2 className="text-xl font-bold text-white mb-4">Trending</h2>
 
       <div className="flex flex-col gap-2">
         {posts.map((post, idx) => {
@@ -42,24 +39,19 @@ export default function TrendingStrip() {
               className="trending-item flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 hover:bg-white/10 transition-colors group animate-card-enter"
               style={{ animationDelay: `${idx * 80}ms` }}
             >
-              <span className="w-5 text-sm font-bold text-white/60">{post.rank}</span>
+              <span className="w-5 text-sm font-bold text-[#C4A23E]">{post.rank}</span>
               <span className="text-green-400 text-xs font-bold">▲</span>
-              <span className="text-sm text-white line-clamp-1 flex-1 group-hover:text-[#C4A23E] transition-colors">
+              <span className="text-sm text-gray-100 line-clamp-1 flex-1 group-hover:text-[#C4A23E] transition-colors">
                 {post.title}
               </span>
               {post.indexScore && (
-                <div
-                  className={`flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-1 ${
-                    isTop ? 'bg-[#C4A23E]/10' : 'bg-white/5'
-                  }`}
-                >
+                <div className="bg-[#00777A] text-white px-2 py-0.5 rounded-md text-sm font-medium flex items-center gap-1.5 shrink-0 tabular-nums">
                   <PulseIcon
                     size={14}
+                    color="white"
                     className={isTop ? 'animate-trending-pulse' : ''}
                   />
-                  <span className={`text-sm font-bold tabular-nums ${scoreOpacity}`}>
-                    {post.indexScore}
-                  </span>
+                  <span>{post.indexScore}</span>
                 </div>
               )}
             </a>

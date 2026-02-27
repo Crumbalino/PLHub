@@ -46,12 +46,11 @@ export default function FeedList({ club = null }: FeedListProps) {
       <SortTabs current={sortMode} onChange={setSortMode} />
 
       {/* Section Heading */}
-      <div className="mb-6 mt-6">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <div className="w-1 h-6 bg-[#C4A23E] rounded-full" />
+      <div className="mb-6 mt-6 border-l-3 border-l-[#C4A23E] pl-3">
+        <h2 className="text-xl font-bold text-white">
           {heading.title}
         </h2>
-        <p className="text-sm text-white/60 mt-1 ml-3">{heading.sub}</p>
+        <p className="text-sm text-white/60 mt-1">{heading.sub}</p>
       </div>
 
       {/* Loading skeleton — shimmer effect */}
@@ -82,7 +81,7 @@ export default function FeedList({ club = null }: FeedListProps) {
 
       {/* Feed — key on sortMode triggers re-animation on sort change */}
       {!isLoading && (
-        <div className="space-y-5 animate-feed-enter" key={sortMode}>
+        <div className="space-y-6 animate-feed-enter" key={sortMode}>
           {posts.map((post, idx) => (
             <StoryCard
               key={post.id}

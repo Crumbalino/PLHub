@@ -159,8 +159,8 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
       {/* PLHub Index Score */}
       {post.indexScore && (
         <div className="flex items-center gap-2 mb-4">
-          <div className="bg-[#00555A]/20 text-[#00555A] px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 tabular-nums">
-            <PulseIcon size={12} color="#00555A" />
+          <div className="bg-[#00777A] text-white px-2 py-0.5 rounded-md text-sm font-medium flex items-center gap-1.5 tabular-nums">
+            <PulseIcon size={12} color="white" />
             <span>Index {post.indexScore}</span>
           </div>
         </div>
