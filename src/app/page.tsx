@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import ClubFilterBar from '@/components/ClubFilterBar'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
@@ -54,24 +53,6 @@ export default async function HomePage({ searchParams }: PageProps) {
 
             {/* Divider between filter/trending and feed */}
             <hr className="section-divider mb-6" />
-
-            {/* Club filter indicator */}
-            {clubSlug && (
-              <div className="flex items-center gap-2 text-sm text-white/80 mb-6">
-                <span>
-                  Showing:{' '}
-                  <span className="font-semibold text-white capitalize">
-                    {clubSlug.replace('-', ' ')}
-                  </span>
-                </span>
-                <Link
-                  href="/"
-                  className="ml-2 text-white/60 hover:text-white transition-colors"
-                >
-                  ✕ Clear
-                </Link>
-              </div>
-            )}
 
             {/* Feed with fade transition */}
             <div className="transition-opacity duration-300" key={clubSlug || 'all'}>
