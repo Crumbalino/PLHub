@@ -26,7 +26,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   const clubSlug = searchParams.club || null
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-transparent relative">
         <div className="max-w-[1400px] mx-auto px-4 pt-4">
 
         {/* ============================================================
