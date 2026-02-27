@@ -1,36 +1,37 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
 interface Club {
   id: number
   slug: string
   name: string
+  shortName?: string
 }
 
 const CLUBS: Club[] = [
-  { id: 3, slug: 'arsenal', name: 'Arsenal' },
-  { id: 7, slug: 'aston-villa', name: 'Aston Villa' },
-  { id: 94, slug: 'brentford', name: 'Brentford' },
-  { id: 36, slug: 'brighton', name: 'Brighton' },
-  { id: 91, slug: 'bournemouth', name: 'Bournemouth' },
-  { id: 8, slug: 'chelsea', name: 'Chelsea' },
-  { id: 31, slug: 'crystal-palace', name: 'Crystal Palace' },
-  { id: 11, slug: 'everton', name: 'Everton' },
-  { id: 54, slug: 'fulham', name: 'Fulham' },
-  { id: 40, slug: 'ipswich', name: 'Ipswich' },
-  { id: 13, slug: 'leicester', name: 'Leicester' },
-  { id: 14, slug: 'liverpool', name: 'Liverpool' },
-  { id: 43, slug: 'manchester-city', name: 'Man City' },
-  { id: 1, slug: 'manchester-united', name: 'Man Utd' },
-  { id: 4, slug: 'newcastle', name: 'Newcastle' },
-  { id: 17, slug: 'nottingham-forest', name: 'Forest' },
-  { id: 20, slug: 'southampton', name: 'Southampton' },
-  { id: 6, slug: 'tottenham', name: 'Spurs' },
-  { id: 21, slug: 'west-ham', name: 'West Ham' },
-  { id: 39, slug: 'wolverhampton', name: 'Wolves' },
+  { id: 3, slug: 'arsenal', name: 'Arsenal', shortName: 'ARS' },
+  { id: 7, slug: 'aston-villa', name: 'Aston Villa', shortName: 'AVL' },
+  { id: 94, slug: 'brentford', name: 'Brentford', shortName: 'BRE' },
+  { id: 36, slug: 'brighton', name: 'Brighton', shortName: 'BHA' },
+  { id: 91, slug: 'bournemouth', name: 'Bournemouth', shortName: 'BOU' },
+  { id: 8, slug: 'chelsea', name: 'Chelsea', shortName: 'CHE' },
+  { id: 31, slug: 'crystal-palace', name: 'Crystal Palace', shortName: 'CRY' },
+  { id: 11, slug: 'everton', name: 'Everton', shortName: 'EVE' },
+  { id: 54, slug: 'fulham', name: 'Fulham', shortName: 'FUL' },
+  { id: 40, slug: 'ipswich', name: 'Ipswich', shortName: 'IPS' },
+  { id: 13, slug: 'leicester', name: 'Leicester', shortName: 'LEI' },
+  { id: 14, slug: 'liverpool', name: 'Liverpool', shortName: 'LIV' },
+  { id: 43, slug: 'manchester-city', name: 'Man City', shortName: 'MCI' },
+  { id: 1, slug: 'manchester-united', name: 'Man Utd', shortName: 'MUN' },
+  { id: 4, slug: 'newcastle', name: 'Newcastle', shortName: 'NEW' },
+  { id: 17, slug: 'nottingham-forest', name: 'Forest', shortName: 'NFO' },
+  { id: 20, slug: 'southampton', name: 'Southampton', shortName: 'SOU' },
+  { id: 6, slug: 'tottenham', name: 'Spurs', shortName: 'TOT' },
+  { id: 21, slug: 'west-ham', name: 'West Ham', shortName: 'WHU' },
+  { id: 39, slug: 'wolverhampton', name: 'Wolves', shortName: 'WOL' },
 ]
 
 const clubMap = Object.fromEntries(CLUBS.map(c => [c.slug, c]))
@@ -50,9 +51,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
     setMobileOpen(false)
   }, [selectedClub, router])
 
-  const handleAllSelect = useCallback(() => {
+  const handleClear = useCallback(() => {
     router.push('/')
-    setMobileOpen(false)
   }, [router])
 
   const selectedClubData = selectedClub ? clubMap[selectedClub] : null
@@ -85,7 +85,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
           Filter By
         </div>
 
-        {/* Badge Grid */}
+        {/* Badge Grid - 10 per row, 2 rows */}
         <div
           style={{
             display: 'grid',
@@ -93,28 +93,84 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
             gap: '12px 10px',
             alignItems: 'center',
             justifyItems: 'center',
+            marginBottom: selectedClub ? '16px' : '0',
           }}
         >
-          {/* All Button */}
-          <DesktopBadge
-            label="All"
-            isSelected={isAllActive}
-            hasOtherSelected={!!selectedClub}
-            onClick={handleAllSelect}
-            isAllButton
-          />
+          {CLUBS.map((club) => {
+            const isSelected = selectedClub === club.slug
+            const hasOtherSelected = !!selectedClub && selectedClub !== club.slug
+            const opacity = isSelected ? 1 : hasOtherSelected ? 0.4 : 0.7
 
-          {/* Club Badges */}
-          {CLUBS.map((club) => (
-            <DesktopBadge
-              key={club.slug}
-              club={club}
-              isSelected={selectedClub === club.slug}
-              hasOtherSelected={!!selectedClub && selectedClub !== club.slug}
-              onClick={() => handleClubSelect(club.slug)}
-            />
-          ))}
+            return (
+              <button
+                key={club.slug}
+                onClick={() => handleClubSelect(club.slug)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  opacity: opacity,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  border: isSelected ? '2px solid #C4A23E' : '2px solid transparent',
+                  backgroundColor: 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.opacity = '1'
+                  el.style.transform = 'scale(1.15)'
+                  el.style.boxShadow = '0 0 12px rgba(196,162,62,0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.transform = 'scale(1)'
+                  el.style.boxShadow = 'none'
+                  el.style.opacity = opacity.toString()
+                }}
+                title={club.name}
+              >
+                <Image
+                  src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
+                  alt={club.name}
+                  width={36}
+                  height={36}
+                  unoptimized
+                  className="w-full h-full object-contain"
+                />
+              </button>
+            )
+          })}
         </div>
+
+        {/* Clear button - shown when filtered */}
+        {selectedClub && (
+          <div
+            style={{
+              textAlign: 'center',
+              animation: 'fadeIn 0.3s ease',
+            }}
+          >
+            <button
+              onClick={handleClear}
+              style={{
+                color: '#C4A23E',
+                fontSize: '12px',
+                cursor: 'pointer',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                fontWeight: 500,
+              }}
+              className="hover:opacity-80 transition-opacity"
+            >
+              ✕ Clear
+            </button>
+          </div>
+        )}
       </div>
 
       {/* MOBILE VERSION */}
@@ -174,7 +230,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
               animation: 'scaleDown 0.25s ease-out',
               transformOrigin: 'top',
               marginBottom: '16px',
-              padding: '12px 16px',
+              padding: '16px',
             }}
           >
             <style>{`
@@ -188,23 +244,17 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                   opacity: 1;
                 }
               }
+              @keyframes fadeIn {
+                from {
+                  opacity: 0;
+                }
+                to {
+                  opacity: 1;
+                }
+              }
             `}</style>
 
-            {/* All option */}
-            <button
-              onClick={handleAllSelect}
-              className="w-full text-center py-2 rounded-lg mb-3 transition-colors"
-              style={{
-                color: isAllActive ? '#C4A23E' : 'rgba(255,255,255,0.7)',
-                fontSize: '14px',
-                fontWeight: 600,
-                backgroundColor: isAllActive ? 'rgba(196,162,62,0.1)' : 'transparent',
-              }}
-            >
-              All clubs
-            </button>
-
-            {/* Badge Grid - 5 per row */}
+            {/* Badge Grid - 5 per row, 4 rows */}
             <div
               style={{
                 display: 'grid',
@@ -212,151 +262,86 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                 gap: '12px',
               }}
             >
-              {CLUBS.map((club) => (
-                <MobileBadge
-                  key={club.slug}
-                  club={club}
-                  isSelected={selectedClub === club.slug}
-                  hasOtherSelected={!!selectedClub && selectedClub !== club.slug}
-                  onClick={() => handleClubSelect(club.slug)}
-                />
-              ))}
+              {CLUBS.map((club) => {
+                const isSelected = selectedClub === club.slug
+                const hasOtherSelected = !!selectedClub && selectedClub !== club.slug
+                const opacity = isSelected ? 1 : hasOtherSelected ? 0.4 : 0.7
+
+                return (
+                  <button
+                    key={club.slug}
+                    onClick={() => handleClubSelect(club.slug)}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      opacity: opacity,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      border: isSelected ? '2px solid #C4A23E' : '2px solid transparent',
+                      backgroundColor: 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto',
+                      padding: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.opacity = '1'
+                      el.style.transform = 'scale(1.15)'
+                      el.style.boxShadow = '0 0 12px rgba(196,162,62,0.4)'
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.transform = 'scale(1)'
+                      el.style.boxShadow = 'none'
+                      el.style.opacity = opacity.toString()
+                    }}
+                    title={club.name}
+                  >
+                    <Image
+                      src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
+                      alt={club.name}
+                      width={36}
+                      height={36}
+                      unoptimized
+                      className="w-full h-full object-contain"
+                    />
+                  </button>
+                )
+              })}
             </div>
+
+            {/* Clear button - shown when filtered */}
+            {selectedClub && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  marginTop: '16px',
+                  animation: 'fadeIn 0.3s ease',
+                }}
+              >
+                <button
+                  onClick={handleClear}
+                  style={{
+                    color: '#C4A23E',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontWeight: 500,
+                  }}
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  ✕ Clear
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes badgePulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.2); }
-        }
-
-        .badge-pulse {
-          animation: badgePulse 0.3s ease-out;
-        }
-      `}</style>
     </>
-  )
-}
-
-function DesktopBadge({
-  club,
-  label,
-  isSelected,
-  hasOtherSelected,
-  onClick,
-  isAllButton,
-}: {
-  club?: Club
-  label?: string
-  isSelected: boolean
-  hasOtherSelected: boolean
-  onClick: () => void
-  isAllButton?: boolean
-}) {
-  const opacity = isSelected ? 1 : hasOtherSelected ? 0.4 : 0.7
-
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        opacity: opacity,
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        border: isSelected ? '2px solid #C4A23E' : '2px solid transparent',
-        backgroundColor: isAllButton ? 'rgba(255,255,255,0.1)' : 'transparent',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: isAllButton ? '13px' : undefined,
-        fontWeight: isAllButton ? 'bold' : undefined,
-        color: isAllButton ? '#C4A23E' : undefined,
-      }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.opacity = '1'
-        el.style.transform = 'scale(1.15)'
-        el.style.boxShadow = '0 0 12px rgba(196,162,62,0.4)'
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.transform = 'scale(1)'
-        el.style.boxShadow = 'none'
-        el.style.opacity = opacity.toString()
-      }}
-      title={club?.name || 'All clubs'}
-    >
-      {isAllButton ? (
-        label
-      ) : club ? (
-        <Image
-          src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
-          alt={club.name}
-          width={36}
-          height={36}
-          unoptimized
-          className="w-full h-full object-contain"
-        />
-      ) : null}
-    </button>
-  )
-}
-
-function MobileBadge({
-  club,
-  isSelected,
-  hasOtherSelected,
-  onClick,
-}: {
-  club: Club
-  isSelected: boolean
-  hasOtherSelected: boolean
-  onClick: () => void
-}) {
-  const opacity = isSelected ? 1 : hasOtherSelected ? 0.4 : 0.7
-
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        opacity: opacity,
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        border: isSelected ? '2px solid #C4A23E' : '2px solid transparent',
-        backgroundColor: 'transparent',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.opacity = '1'
-        el.style.transform = 'scale(1.15)'
-        el.style.boxShadow = '0 0 12px rgba(196,162,62,0.4)'
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.transform = 'scale(1)'
-        el.style.boxShadow = 'none'
-        el.style.opacity = opacity.toString()
-      }}
-      title={club.name}
-    >
-      <Image
-        src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
-        alt={club.name}
-        width={36}
-        height={36}
-        unoptimized
-        className="w-full h-full object-contain"
-      />
-    </button>
   )
 }
