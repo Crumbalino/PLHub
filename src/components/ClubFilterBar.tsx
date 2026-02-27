@@ -80,7 +80,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(10, 1fr)',
-          gap: '10px 8px',
+          gap: '12px 10px',
           alignItems: 'center',
           justifyItems: 'center',
         }}
