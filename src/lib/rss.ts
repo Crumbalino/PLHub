@@ -80,10 +80,6 @@ const FEEDS = [
     url: 'https://www.theguardian.com/football/rss',
   },
   {
-    name: 'talkSPORT',
-    url: 'https://talksport.com/feed/',
-  },
-  {
     name: 'Goal.com',
     url: 'https://www.goal.com/feeds/en/news',
   },
