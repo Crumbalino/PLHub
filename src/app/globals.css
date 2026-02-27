@@ -22,7 +22,7 @@ article[id^="post-"] {
 }
 
 body {
-  background: radial-gradient(ellipse at 50% 0%, rgba(10, 110, 110, 0.15) 0%, var(--background) 60%) !important;
+  background: radial-gradient(ellipse at 50% 30%, #0F2A2B 0%, #0B1F21 40%, #091719 100%) !important;
   color: var(--foreground);
   letter-spacing: 0.01em;
   line-height: 1.65;
