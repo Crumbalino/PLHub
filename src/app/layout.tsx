@@ -93,21 +93,24 @@ export default function RootLayout({
         <JsonLd data={websiteSchema} />
       </head>
       <body className={`${atkinson.className} ${lexend.variable} bg-[#0B1F21] text-white antialiased`} style={{ fontSize: '18px', lineHeight: '1.65', letterSpacing: '0.01em' }}>
-        {gaMeasurementId && (
-          <GoogleAnalytics measurementId={gaMeasurementId} />
-        )}
-        <Navbar />
-        <MatchTicker />
-        <main>{children}</main>
-        <BackToTopButton />
-        <footer className="mt-16 border-t border-white/5 px-4 py-10 text-center">
-          <p className="text-sm text-white/40">
-            PLHub — Premier League news from Reddit, BBC Sport, YouTube and more.
-          </p>
-          <p className="text-xs text-white/20 mt-2">
-            Not affiliated with the Premier League or its clubs.
-          </p>
-        </footer>
+        {/* Content wrapper with z-index to sit above background gradient */}
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          {gaMeasurementId && (
+            <GoogleAnalytics measurementId={gaMeasurementId} />
+          )}
+          <Navbar />
+          <MatchTicker />
+          <main>{children}</main>
+          <BackToTopButton />
+          <footer className="mt-16 border-t border-white/5 px-4 py-10 text-center">
+            <p className="text-sm text-white/40">
+              PLHub — Premier League news from Reddit, BBC Sport, YouTube and more.
+            </p>
+            <p className="text-xs text-white/20 mt-2">
+              Not affiliated with the Premier League or its clubs.
+            </p>
+          </footer>
+        </div>
 
         {/* Google Analytics GA4 */}
         <Script
