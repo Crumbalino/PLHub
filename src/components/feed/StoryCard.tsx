@@ -99,8 +99,6 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
   const [summaryExpanded, setSummaryExpanded] = useState(false)
   const [spPulsing, setSpPulsing] = useState(false)
   const [borderPulsing, setBorderPulsing] = useState(false)
-  const [hasTypedOnce, setHasTypedOnce] = useState(false)
-  const [typedText, setTypedText] = useState('')
   const [animatedScore, setAnimatedScore] = useState(0)
   const [hasAnimatedScore, setHasAnimatedScore] = useState(false)
   const cardRef = useRef<HTMLArticleElement>(null)
@@ -111,25 +109,6 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
   const staggerDelay = index < 10 ? `${index * 60}ms` : '0ms'
   const hasSummary = !!post.summary
   const paragraphs = hasSummary ? splitSummaryIntoParagraphs(post.summary) : []
-  const firstSentence = paragraphs[0] || ''
-
-  // Typing effect
-  useEffect(() => {
-    if (!summaryExpanded || !hasSummary || hasTypedOnce || typedText === firstSentence) return
-
-    let i = 0
-    const interval = setInterval(() => {
-      if (i <= firstSentence.length) {
-        setTypedText(firstSentence.substring(0, i))
-        i++
-      } else {
-        clearInterval(interval)
-        setHasTypedOnce(true)
-      }
-    }, 30)
-
-    return () => clearInterval(interval)
-  }, [summaryExpanded, hasSummary, hasTypedOnce, firstSentence, typedText])
 
   // Animated score count-up with IntersectionObserver
   useEffect(() => {
@@ -167,11 +146,6 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
     setSpPulsing(true)
     setBorderPulsing(true)
     setSummaryExpanded(!summaryExpanded)
-    if (summaryExpanded) {
-      setTypedText('')
-    } else {
-      setTypedText('')
-    }
     setTimeout(() => setSpPulsing(false), 300)
     setTimeout(() => setBorderPulsing(false), 500)
   }
@@ -303,37 +277,26 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
             </span>
           </div>
 
-          {/* Summary container */}
+          {/* Summary container — smooth expand/collapse */}
           <div
-            className="overflow-hidden transition-all duration-300 ease-out"
+            className="overflow-hidden transition-all ease-out"
             style={{
               maxHeight: summaryExpanded ? '1000px' : '0px',
               opacity: summaryExpanded ? 1 : 0,
+              transitionDuration: summaryExpanded ? '0.35s' : '0.25s',
+              transitionTimingFunction: summaryExpanded ? 'ease-out' : 'ease-in',
             }}
           >
-            <div className="mt-2 pl-4 border-l-2 border-[#00555A] py-3">
-              {/* First sentence with typing effect */}
-              <div className="min-h-[1.5em]">
-                <p className="text-base text-gray-200 leading-[1.8]">
-                  {hasTypedOnce ? firstSentence : typedText}
+            <div className="mt-2 pl-4 border-l-2 border-[#00555A] py-3 space-y-4">
+              {/* Summary paragraphs */}
+              {paragraphs.map((para, idx) => (
+                <p key={idx} className="text-base text-gray-200 leading-[1.8]">
+                  {para}
                 </p>
-              </div>
-
-              {/* Rest of paragraphs with fade-in */}
-              <div
-                className={`space-y-4 transition-opacity duration-300 ${
-                  hasTypedOnce ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                {paragraphs.slice(1).map((para, idx) => (
-                  <p key={idx} className="text-base text-gray-200 leading-[1.8]">
-                    {para}
-                  </p>
-                ))}
-              </div>
+              ))}
 
               {/* CTA Link inside summary */}
-              <div className="mt-4 mb-4">
+              <div className="mt-4 mb-2">
                 <a
                   href={post.url}
                   target="_blank"
