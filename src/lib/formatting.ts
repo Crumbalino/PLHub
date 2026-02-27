@@ -84,6 +84,22 @@ export function getReadTimeLabel(summary: string | null): string {
 }
 
 /**
+ * Extract the first 2-3 sentences from the summary for preview.
+ */
+export function getPreviewSummary(summary: string | null): string | null {
+  if (!summary) return null
+  const cleaned = stripMarkdown(decodeHtmlEntities(summary))
+  const sentences = cleaned.split(/(?<=\.)\s+(?=[A-Z])/)
+  if (sentences.length === 0) return null
+  // Take first 2-3 sentences, up to about 200 characters
+  let preview = sentences.slice(0, 3).join(' ')
+  if (preview.length > 200) {
+    preview = sentences.slice(0, 2).join(' ')
+  }
+  return preview
+}
+
+/**
  * Extract a clean preview blurb from post content.
  * Used as the 2-line teaser before expansion.
  */
