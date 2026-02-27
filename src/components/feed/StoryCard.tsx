@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import type { FeedPost } from '@/lib/types'
-import { getPreviewSummary } from '@/lib/formatting'
-import PulseIcon from './PulseIcon'
 
 interface StoryCardProps {
   post: FeedPost
@@ -14,92 +12,127 @@ interface StoryCardProps {
 }
 
 /**
- * Get the colored dot for a source
+ * Map source names to domains for favicon lookup
  */
-function getSourceDot(source: string): { color: string; label: string } {
-  const sourceMap: Record<string, { color: string; label: string }> = {
-    'bbc': { color: '#F59E0B', label: 'BBC Sport' },
-    'guardian': { color: '#3B82F6', label: 'The Guardian' },
-    'sky': { color: '#3B82F6', label: 'Sky Sports' },
-    'talksport': { color: '#9CA3AF', label: 'talkSPORT' },
-    'reddit': { color: '#9CA3AF', label: 'Reddit' },
-    'youtube': { color: '#EF4444', label: 'YouTube' },
+function getSourceDomain(source: string): string {
+  const domainMap: Record<string, string> = {
+    'bbc': 'bbc.co.uk',
+    'guardian': 'theguardian.com',
+    'sky': 'skysports.com',
+    'athletic': 'theathletic.com',
+    'espn': 'espn.com',
+    'talksport': 'talksport.com',
+    'reddit': 'reddit.com',
+    'goal': 'goal.com',
+    '90min': '90min.com',
+    'youtube': 'youtube.com',
   }
 
-  // Detect source from sourceInfo.name
-  const lowerName = source.toLowerCase()
-  for (const [key, value] of Object.entries(sourceMap)) {
-    if (lowerName.includes(key)) return value
+  const lowerSource = source.toLowerCase()
+  for (const [key, domain] of Object.entries(domainMap)) {
+    if (lowerSource.includes(key)) return domain
   }
-  return { color: '#9CA3AF', label: source }
+  return source
 }
 
 /**
- * Check if a source is trusted
+ * Get the source name for display
  */
-function isTrustedSource(source: string): boolean {
-  const lowerName = source.toLowerCase()
-  return lowerName.includes('bbc') || lowerName.includes('sky') || lowerName.includes('guardian')
+function getSourceName(source: string): string {
+  const nameMap: Record<string, string> = {
+    'bbc': 'BBC Sport',
+    'guardian': 'The Guardian',
+    'sky': 'Sky Sports',
+    'athletic': 'The Athletic',
+    'espn': 'ESPN',
+    'talksport': 'talkSPORT',
+    'reddit': 'Reddit',
+    'goal': 'Goal.com',
+    '90min': '90min',
+    'youtube': 'YouTube',
+  }
+
+  const lowerSource = source.toLowerCase()
+  for (const [key, name] of Object.entries(nameMap)) {
+    if (lowerSource.includes(key)) return name
+  }
+  return source
 }
 
 export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 }: StoryCardProps) {
   const [imgError, setImgError] = useState(false)
+  const [summaryExpanded, setSummaryExpanded] = useState(false)
+  const [spPulsing, setSpPulsing] = useState(false)
+
   const hasImage = !!post.imageUrl && !imgError
-  const previewSummary = getPreviewSummary(post.summary)
-  const sourceInfo = getSourceDot(post.sourceInfo.name)
-  const isTrusted = isTrustedSource(post.sourceInfo.name)
+  const sourceName = getSourceName(post.sourceInfo.name)
+  const sourceDomain = getSourceDomain(post.sourceInfo.name)
   const staggerDelay = index < 10 ? `${index * 60}ms` : '0ms'
+  const hasSummary = !!post.summary
+
+  const handleSummaryToggle = () => {
+    setSpPulsing(true)
+    setTimeout(() => setSpPulsing(false), 300)
+    setSummaryExpanded(!summaryExpanded)
+  }
 
   return (
     <article
       id={`post-${post.id}`}
-      className="story-card bg-[#1A2A2B] rounded-xl overflow-hidden border border-white/5 p-5 animate-card-enter"
+      className="story-card bg-[#1A2A2B] rounded-xl overflow-hidden border border-white/5 p-4 sm:p-5 transition-all duration-200 ease-out hover:border-white/10 hover:shadow-lg hover:shadow-black/20 animate-card-enter"
       style={{ animationDelay: staggerDelay }}
     >
-      {/* HEADER ROW: Source, Club, Timestamp */}
+      {/* ROW 1: SOURCE + CLUB + TIMESTAMP */}
       <div className="flex items-center justify-between mb-4 gap-3">
-        {/* Source with colored dot */}
+        {/* Left side: Favicon, source name, club badge, club name */}
         <div className="flex items-center gap-2 min-w-0">
-          <div
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ backgroundColor: sourceInfo.color }}
+          {/* Favicon */}
+          <img
+            src={`https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=32`}
+            alt={sourceName}
+            className="w-5 h-5 rounded-sm flex-shrink-0"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+            }}
           />
-          <span
-            className="text-xs font-semibold whitespace-nowrap"
-            style={{ color: sourceInfo.color }}
-          >
-            {sourceInfo.label}
+
+          {/* Source name */}
+          <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
+            {sourceName}
           </span>
+
+          {/* Separator dot */}
+          <span className="text-gray-600 mx-2">·</span>
+
+          {/* Club badge + short name */}
+          {post.clubs.length > 0 && (
+            <>
+              <div className="w-5 h-5 flex-shrink-0">
+                <Image
+                  src={post.clubs[0].badgeUrl}
+                  alt={post.clubs[0].shortName}
+                  width={20}
+                  height={20}
+                  unoptimized
+                  className="w-full h-full object-contain rounded-full"
+                />
+              </div>
+              <span className="text-xs text-gray-400">
+                {post.clubs[0].shortName}
+              </span>
+            </>
+          )}
         </div>
 
-        {/* Club badge + short name (middle) */}
-        {post.clubs.length > 0 && (
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <div className="w-5 h-5 flex-shrink-0">
-              <Image
-                src={post.clubs[0].badgeUrl}
-                alt={post.clubs[0].shortName}
-                width={20}
-                height={20}
-                unoptimized
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <span className="text-xs text-white/80 font-medium whitespace-nowrap">
-              {post.clubs[0].shortName}
-            </span>
-          </div>
-        )}
-
-        {/* Timestamp (right) */}
-        <span className="text-xs text-white/60 whitespace-nowrap ml-auto">
+        {/* Right side: Timestamp */}
+        <span className="text-xs text-gray-500 whitespace-nowrap ml-auto">
           {post.timeDisplay}
         </span>
       </div>
 
       {/* IMAGE */}
       {hasImage && (
-        <div className="relative w-[calc(100%+2.5rem)] -mx-5 mb-4 h-[160px] sm:h-[200px] overflow-hidden rounded-lg">
+        <div className="relative w-[calc(100%+2rem)] -mx-4 sm:-mx-5 sm:w-[calc(100%+2.5rem)] mb-4 h-[160px] sm:h-[200px] overflow-hidden rounded-lg">
           <img
             src={post.imageUrl!}
             alt=""
@@ -120,76 +153,91 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
         </div>
       )}
 
-      {/* HEADLINE — Dominant element */}
-      <h3 className="text-lg sm:text-xl font-semibold text-white leading-tight mb-3 line-clamp-3">
+      {/* ROW 2: HEADLINE */}
+      <h3 className="text-xl font-semibold text-white leading-tight mt-3 line-clamp-3">
         {post.title}
       </h3>
 
-      {/* AI SUMMARY — Visible by default */}
-      {previewSummary && (
-        <div className="border-l-2 border-l-[#00555A] pl-3 py-2 mb-4 text-sm text-gray-200 leading-relaxed line-clamp-3">
-          {previewSummary}
-        </div>
+      {/* ROW 3: SECRET PUNDIT REVEAL */}
+      {hasSummary && (
+        <>
+          {/* Trigger button */}
+          <button
+            onClick={handleSummaryToggle}
+            className="w-full mt-3 flex items-center gap-2 rounded-lg py-2.5 px-3 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200 ease-out cursor-pointer"
+          >
+            {/* SP Circle */}
+            <div
+              className={`flex-shrink-0 w-7 h-7 rounded-full bg-[#00555A] text-white text-xs font-bold flex items-center justify-center transition-all duration-300 ${
+                spPulsing ? 'animate-badge-pulse' : ''
+              }`}
+              style={
+                summaryExpanded
+                  ? { boxShadow: '0 0 8px rgba(196,162,62,0.3)' }
+                  : {}
+              }
+            >
+              SP
+            </div>
+
+            {/* Label */}
+            <span className="text-sm text-gray-300 font-medium flex-1 text-left">
+              The Pundit's Take
+            </span>
+
+            {/* Chevron */}
+            <span
+              className="text-gray-500 text-sm transition-transform duration-300 flex-shrink-0"
+              style={{
+                transform: summaryExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+              }}
+            >
+              ▸
+            </span>
+          </button>
+
+          {/* Summary container */}
+          <div
+            className="overflow-hidden transition-all duration-300 ease-out"
+            style={{
+              maxHeight: summaryExpanded ? '500px' : '0px',
+              opacity: summaryExpanded ? 1 : 0,
+            }}
+          >
+            <div className="mt-2 pl-4 border-l-2 border-[#00555A] py-3">
+              <p className="text-base text-gray-200 leading-relaxed">
+                {post.summary}
+              </p>
+            </div>
+          </div>
+        </>
       )}
 
-      {/* CTA LINK */}
-      <a
-        href={post.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
-        className="inline-block text-sm font-medium text-[#C4A23E] hover:underline transition-colors mb-3"
-      >
-        {post.source === 'youtube'
-          ? 'Watch video →'
-          : post.source === 'reddit'
-            ? 'Read thread →'
-            : 'Read article →'}
-      </a>
+      {/* ROW 4: FOOTER */}
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
+        {/* Left side: CTA link */}
+        <a
+          href={post.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="text-sm font-medium text-[#C4A23E] hover:underline transition-colors"
+        >
+          {post.source === 'youtube'
+            ? 'Watch video →'
+            : post.source === 'reddit'
+              ? 'Read thread →'
+              : 'Read article →'}
+        </a>
 
-      {/* SOURCE CREDIBILITY BADGE */}
-      <div className="mb-3">
-        {isTrusted ? (
-          <span className="text-xs font-semibold text-[#C4A23E]">Trusted Source</span>
-        ) : (
-          <span className="text-xs text-white/40">Community</span>
+        {/* Right side: Index score badge */}
+        {post.indexScore && (
+          <div className="bg-[#00777A] text-white text-sm font-medium rounded-md px-2.5 py-1 flex items-center gap-1.5 tabular-nums flex-shrink-0">
+            <span className="text-xs">✦</span>
+            <span>{post.indexScore}</span>
+          </div>
         )}
       </div>
-
-      {/* PLHub Index Score */}
-      {post.indexScore && (
-        <div className="flex items-center gap-2 mb-4">
-          <div className="bg-[#00777A] text-white px-2 py-0.5 rounded-md text-sm font-medium flex items-center gap-1.5 tabular-nums">
-            <PulseIcon size={12} color="white" />
-            <span>Index {post.indexScore}</span>
-          </div>
-        </div>
-      )}
-
-      {/* FOOTER — All clubs */}
-      {post.clubs.length > 0 && (
-        <div className="flex items-center gap-1.5 pt-3 border-t border-white/5">
-          {post.clubs.map((club, idx) => (
-            <div key={club.slug} className="flex items-center gap-1">
-              {idx === 1 && post.isMatchReport && (
-                <span className="text-[10px] text-white/30 mx-0.5">vs</span>
-              )}
-              {idx > 0 && !post.isMatchReport && (
-                <span className="text-[10px] text-white/20 mx-0.5">·</span>
-              )}
-              <Image
-                src={club.badgeUrl}
-                alt={club.shortName}
-                width={16}
-                height={16}
-                unoptimized
-                className="w-4 h-4 object-contain"
-              />
-              <span className="text-xs text-white/70">{club.shortName}</span>
-            </div>
-          ))}
-        </div>
-      )}
     </article>
   )
 }
