@@ -23,7 +23,7 @@ async function fetchSubreddit(subreddit: string): Promise<FetchedRedditPost[]> {
     `${REDDIT_BASE}/r/${subreddit}/hot.json?limit=25`,
     {
       headers: {
-        'User-Agent': 'PLHub/1.0 (news aggregator)',
+        'User-Agent': 'PLHub/1.0 (Premier League news aggregator)',
       },
       next: { revalidate: 0 },
     }
