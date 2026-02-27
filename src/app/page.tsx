@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import ClubSelectorBar from '@/components/ClubSelectorBar'
+import ClubFilterBar from '@/components/ClubFilterBar'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
 import TrendingStrip from '@/components/trending/TrendingStrip'
@@ -27,11 +27,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   const clubSlug = searchParams.club || null
 
   return (
-    <>
-      {/* Sticky Club Selector Bar */}
-      <ClubSelectorBar currentSlug={clubSlug ?? undefined} />
-
-      <div className="min-h-screen bg-[#0B1F21]">
+    <div className="min-h-screen bg-[#0B1F21]">
         <div className="max-w-[1400px] mx-auto px-4 pt-4">
 
         {/* ============================================================
@@ -50,6 +46,9 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           {/* CENTRE — Feed */}
           <main className="min-w-0">
+            {/* Club Filter Bar */}
+            <ClubFilterBar currentClub={clubSlug ?? undefined} />
+
             {/* Trending — only on unfiltered home */}
             {!clubSlug && <TrendingStrip />}
 
@@ -113,6 +112,6 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
