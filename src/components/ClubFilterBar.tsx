@@ -89,8 +89,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
         <button
           onClick={handleAllClick}
           style={{
-            width: '34px',
-            height: '34px',
+            width: '40px',
+            height: '40px',
             borderRadius: '50%',
             backgroundColor: 'rgba(255,255,255,0.1)',
             border: isAllActive ? '2px solid #C4A23E' : '2px solid transparent',
@@ -100,7 +100,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: 'bold',
             color: '#C4A23E',
           }}
@@ -129,8 +129,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
               key={club.slug}
               onClick={() => handleClubClick(club.slug)}
               style={{
-                width: '34px',
-                height: '34px',
+                width: '40px',
+                height: '40px',
                 borderRadius: '50%',
                 opacity: baseOpacity,
                 cursor: 'pointer',
@@ -157,8 +157,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
               <Image
                 src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
                 alt={club.name}
-                width={30}
-                height={30}
+                width={36}
+                height={36}
                 unoptimized
                 className="w-full h-full object-contain"
               />
