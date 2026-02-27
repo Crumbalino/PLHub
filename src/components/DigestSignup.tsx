@@ -54,7 +54,7 @@ export default function DigestSignup() {
         <span className="text-sm font-bold text-white">Breakfast Digest</span>
       </div>
 
-      <p className="text-sm text-white/60 mb-4 leading-relaxed">
+      <p className="text-sm text-gray-300 mb-4 leading-relaxed">
         The top Premier League stories in your inbox every morning at 7am.
         Free, no spam, unsubscribe anytime.
       </p>

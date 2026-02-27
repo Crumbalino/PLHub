@@ -21,7 +21,7 @@ export default function SortTabs({ current, onChange }: SortTabsProps) {
           key={key}
           onClick={() => onChange(key)}
           className={`pb-3 text-sm font-medium transition-all duration-200 relative ${
-            current === key ? 'text-white' : 'text-white/50 hover:text-white/80'
+            current === key ? 'text-white' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
           {label}

@@ -208,7 +208,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
               </>
             )}
             <span
-              className="text-white/60 ml-auto transition-transform"
+              className="text-gray-400 ml-auto transition-transform"
               style={{
                 transform: mobileOpen ? 'rotate(180deg)' : 'rotate(0deg)',
               }}

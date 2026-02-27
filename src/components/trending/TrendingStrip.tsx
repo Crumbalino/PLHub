@@ -30,7 +30,7 @@ export default function TrendingStrip() {
         {posts.map((post, idx) => {
           const isTop = idx === 0
           const scoreOpacity =
-            idx === 0 ? 'text-white' : idx <= 2 ? 'text-white/80' : 'text-white/55'
+            idx === 0 ? 'text-white' : idx <= 2 ? 'text-gray-200' : 'text-gray-300'
 
           return (
             <a

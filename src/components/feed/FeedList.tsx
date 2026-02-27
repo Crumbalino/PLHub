@@ -50,7 +50,7 @@ export default function FeedList({ club = null }: FeedListProps) {
         <h2 className="text-xl font-bold text-white">
           {heading.title}
         </h2>
-        <p className="text-sm text-white/60 mt-1">{heading.sub}</p>
+        <p className="text-sm text-gray-400 mt-1">{heading.sub}</p>
       </div>
 
       {/* Loading skeleton — shimmer effect */}
@@ -99,7 +99,7 @@ export default function FeedList({ club = null }: FeedListProps) {
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 py-16 text-center animate-fadeIn">
           <span className="text-4xl">⚽</span>
           <h3 className="mt-4 text-base font-semibold text-white">No stories yet</h3>
-          <p className="mt-2 max-w-sm text-sm text-white/60">
+          <p className="mt-2 max-w-sm text-sm text-gray-400">
             News will appear here once the cron jobs have fetched the latest posts.
           </p>
         </div>
@@ -108,7 +108,7 @@ export default function FeedList({ club = null }: FeedListProps) {
       {/* Load More */}
       {!isLoading && hasMore && posts.length > 0 && (
         <div className="text-center mt-10 mb-4">
-          <p className="text-xs text-white/30 mb-3">
+          <p className="text-xs text-gray-400 mb-3">
             Showing {posts.length} stories
           </p>
           <button
