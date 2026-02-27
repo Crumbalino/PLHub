@@ -1,5 +1,6 @@
 import { RedditPost } from '@/types'
 import { CLUBS, CLUBS_BY_SUBREDDIT } from './clubs'
+import { isGamblingContent } from './content-filter'
 
 const REDDIT_BASE = 'https://www.reddit.com'
 const PL_SUBREDDIT = 'PremierLeague'
@@ -38,7 +39,7 @@ async function fetchSubreddit(subreddit: string): Promise<FetchedRedditPost[]> {
   const posts: RedditPost[] = data?.data?.children ?? []
 
   return posts
-    .filter((p) => !p.data.stickied)
+    .filter((p) => !p.data.stickied && !isGamblingContent(p.data.title, p.data.selftext))
     .map((p) => {
       const sub = p.data.subreddit.toLowerCase()
       const clubSlug = CLUBS_BY_SUBREDDIT[sub] ?? null

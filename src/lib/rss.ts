@@ -1,4 +1,5 @@
 import Parser from 'rss-parser'
+import { isGamblingContent } from './content-filter'
 
 const NON_PL_KEYWORDS = [
   'NFL', 'NBA', 'MLB', 'NHL', 'NASCAR', 'Formula 1', 'F1',
@@ -156,6 +157,11 @@ async function fetchFeed(name: string, url: string): Promise<FetchedRssPost[]> {
       .filter((item) => {
         const title = item.title ?? ''
         const description = item.contentSnippet ?? item.content ?? ''
+
+        // Filter out gambling/betting content
+        if (isGamblingContent(title, description)) return false
+
+        // Filter for PL content
         return isPremierLeagueContent(title, description)
       })
       .map((item) => {

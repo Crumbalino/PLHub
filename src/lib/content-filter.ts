@@ -82,6 +82,37 @@ export function filterPLContent(posts: Post[]): Post[] {
 }
 
 /**
+ * Dedicated gambling/betting content filter
+ * Checks for casino, sports betting, odds boosting, and affiliate promotion content
+ */
+export const GAMBLING_KEYWORDS = [
+  'bet £', 'bet $',
+  'free bet', 'free bets', 'freebet',
+  'betting odds', 'betting tips', 'betting offer',
+  'accumulator', 'acca',
+  'odds boost', 'price boost', 'enhanced odds',
+  'get £', 'get $', 'get free',
+  'welcome offer', 'sign up offer', 'sign-up offer',
+  'bet builder', 'betbuilder',
+  'paddy power', 'betfair', 'bet365', 'william hill',
+  'ladbrokes', 'coral', 'skybet', 'sky bet',
+  'betway', 'unibet', '888sport', 'betfred',
+  'tote', 'shot on target on tote',
+  'enhanced odds', 'money back',
+  'casino', 'slots', 'slot game',
+  'gamble', 'gambling', 'gambler',
+  'anytime scorer', 'first goalscorer',
+  '2/1 to get a shot',
+  'betting affiliates', 'smarkets',
+  'super boost',
+]
+
+export function isGamblingContent(title: string, content?: string): boolean {
+  const text = `${title} ${content || ''}`.toLowerCase()
+  return GAMBLING_KEYWORDS.some(keyword => text.includes(keyword.toLowerCase()))
+}
+
+/**
  * Deduplicate posts by URL
  */
 export function deduplicatePosts(posts: Post[]): Post[] {
