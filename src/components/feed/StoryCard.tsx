@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import type { FeedPost } from '@/lib/types'
 
@@ -59,28 +59,138 @@ function getSourceName(source: string): string {
   return source
 }
 
+/**
+ * Split summary into paragraphs on ". " followed by capital letter
+ */
+function splitSummaryIntoParagraphs(summary: string): string[] {
+  return summary.split(/\.\s+(?=[A-Z])/).map(p => p.trim() + (p.endsWith('.') ? '' : '.'))
+}
+
+/**
+ * Get index score color coding
+ */
+function getScoreColorClass(score: number): { bg: string; text: string; border: string; glow: string } {
+  if (score >= 70) {
+    return {
+      bg: 'bg-[#C4A23E]/20',
+      text: 'text-[#C4A23E]',
+      border: 'border border-[#C4A23E]/30',
+      glow: 'shadow-lg shadow-[#C4A23E]/20',
+    }
+  }
+  if (score >= 50) {
+    return {
+      bg: 'bg-white/10',
+      text: 'text-white',
+      border: 'border border-white/20',
+      glow: '',
+    }
+  }
+  return {
+    bg: 'bg-white/5',
+    text: 'text-gray-400',
+    border: 'border border-white/5',
+    glow: '',
+  }
+}
+
 export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 }: StoryCardProps) {
   const [imgError, setImgError] = useState(false)
   const [summaryExpanded, setSummaryExpanded] = useState(false)
   const [spPulsing, setSpPulsing] = useState(false)
+  const [borderPulsing, setBorderPulsing] = useState(false)
+  const [hasTypedOnce, setHasTypedOnce] = useState(false)
+  const [typedText, setTypedText] = useState('')
+  const [animatedScore, setAnimatedScore] = useState(0)
+  const [hasAnimatedScore, setHasAnimatedScore] = useState(false)
+  const cardRef = useRef<HTMLArticleElement>(null)
 
   const hasImage = !!post.imageUrl && !imgError
   const sourceName = getSourceName(post.sourceInfo.name)
   const sourceDomain = getSourceDomain(post.sourceInfo.name)
   const staggerDelay = index < 10 ? `${index * 60}ms` : '0ms'
   const hasSummary = !!post.summary
+  const paragraphs = hasSummary ? splitSummaryIntoParagraphs(post.summary) : []
+  const firstSentence = paragraphs[0] || ''
 
-  const handleSummaryToggle = () => {
+  // Typing effect
+  useEffect(() => {
+    if (!summaryExpanded || !hasSummary || hasTypedOnce || typedText === firstSentence) return
+
+    let i = 0
+    const interval = setInterval(() => {
+      if (i <= firstSentence.length) {
+        setTypedText(firstSentence.substring(0, i))
+        i++
+      } else {
+        clearInterval(interval)
+        setHasTypedOnce(true)
+      }
+    }, 30)
+
+    return () => clearInterval(interval)
+  }, [summaryExpanded, hasSummary, hasTypedOnce, firstSentence, typedText])
+
+  // Animated score count-up with IntersectionObserver
+  useEffect(() => {
+    if (!post.indexScore || hasAnimatedScore || !cardRef.current) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasAnimatedScore(true)
+          const target = post.indexScore
+          let current = 0
+          const increment = target / 60 // 60 frames over ~1s
+          const interval = setInterval(() => {
+            current += increment
+            if (current >= target) {
+              setAnimatedScore(target)
+              clearInterval(interval)
+            } else {
+              setAnimatedScore(Math.floor(current))
+            }
+          }, 16) // ~60fps
+
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.5 }
+    )
+
+    observer.observe(cardRef.current)
+    return () => observer.disconnect()
+  }, [post.indexScore, hasAnimatedScore])
+
+  const handleCardClick = () => {
+    if (!hasSummary) return
     setSpPulsing(true)
-    setTimeout(() => setSpPulsing(false), 300)
+    setBorderPulsing(true)
     setSummaryExpanded(!summaryExpanded)
+    if (summaryExpanded) {
+      setTypedText('')
+    } else {
+      setTypedText('')
+    }
+    setTimeout(() => setSpPulsing(false), 300)
+    setTimeout(() => setBorderPulsing(false), 500)
   }
+
+  const scoreColor = getScoreColorClass(post.indexScore || 0)
+  const displayScore = hasAnimatedScore ? animatedScore : post.indexScore || 0
 
   return (
     <article
+      ref={cardRef}
       id={`post-${post.id}`}
-      className="story-card bg-[#1A2A2B] rounded-xl overflow-hidden border border-white/5 p-4 sm:p-5 transition-all duration-200 ease-out hover:border-white/10 hover:shadow-lg hover:shadow-black/20 animate-card-enter"
-      style={{ animationDelay: staggerDelay }}
+      onClick={handleCardClick}
+      className={`story-card bg-[#1A2A2B] rounded-xl overflow-hidden border border-white/5 p-4 sm:p-5 transition-all duration-200 ease-out hover:border-white/10 hover:shadow-lg hover:shadow-black/20 animate-card-enter ${
+        hasSummary ? 'cursor-pointer' : ''
+      } ${borderPulsing ? 'animate-border-pulse' : ''}`}
+      style={{
+        animationDelay: staggerDelay,
+        borderColor: borderPulsing ? 'rgba(196,162,62,0.3)' : undefined,
+      }}
     >
       {/* ROW 1: SOURCE + CLUB + TIMESTAMP */}
       <div className="flex items-center justify-between mb-4 gap-3">
@@ -97,12 +207,12 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
           />
 
           {/* Source name */}
-          <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
+          <span className="text-xs text-gray-300 font-medium whitespace-nowrap">
             {sourceName}
           </span>
 
           {/* Separator dot */}
-          <span className="text-gray-600 mx-2">·</span>
+          <span className="text-gray-400 mx-2">·</span>
 
           {/* Club badge + short name */}
           {post.clubs.length > 0 && (
@@ -117,7 +227,7 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
                   className="w-full h-full object-contain rounded-full"
                 />
               </div>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-300">
                 {post.clubs[0].shortName}
               </span>
             </>
@@ -125,14 +235,14 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
         </div>
 
         {/* Right side: Timestamp */}
-        <span className="text-xs text-gray-500 whitespace-nowrap ml-auto">
+        <span className="text-xs text-gray-400 whitespace-nowrap ml-auto">
           {post.timeDisplay}
         </span>
       </div>
 
       {/* IMAGE */}
       {hasImage && (
-        <div className="relative w-[calc(100%+2rem)] -mx-4 sm:-mx-5 sm:w-[calc(100%+2.5rem)] mb-4 h-[160px] sm:h-[200px] overflow-hidden rounded-lg">
+        <div className="relative w-[calc(100%+2rem)] -mx-4 sm:-mx-5 sm:w-[calc(100%+2.5rem)] mb-4 h-[200px] sm:h-[300px] overflow-hidden rounded-lg">
           <img
             src={post.imageUrl!}
             alt=""
@@ -162,10 +272,7 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
       {hasSummary && (
         <>
           {/* Trigger button */}
-          <button
-            onClick={handleSummaryToggle}
-            className="w-full mt-3 flex items-center gap-2 rounded-lg py-2.5 px-3 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200 ease-out cursor-pointer"
-          >
+          <div className="w-full mt-3 flex items-center gap-2 rounded-lg py-2.5 px-3 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200 ease-out">
             {/* SP Circle */}
             <div
               className={`flex-shrink-0 w-7 h-7 rounded-full bg-[#00555A] text-white text-xs font-bold flex items-center justify-center transition-all duration-300 ${
@@ -181,63 +288,84 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
             </div>
 
             {/* Label */}
-            <span className="text-sm text-gray-300 font-medium flex-1 text-left">
+            <span className="text-sm text-gray-200 font-medium flex-1 text-left">
               The Pundit's Take
             </span>
 
             {/* Chevron */}
             <span
-              className="text-gray-500 text-sm transition-transform duration-300 flex-shrink-0"
+              className="text-gray-300 text-sm transition-transform duration-300 flex-shrink-0"
               style={{
                 transform: summaryExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
               }}
             >
               ▸
             </span>
-          </button>
+          </div>
 
           {/* Summary container */}
           <div
             className="overflow-hidden transition-all duration-300 ease-out"
             style={{
-              maxHeight: summaryExpanded ? '500px' : '0px',
+              maxHeight: summaryExpanded ? '1000px' : '0px',
               opacity: summaryExpanded ? 1 : 0,
             }}
           >
             <div className="mt-2 pl-4 border-l-2 border-[#00555A] py-3">
-              <p className="text-base text-gray-200 leading-relaxed">
-                {post.summary}
-              </p>
+              {/* First sentence with typing effect */}
+              <div className="min-h-[1.5em]">
+                <p className="text-base text-gray-200 leading-[1.8]">
+                  {hasTypedOnce ? firstSentence : typedText}
+                </p>
+              </div>
+
+              {/* Rest of paragraphs with fade-in */}
+              <div
+                className={`space-y-4 transition-opacity duration-300 ${
+                  hasTypedOnce ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                {paragraphs.slice(1).map((para, idx) => (
+                  <p key={idx} className="text-base text-gray-200 leading-[1.8]">
+                    {para}
+                  </p>
+                ))}
+              </div>
+
+              {/* CTA Link inside summary */}
+              <div className="mt-4 mb-4">
+                <a
+                  href={post.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-sm font-medium text-[#C4A23E] hover:underline transition-colors"
+                >
+                  {post.source === 'youtube'
+                    ? 'Watch video →'
+                    : post.source === 'reddit'
+                      ? 'Read thread →'
+                      : 'Read article →'}
+                </a>
+              </div>
             </div>
           </div>
         </>
       )}
 
-      {/* ROW 4: FOOTER */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
-        {/* Left side: CTA link */}
-        <a
-          href={post.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="text-sm font-medium text-[#C4A23E] hover:underline transition-colors"
-        >
-          {post.source === 'youtube'
-            ? 'Watch video →'
-            : post.source === 'reddit'
-              ? 'Read thread →'
-              : 'Read article →'}
-        </a>
-
-        {/* Right side: Index score badge */}
-        {post.indexScore && (
-          <div className="bg-[#00777A] text-white text-sm font-medium rounded-md px-2.5 py-1 flex items-center gap-1.5 tabular-nums flex-shrink-0">
-            <span className="text-xs">✦</span>
-            <span>{post.indexScore}</span>
+      {/* ROW 4: FOOTER — INDEX SCORE */}
+      {post.indexScore && (
+        <div className="flex items-center justify-end mt-4 pt-3 border-t border-white/5">
+          <div
+            className={`${scoreColor.bg} ${scoreColor.text} ${scoreColor.border} text-lg font-bold rounded-lg px-3 py-1.5 flex items-center justify-center flex-col tabular-nums ${scoreColor.glow} transition-all duration-200`}
+          >
+            <span className="text-[9px] uppercase tracking-widest text-gray-400 text-center leading-none mb-0.5">
+              Index
+            </span>
+            <span>{displayScore}</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </article>
   )
 }
