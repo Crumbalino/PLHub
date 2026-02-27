@@ -110,7 +110,6 @@ export default async function HomePage({ searchParams }: PageProps) {
             </div>
           </aside>
         </div>
-        </div>
       </div>
     </div>
   )
