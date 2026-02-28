@@ -2,7 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* ================================
+   PLHub Brand Tokens v2.1
+   Dark mode = default. Light mode via .light on <html>.
+   No grey hex codes. Opacity on base colour only.
+   ================================ */
+
+/* Dark mode (default) */
+:root,
+.dark {
+  --plh-bg: #0D1B2A;
+  --plh-card: #112238;
+  --plh-elevated: #162D45;
+
+  --plh-text-base: 250, 245, 240;
+  --plh-text-100: #FAF5F0;
+  --plh-text-75: rgba(250, 245, 240, 0.75);
+  --plh-text-70: rgba(250, 245, 240, 0.70);
+  --plh-text-50: rgba(250, 245, 240, 0.50);
+  --plh-text-40: rgba(250, 245, 240, 0.40);
+
+  --plh-pink: #E84080;
+  --plh-pink-hover: #D03670;
+  --plh-pink-active: #B82E60;
+  --plh-gold: #D4A843;
+  --plh-teal: #3AAFA9;
+  --plh-ice: #8AACCC;
+  --plh-violet: #C084FC;
+  --plh-orange: #F97316;
+
+  --plh-border: rgba(250, 245, 240, 0.05);
+  --plh-border-hover: rgba(250, 245, 240, 0.1);
+  --plh-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
+
+  /* Legacy compat vars for existing components */
   --background: #0B1F21;
   --foreground: #ededed;
   --brand-teal: #00555A;
@@ -11,9 +44,57 @@
   --card-bg-hover: #1c3d41;
 }
 
+/* Light mode */
+.light {
+  --plh-bg: #F8F9FB;
+  --plh-card: #FFFFFF;
+  --plh-elevated: #F0F1F4;
+
+  --plh-text-base: 13, 27, 42;
+  --plh-text-100: #1A1D23;
+  --plh-text-75: rgba(13, 27, 42, 0.75);
+  --plh-text-70: rgba(13, 27, 42, 0.70);
+  --plh-text-50: rgba(13, 27, 42, 0.50);
+  --plh-text-40: rgba(13, 27, 42, 0.40);
+
+  --plh-pink: #E84080;
+  --plh-pink-hover: #D03670;
+  --plh-pink-active: #B82E60;
+  --plh-gold: #B8923A;
+  --plh-teal: #2A9490;
+  --plh-ice: #5A7F9F;
+  --plh-violet: #9B59B6;
+  --plh-orange: #D96A14;
+
+  --plh-border: rgba(13, 27, 42, 0.08);
+  --plh-border-hover: rgba(13, 27, 42, 0.12);
+  --plh-shadow: 0 2px 6px rgba(13, 27, 42, 0.05), 0 1px 2px rgba(13, 27, 42, 0.03);
+
+  /* Legacy compat vars */
+  --background: #F8F9FB;
+  --foreground: #1A1D23;
+}
+
+/* ================================
+   BASE STYLES
+   ================================ */
+
 html {
-  font-size: 18px;
+  background-color: var(--plh-bg);
+  transition: background-color 300ms ease;
   scroll-behavior: smooth;
+  font-size: 18px;
+}
+
+body {
+  font-family: 'Sora', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--plh-text-100);
+  background-color: var(--plh-bg);
+  letter-spacing: 0.01em;
+  line-height: 1.65;
+  position: relative;
 }
 
 /* Anchor targets clear the sticky navbar */
@@ -21,18 +102,24 @@ article[id^="post-"] {
   scroll-margin-top: 5rem;
 }
 
-body {
-  background: radial-gradient(ellipse at 50% 20%, #153A3C 0%, #0B1F21 50%, #071517 100%) !important;
-  color: var(--foreground);
-  letter-spacing: 0.01em;
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  position: relative;
+/* ================================
+   REDUCED MOTION
+   ================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
+/* ================================
+   UTILITY: HIDE SCROLLBAR
+   ================================ */
 
-/* Hide scrollbar but allow scrolling */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -41,19 +128,52 @@ body {
   display: none;
 }
 
-/* ============================================
-   SUMMARY TEXT
-   ============================================ */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ================================
+   FONT CLASS
+   ================================ */
+
+.font-sora {
+  font-family: 'Sora', sans-serif;
+}
+
 .summary-text {
-  font-family: var(--font-lexend), sans-serif;
+  font-family: 'Sora', sans-serif;
   font-weight: 300;
 }
 
+/* ================================
+   SCROLLBAR (subtle, brand-matched)
+   ================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--plh-text-40);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--plh-text-50);
+}
+
 /* ============================================
-   CARD ANIMATIONS
+   CARD ENTER ANIMATION
    ============================================ */
 
-/* Feed stagger — cards fade in one by one */
 @keyframes cardEnter {
   from {
     opacity: 0;

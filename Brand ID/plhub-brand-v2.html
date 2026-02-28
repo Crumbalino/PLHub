@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLHub — Brand Identity System v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D1B2A;
+    --navy-card: #112238;
+    --navy-elevated: #162D45;
+    --pink: #E84080;
+    --gold: #D4A843;
+    --teal: #3AAFA9;
+    --teal-lt: #2A9490;
+    --ice: #8AACCC;
+    --violet: #C084FC;
+    --orange: #F97316;
+    --warm-white: #FAF5F0;
+    --cool-white: #F8F9FB;
+    --white-card: #FFFFFF;
+    --white-hover: #F0F1F4;
+    --text-light: #1A1D23;
+    --gold-lt: #B8923A;
+    --ice-lt: #5A7F9F;
+    --violet-lt: #9B59B6;
+    --orange-lt: #D96A14;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--navy); color:var(--warm-white); font-family:'Sora',sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased; }
+
+  /* ---- NAV ---- */
+  .doc-nav { position:sticky; top:0; z-index:100; background:rgba(13,27,42,0.95); backdrop-filter:blur(12px); border-bottom:1px solid rgba(250,245,240,0.05); padding:12px 24px; }
+  .doc-nav-inner { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
+  .doc-nav-logo { display:flex; align-items:center; gap:8px; }
+  .doc-nav-links { display:flex; gap:16px; flex-wrap:wrap; }
+  .doc-nav-links a { font-size:11px; color:rgba(250,245,240,0.4); text-decoration:none; transition:color 0.2s; }
+  .doc-nav-links a:hover { color:var(--pink); }
+
+  /* ---- LAYOUT ---- */
+  .container { max-width:1000px; margin:0 auto; padding:0 24px; }
+  .section { padding:60px 0; border-bottom:1px solid rgba(250,245,240,0.04); }
+  .section:last-child { border-bottom:none; }
+
+  /* ---- TYPOGRAPHY ---- */
+  .sec-num { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--pink); font-weight:500; margin-bottom:6px; }
+  .sec-title { font-size:clamp(24px,4vw,36px); font-weight:800; letter-spacing:-0.5px; margin-bottom:8px; line-height:1.2; }
+  .sec-desc { font-size:14px; color:rgba(250,245,240,0.4); max-width:600px; line-height:1.7; margin-bottom:28px; }
+  .sub-title { font-size:clamp(16px,2.5vw,22px); font-weight:700; margin-bottom:12px; margin-top:32px; letter-spacing:-0.3px; }
+  .sub-title-sm { font-size:14px; font-weight:600; color:var(--teal); margin-bottom:8px; margin-top:20px; text-transform:uppercase; letter-spacing:1px; }
+  .body { font-size:13px; color:rgba(250,245,240,0.55); line-height:1.7; margin-bottom:12px; max-width:700px; }
+  .body strong { color:rgba(250,245,240,0.85); font-weight:600; }
+  .body em { color:var(--pink); font-style:normal; font-weight:500; }
+
+  /* ---- SPEC BOXES ---- */
+  .spec-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin:16px 0; }
+  .spec-box { background:var(--navy-card); border:1px solid rgba(250,245,240,0.05); border-radius:12px; padding:20px; }
+  .spec-box-title { font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:600; margin-bottom:12px; }
+  .spec-row { display:flex; justify-content:space-between; align-items:baseline; padding:5px 0; border-bottom:1px solid rgba(250,245,240,0.03); font-size:12px; }
+  .spec-row:last-child { border-bottom:none; }
+  .spec-label { color:rgba(250,245,240,0.4); }
+  .spec-value { color:rgba(250,245,240,0.8); font-weight:500; font-family:'Consolas','Courier New',monospace; font-size:11px; }
+
+  /* ---- COLOUR SWATCHES ---- */
+  .swatch-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin:16px 0; }
+  .swatch { border-radius:10px; overflow:hidden; border:1px solid rgba(250,245,240,0.05); }
+  .swatch-color { height:60px; }
+  .swatch-info { padding:10px 12px; background:var(--navy-card); }
+  .swatch-name { font-size:11px; font-weight:600; margin-bottom:2px; }
+  .swatch-hex { font-size:10px; font-family:'Consolas',monospace; color:rgba(250,245,240,0.35); }
+  .swatch-role { font-size:9px; color:rgba(250,245,240,0.25); margin-top:3px; line-height:1.4; }
+
+  /* ---- TABLES ---- */
+  .doc-table { width:100%; border-collapse:collapse; margin:16px 0; font-size:12px; }
+  .doc-table th { text-align:left; padding:10px 14px; background:var(--navy-card); color:rgba(250,245,240,0.6); font-weight:600; font-size:10px; letter-spacing:1px; text-transform:uppercase; border-bottom:2px solid rgba(250,245,240,0.06); }
+  .doc-table td { padding:10px 14px; border-bottom:1px solid rgba(250,245,240,0.03); color:rgba(250,245,240,0.55); }
+  .doc-table tr:hover td { background:rgba(250,245,240,0.01); }
+
+  /* ---- CODE BLOCKS ---- */
+  .code-block { background:rgba(0,0,0,0.3); border:1px solid rgba(250,245,240,0.05); border-radius:8px; padding:16px; margin:12px 0; font-family:'Consolas','Courier New',monospace; font-size:11px; color:rgba(250,245,240,0.6); line-height:1.8; overflow-x:auto; white-space:pre; }
+  .code-comment { color:rgba(250,245,240,0.25); }
+  .code-prop { color:var(--teal); }
+  .code-val { color:var(--pink); }
+
+  /* ---- DO / DON'T ---- */
+  .rule-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  @media(max-width:600px) { .rule-grid { grid-template-columns:1fr; } }
+  .rule-col { border-radius:12px; padding:20px; }
+  .rule-col.do { background:rgba(58,175,169,0.05); border:1px solid rgba(58,175,169,0.12); }
+  .rule-col.dont { background:rgba(232,64,128,0.05); border:1px solid rgba(232,64,128,0.12); }
+  .rule-col-title { font-size:12px; font-weight:700; margin-bottom:12px; letter-spacing:1px; }
+  .rule-item { font-size:12px; color:rgba(250,245,240,0.5); padding:5px 0; padding-left:20px; position:relative; line-height:1.5; }
+  .rule-item::before { position:absolute; left:0; font-weight:700; font-size:13px; }
+  .rule-col.do .rule-item::before { content:"\2713"; color:var(--teal); }
+  .rule-col.dont .rule-item::before { content:"\2717"; color:var(--pink); }
+
+  /* ---- MOCKUP FRAMES ---- */
+  .mockup { border-radius:14px; overflow:hidden; border:1px solid rgba(250,245,240,0.06); margin:20px 0; }
+  .mock-browser { padding:8px 16px; display:flex; align-items:center; gap:8px; }
+  .mock-dots { display:flex; gap:5px; }
+  .mock-dot { width:8px; height:8px; border-radius:50%; }
+  .mock-url { flex:1; border-radius:4px; padding:3px 10px; font-size:10px; font-family:monospace; }
+
+  /* ---- INLINE LOGO ---- */
+  .logo-inline { display:inline-flex; align-items:center; gap:6px; }
+
+  /* ---- VISUAL EXAMPLES ---- */
+  .example-row { display:flex; gap:16px; flex-wrap:wrap; margin:16px 0; align-items:flex-start; }
+  .example-card { background:var(--navy-card); border:1px solid rgba(250,245,240,0.05); border-radius:10px; padding:16px; flex:1; min-width:200px; }
+  .example-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--pink); font-weight:500; margin-bottom:8px; }
+
+  /* ---- STATE DEMO ---- */
+  .state-demo { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0; align-items:center; }
+
+  /* ---- BUTTONS (brand system) ---- */
+  .btn { font-family:'Sora',sans-serif; font-weight:500; border-radius:8px; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; justify-content:center; gap:6px; border:none; }
+  .btn-sm { font-size:12px; padding:8px 16px; }
+  .btn-md { font-size:13px; padding:10px 20px; }
+  .btn-lg { font-size:14px; padding:12px 24px; }
+  .btn-primary { background:var(--pink); color:white; }
+  .btn-primary:hover { background:#D03670; }
+  .btn-primary:active { background:#B82E60; transform:scale(0.98); }
+  .btn-primary:disabled { background:rgba(232,64,128,0.3); color:rgba(255,255,255,0.4); cursor:not-allowed; }
+  .btn-secondary { background:transparent; color:var(--warm-white); border:1px solid rgba(250,245,240,0.15); }
+  .btn-secondary:hover { border-color:rgba(250,245,240,0.3); background:rgba(250,245,240,0.03); }
+  .btn-secondary:active { background:rgba(250,245,240,0.06); }
+  .btn-secondary:disabled { color:rgba(250,245,240,0.2); border-color:rgba(250,245,240,0.05); cursor:not-allowed; }
+  .btn-ghost { background:transparent; color:var(--teal); border:none; }
+  .btn-ghost:hover { color:var(--pink); background:rgba(232,64,128,0.05); }
+  .btn-ghost:active { background:rgba(232,64,128,0.1); }
+  .btn-ghost:disabled { color:rgba(58,175,169,0.3); cursor:not-allowed; }
+
+  /* Light mode button variants */
+  .btn-primary-lt { background:var(--pink); color:white; }
+  .btn-secondary-lt { background:transparent; color:var(--text-light); border:1px solid rgba(13,27,42,0.15); }
+  .btn-ghost-lt { background:transparent; color:var(--teal-lt); border:none; }
+
+  /* ---- CARD ANATOMY ---- */
+  .anatomy-card { position:relative; }
+  .anatomy-label { position:absolute; font-size:8px; letter-spacing:1px; text-transform:uppercase; color:var(--pink); font-weight:600; background:rgba(232,64,128,0.1); padding:2px 6px; border-radius:3px; white-space:nowrap; }
+
+  /* ---- COVER ---- */
+  .cover { min-height:70vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 24px; position:relative; overflow:hidden; }
+  .cover::before { content:''; position:absolute; top:-200px; right:-200px; width:600px; height:600px; background:radial-gradient(circle, rgba(232,64,128,0.06) 0%, transparent 70%); pointer-events:none; }
+  .cover::after { content:''; position:absolute; bottom:-200px; left:-200px; width:600px; height:600px; background:radial-gradient(circle, rgba(58,175,169,0.04) 0%, transparent 70%); pointer-events:none; }
+  .cover-version { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--teal); margin-bottom:24px; }
+  .cover-logo { margin-bottom:32px; }
+  .cover-title { font-size:clamp(28px,5vw,48px); font-weight:800; letter-spacing:-1px; margin-bottom:12px; }
+  .cover-sub { font-size:15px; color:rgba(250,245,240,0.35); max-width:500px; line-height:1.7; margin-bottom:40px; }
+  .cover-meta { font-size:11px; color:rgba(250,245,240,0.2); border-top:1px solid rgba(250,245,240,0.05); padding-top:20px; }
+
+  /* ---- TOC ---- */
+  .toc { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px; margin:20px 0; }
+  .toc-item { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--navy-card); border:1px solid rgba(250,245,240,0.04); border-radius:8px; text-decoration:none; transition:all 0.2s; }
+  .toc-item:hover { border-color:rgba(250,245,240,0.1); background:var(--navy-elevated); }
+  .toc-num { font-size:10px; font-weight:700; color:var(--pink); min-width:20px; }
+  .toc-text { font-size:12px; color:rgba(250,245,240,0.6); }
+
+  /* ---- OPACITY DEMO ---- */
+  .opacity-row { display:flex; align-items:baseline; gap:16px; padding:8px 0; border-bottom:1px solid rgba(250,245,240,0.03); }
+  .opacity-row:last-child { border-bottom:none; }
+  .opacity-pct { font-size:10px; font-family:monospace; color:rgba(250,245,240,0.3); min-width:40px; }
+
+  /* ---- INTERACTION STATES ---- */
+  .states-table { width:100%; }
+  .states-table td { vertical-align:top; padding:8px; }
+
+  /* ---- RESPONSIVE DEMO ---- */
+  .responsive-demo { display:flex; gap:16px; align-items:flex-end; justify-content:center; margin:20px 0; flex-wrap:wrap; }
+  .device-frame { background:var(--navy-card); border:1px solid rgba(250,245,240,0.08); border-radius:10px; overflow:hidden; }
+  .device-label { text-align:center; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:rgba(250,245,240,0.3); margin-bottom:6px; }
+
+  /* ---- FUTURE FEATURE CARDS ---- */
+  .future-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin:16px 0; }
+  .future-card { background:var(--navy-card); border:1px solid rgba(250,245,240,0.05); border-left:3px solid var(--gold); border-radius:10px; padding:20px; }
+  .future-card-title { font-size:14px; font-weight:600; margin-bottom:6px; }
+  .future-card-status { font-size:9px; letter-spacing:1px; text-transform:uppercase; font-weight:600; margin-bottom:8px; }
+  .future-card-body { font-size:12px; color:rgba(250,245,240,0.4); line-height:1.6; }
+
+  /* Print styles */
+  @media print {
+    body { background:white; color:#111; }
+    .doc-nav { display:none; }
+    .section { page-break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================ -->
+<!-- STICKY NAV                                    -->
+<!-- ============================================ -->
+<nav class="doc-nav">
+  <div class="doc-nav-inner">
+    <div class="doc-nav-logo">
+      <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><path d="M4 14V4H14" stroke="#D4A843" stroke-width="4" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#E84080" stroke-width="4" stroke-linecap="round"/></svg>
+      <span style="font-size:13px;font-weight:700;color:#E84080">PL</span><span style="font-size:13px;font-weight:300">HUB</span>
+      <span style="font-size:10px;color:rgba(250,245,240,0.2);margin-left:4px">Brand System v2.0</span>
+    </div>
+    <div class="doc-nav-links">
+      <a href="#logo">Logo</a>
+      <a href="#colours">Colours</a>
+      <a href="#type">Type</a>
+      <a href="#buttons">Buttons</a>
+      <a href="#cards">Cards</a>
+      <a href="#states">States</a>
+      <a href="#layout">Layout</a>
+      <a href="#mode">Modes</a>
+      <a href="#future">Future</a>
+      <a href="#rules">Rules</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================ -->
+<!-- COVER                                         -->
+<!-- ============================================ -->
+<div class="cover">
+  <div class="cover-version">Brand Identity System</div>
+  <div class="cover-logo" style="display:inline-flex;flex-direction:column;align-items:center;position:relative;padding:20px 28px;">
+    <svg style="position:absolute;top:0;left:0;" width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M2 14V2H14" stroke="#D4A843" stroke-width="3" stroke-linecap="round"/></svg>
+    <svg style="position:absolute;bottom:0;right:0;" width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M22 10V22H10" stroke="#E84080" stroke-width="3" stroke-linecap="round"/></svg>
+    <div style="line-height:1.05;padding:8px 6px;">
+      <div style="font-size:clamp(40px,7vw,64px);font-weight:700;color:#E84080;letter-spacing:2px;">PL</div>
+      <div style="font-size:clamp(40px,7vw,64px);font-weight:300;letter-spacing:7px;">HUB</div>
+    </div>
+  </div>
+  <div class="cover-title">Brand Identity System</div>
+  <div class="cover-sub">The single source of truth for PLHub's visual identity. Every colour, every component, every interaction — documented for anyone working on the site.</div>
+  <div class="cover-meta">
+    v2.0 — February 2026 · plhub.co.uk<br>
+    <span style="font-style:italic;color:rgba(250,245,240,0.15)">This is a living document. Update the version history when changes are made.</span>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TABLE OF CONTENTS                             -->
+<!-- ============================================ -->
+<div class="section" style="padding-top:40px;">
+  <div class="container">
+    <div class="sec-num">Contents</div>
+    <div class="sec-title">What's in this document</div>
+    <div class="toc">
+      <a class="toc-item" href="#overview"><span class="toc-num">01</span><span class="toc-text">Brand Overview</span></a>
+      <a class="toc-item" href="#logo"><span class="toc-num">02</span><span class="toc-text">Logo System</span></a>
+      <a class="toc-item" href="#colours"><span class="toc-num">03</span><span class="toc-text">Colour System</span></a>
+      <a class="toc-item" href="#type"><span class="toc-num">04</span><span class="toc-text">Typography</span></a>
+      <a class="toc-item" href="#sources"><span class="toc-num">05</span><span class="toc-text">Source Labels</span></a>
+      <a class="toc-item" href="#teal"><span class="toc-num">06</span><span class="toc-text">Teal System</span></a>
+      <a class="toc-item" href="#buttons"><span class="toc-num">07</span><span class="toc-text">Button System</span></a>
+      <a class="toc-item" href="#cards"><span class="toc-num">08</span><span class="toc-text">Card Design</span></a>
+      <a class="toc-item" href="#states"><span class="toc-num">09</span><span class="toc-text">Interaction States</span></a>
+      <a class="toc-item" href="#layout"><span class="toc-num">10</span><span class="toc-text">Responsive Layout</span></a>
+      <a class="toc-item" href="#mode"><span class="toc-num">11</span><span class="toc-text">Dark / Light Mode</span></a>
+      <a class="toc-item" href="#future"><span class="toc-num">12</span><span class="toc-text">Future Features</span></a>
+      <a class="toc-item" href="#teletext"><span class="toc-num">13</span><span class="toc-text">Teletext Nods</span></a>
+      <a class="toc-item" href="#a11y"><span class="toc-num">14</span><span class="toc-text">Accessibility & ADHD</span></a>
+      <a class="toc-item" href="#ads"><span class="toc-num">15</span><span class="toc-text">Ad Policy</span></a>
+      <a class="toc-item" href="#rules"><span class="toc-num">16</span><span class="toc-text">Brand Rules</span></a>
+      <a class="toc-item" href="#css"><span class="toc-num">17</span><span class="toc-text">CSS Reference</span></a>
+      <a class="toc-item" href="#versions"><span class="toc-num">18</span><span class="toc-text">Version History</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 01. BRAND OVERVIEW                            -->
+<!-- ============================================ -->
+<div class="section" id="overview">
+  <div class="container">
+    <div class="sec-num">01</div>
+    <div class="sec-title">Brand Overview</div>
+    <div class="sec-desc">PLHub is a Premier League news aggregation platform for busy fans who want quick, digestible football content without the noise.</div>
+
+    <div class="spec-grid">
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--pink)">Identity</div>
+        <div class="spec-row"><span class="spec-label">Domain</span><span class="spec-value">plhub.co.uk</span></div>
+        <div class="spec-row"><span class="spec-label">Tagline</span><span class="spec-value" style="font-family:Sora,sans-serif">Quick-hit PL news for busy fans</span></div>
+        <div class="spec-row"><span class="spec-label">Platform</span><span class="spec-value" style="font-family:Sora,sans-serif">Web-first, mobile optimised</span></div>
+        <div class="spec-row"><span class="spec-label">Signature Product</span><span class="spec-value" style="font-family:Sora,sans-serif">The Snapshot</span></div>
+        <div class="spec-row"><span class="spec-label">Stack</span><span class="spec-value">Next.js · Supabase · Vercel</span></div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--teal)">Personality</div>
+        <div class="spec-row"><span class="spec-label">Smart but</span><span class="spec-value" style="font-family:Sora,sans-serif">Accessible</span></div>
+        <div class="spec-row"><span class="spec-label">Premium but</span><span class="spec-value" style="font-family:Sora,sans-serif">Fan-first</span></div>
+        <div class="spec-row"><span class="spec-label">Terraces not</span><span class="spec-value" style="font-family:Sora,sans-serif">Boardrooms</span></div>
+        <div class="spec-row"><span class="spec-label">Voice</span><span class="spec-value" style="font-family:Sora,sans-serif">Knowing, deadpan, warm</span></div>
+        <div class="spec-row"><span class="spec-label">Never</span><span class="spec-value" style="font-family:Sora,sans-serif;color:var(--pink)">Corporate or clickbait</span></div>
+      </div>
+    </div>
+
+    <div class="sub-title">Core Principles</div>
+    <div class="body"><strong>No gambling content — ever.</strong> Hardcoded rule. No gambling ads, sponsorship, or branded content. This is non-negotiable.</div>
+    <div class="body"><strong>No clickbait.</strong> Headlines are clear and informative. AI summaries give you the story in seconds.</div>
+    <div class="body"><strong>ADHD-friendly UX.</strong> Short-form, scannable, rewarding. High contrast, large fonts, bite-sized AI summaries. Get what you need and move on.</div>
+    <div class="body"><strong>Community-ranked.</strong> Pulse scores surface what fans care about, not what editors push.</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 02. LOGO SYSTEM                               -->
+<!-- ============================================ -->
+<div class="section" id="logo">
+  <div class="container">
+    <div class="sec-num">02</div>
+    <div class="sec-title">Logo System</div>
+    <div class="sec-desc">The diagonal frame. Two brackets at opposing corners — gold top-left, pink bottom-right. The shape is implied; the viewer completes it.</div>
+
+    <!-- Logo variants visual -->
+    <div class="sub-title">Logo Variants</div>
+
+    <div class="spec-grid" style="grid-template-columns:repeat(3, 1fr);">
+      <!-- Stacked -->
+      <div class="spec-box" style="text-align:center;padding:30px 20px;">
+        <div class="example-label">Stacked (Primary)</div>
+        <div style="margin:20px 0;display:flex;justify-content:center;">
+          <div style="display:inline-flex;flex-direction:column;align-items:center;position:relative;padding:14px 18px;">
+            <svg style="position:absolute;top:0;left:0;" width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M2 14V2H14" stroke="#D4A843" stroke-width="3.5" stroke-linecap="round"/></svg>
+            <svg style="position:absolute;bottom:0;right:0;" width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M22 10V22H10" stroke="#E84080" stroke-width="3.5" stroke-linecap="round"/></svg>
+            <div style="line-height:1.1;padding:6px 4px;">
+              <div style="font-size:28px;font-weight:700;color:var(--pink);letter-spacing:2px;">PL</div>
+              <div style="font-size:28px;font-weight:300;letter-spacing:7px;">HUB</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3);margin-top:12px;">Hero placements, app icon, social profile.<br>Text lives inside the frame — brackets and wordmark are one unit.</div>
+      </div>
+
+      <!-- Inline -->
+      <div class="spec-box" style="text-align:center;padding:30px 20px;">
+        <div class="example-label">Inline</div>
+        <div style="margin:30px 0;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span style="font-size:22px;font-weight:700;color:var(--pink);">PL</span>
+          <svg width="22" height="22" viewBox="0 0 36 36" fill="none"><path d="M4 14V4H14" stroke="#D4A843" stroke-width="4" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#E84080" stroke-width="4" stroke-linecap="round"/></svg>
+          <span style="font-size:22px;font-weight:300;">HUB</span>
+        </div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3);margin-top:12px;">Nav bars, compact headers, watermarks</div>
+      </div>
+
+      <!-- Icon Only -->
+      <div class="spec-box" style="text-align:center;padding:30px 20px;">
+        <div class="example-label">Icon Only</div>
+        <div style="margin:20px 0;">
+          <svg width="56" height="56" viewBox="0 0 36 36" fill="none"><path d="M4 14V4H14" stroke="#D4A843" stroke-width="3.5" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#E84080" stroke-width="3.5" stroke-linecap="round"/></svg>
+        </div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3);margin-top:12px;">Favicons, loading states, micro-branding</div>
+      </div>
+    </div>
+
+    <!-- On different backgrounds -->
+    <div class="sub-title">Logo on Backgrounds</div>
+    <div class="example-row">
+      <div class="example-card" style="background:var(--navy);text-align:center;padding:24px;">
+        <div class="example-label">On Navy (default)</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;">
+          <span style="font-size:18px;font-weight:700;color:var(--pink);">PL</span>
+          <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><path d="M4 14V4H14" stroke="#D4A843" stroke-width="4" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#E84080" stroke-width="4" stroke-linecap="round"/></svg>
+          <span style="font-size:18px;font-weight:300;color:var(--warm-white);">HUB</span>
+        </div>
+      </div>
+      <div class="example-card" style="background:var(--cool-white);text-align:center;padding:24px;border-color:rgba(13,27,42,0.08);">
+        <div class="example-label">On Light Background</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;">
+          <span style="font-size:18px;font-weight:700;color:var(--pink);">PL</span>
+          <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><path d="M4 14V4H14" stroke="#D4A843" stroke-width="4" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#E84080" stroke-width="4" stroke-linecap="round"/></svg>
+          <span style="font-size:18px;font-weight:300;color:var(--text-light);">HUB</span>
+        </div>
+      </div>
+      <div class="example-card" style="background:var(--pink);text-align:center;padding:24px;border-color:transparent;">
+        <div class="example-label" style="color:white;">On Pink</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;">
+          <span style="font-size:18px;font-weight:700;color:white;">PL</span>
+          <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><path d="M4 14V4H14" stroke="#FAF5F0" stroke-width="4" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#D4A843" stroke-width="4" stroke-linecap="round"/></svg>
+          <span style="font-size:18px;font-weight:300;color:white;">HUB</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wordmark spec table -->
+    <div class="sub-title">Wordmark Specifications</div>
+    <table class="doc-table">
+      <tr><th>Element</th><th>Font</th><th>Weight</th><th>Colour (dark)</th><th>Colour (light)</th></tr>
+      <tr><td><strong>PL</strong></td><td>Sora</td><td>700 Bold</td><td style="color:var(--pink)">#E84080</td><td style="color:var(--pink)">#E84080</td></tr>
+      <tr><td><strong>HUB</strong></td><td>Sora</td><td>300 Light</td><td style="color:var(--warm-white)">#FAF5F0</td><td style="color:var(--text-light)">#1A1D23</td></tr>
+      <tr><td>Stacked PL tracking</td><td>—</td><td>—</td><td colspan="2">+2px letter-spacing</td></tr>
+      <tr><td>Stacked HUB tracking</td><td>—</td><td>—</td><td colspan="2">+7px letter-spacing</td></tr>
+    </table>
+
+    <!-- Where to use which -->
+    <div class="sub-title">Mobile vs Desktop Logo Usage</div>
+    <div class="spec-grid">
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--pink)">Mobile</div>
+        <div class="spec-row"><span class="spec-label">Nav bar</span><span class="spec-value" style="font-family:Sora,sans-serif">Inline logo (PL [icon] HUB)</span></div>
+        <div class="spec-row"><span class="spec-label">Height</span><span class="spec-value">~28px wordmark height</span></div>
+        <div class="spec-row"><span class="spec-label">Alignment</span><span class="spec-value" style="font-family:Sora,sans-serif">Centred in nav</span></div>
+        <div class="spec-row"><span class="spec-label">Toggle sits</span><span class="spec-value" style="font-family:Sora,sans-serif">Right side of nav</span></div>
+        <div class="spec-row"><span class="spec-label">Clear space</span><span class="spec-value">≥ 16px all sides</span></div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--teal)">Desktop</div>
+        <div class="spec-row"><span class="spec-label">Nav bar</span><span class="spec-value" style="font-family:Sora,sans-serif">Inline logo (PL [icon] HUB)</span></div>
+        <div class="spec-row"><span class="spec-label">Height</span><span class="spec-value">~32px wordmark height</span></div>
+        <div class="spec-row"><span class="spec-label">Alignment</span><span class="spec-value" style="font-family:Sora,sans-serif">Centred in nav</span></div>
+        <div class="spec-row"><span class="spec-label">Sign in</span><span class="spec-value" style="font-family:Sora,sans-serif">Right side of nav</span></div>
+        <div class="spec-row"><span class="spec-label">Clear space</span><span class="spec-value">≥ 24px all sides</span></div>
+      </div>
+    </div>
+
+    <!-- Favicon -->
+    <div class="sub-title">Favicon Scaling</div>
+    <div class="body">The diagonal frame icon is the favicon. At smaller sizes, stroke weight must increase proportionally to remain visible.</div>
+    <div class="example-row" style="align-items:center;">
+      <div style="text-align:center;">
+        <svg width="64" height="64" viewBox="0 0 36 36" fill="none" style="background:var(--navy);border-radius:8px;padding:6px;"><path d="M4 14V4H14" stroke="#D4A843" stroke-width="3" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#E84080" stroke-width="3" stroke-linecap="round"/></svg>
+        <div style="font-size:9px;color:rgba(250,245,240,0.3);margin-top:4px;">64px</div>
+      </div>
+      <div style="text-align:center;">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="background:var(--navy);border-radius:6px;padding:4px;"><path d="M4 14V4H14" stroke="#D4A843" stroke-width="4" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#E84080" stroke-width="4" stroke-linecap="round"/></svg>
+        <div style="font-size:9px;color:rgba(250,245,240,0.3);margin-top:4px;">32px (+25%)</div>
+      </div>
+      <div style="text-align:center;">
+        <svg width="16" height="16" viewBox="0 0 36 36" fill="none" style="background:var(--navy);border-radius:4px;padding:2px;"><path d="M4 14V4H14" stroke="#D4A843" stroke-width="5.5" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#E84080" stroke-width="5.5" stroke-linecap="round"/></svg>
+        <div style="font-size:9px;color:rgba(250,245,240,0.3);margin-top:4px;">16px (+50%)</div>
+      </div>
+    </div>
+
+    <!-- Minimum sizes -->
+    <div class="sub-title">Minimum Sizes</div>
+    <table class="doc-table">
+      <tr><th>Variant</th><th>Min Width</th><th>Notes</th></tr>
+      <tr><td>Stacked (with icon)</td><td>48px wide</td><td>Below this, switch to icon-only</td></tr>
+      <tr><td>Inline</td><td>80px wide</td><td>Below this, switch to icon-only</td></tr>
+      <tr><td>Icon only</td><td>16px</td><td>Increase stroke weight at 32px and below</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 03. COLOUR SYSTEM                             -->
+<!-- ============================================ -->
+<div class="section" id="colours">
+  <div class="container">
+    <div class="sec-num">03</div>
+    <div class="sec-title">Colour System</div>
+    <div class="sec-desc">Navy ground, warm accents, teal for interactivity. The same palette in two modes — adjusted for contrast, never redesigned.</div>
+
+    <div class="sub-title">Dark Mode Palette</div>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="swatch-color" style="background:#0D1B2A"></div><div class="swatch-info"><div class="swatch-name">Navy</div><div class="swatch-hex">#0D1B2A</div><div class="swatch-role">Page background</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#112238"></div><div class="swatch-info"><div class="swatch-name">Navy Card</div><div class="swatch-hex">#112238</div><div class="swatch-role">Cards, elevated surfaces</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#162D45"></div><div class="swatch-info"><div class="swatch-name">Navy Elevated</div><div class="swatch-hex">#162D45</div><div class="swatch-role">Hover, active elements</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#E84080"></div><div class="swatch-info"><div class="swatch-name">Pink</div><div class="swatch-hex">#E84080</div><div class="swatch-role">Primary brand, CTAs, LIVE</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#D4A843"></div><div class="swatch-info"><div class="swatch-name">Gold</div><div class="swatch-hex">#D4A843</div><div class="swatch-role">Icon bracket, pulse scores</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#3AAFA9"></div><div class="swatch-info"><div class="swatch-name">Teal</div><div class="swatch-hex">#3AAFA9</div><div class="swatch-role">Structural, interactive</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#FAF5F0"></div><div class="swatch-info"><div class="swatch-name">Warm White</div><div class="swatch-hex">#FAF5F0</div><div class="swatch-role">Primary text base</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#8AACCC"></div><div class="swatch-info"><div class="swatch-name">Ice</div><div class="swatch-hex">#8AACCC</div><div class="swatch-role">talkSPORT label, cool accent</div></div></div>
+    </div>
+
+    <div class="sub-title">Light Mode Palette</div>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="swatch-color" style="background:#F8F9FB"></div><div class="swatch-info"><div class="swatch-name">Cool White</div><div class="swatch-hex">#F8F9FB</div><div class="swatch-role">Page background</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#FFFFFF;border-bottom:1px solid #eee;"></div><div class="swatch-info"><div class="swatch-name">Pure White</div><div class="swatch-hex">#FFFFFF</div><div class="swatch-role">Cards, elevated surfaces</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#F0F1F4"></div><div class="swatch-info"><div class="swatch-name">Hover</div><div class="swatch-hex">#F0F1F4</div><div class="swatch-role">Hover, active elements</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#E84080"></div><div class="swatch-info"><div class="swatch-name">Pink</div><div class="swatch-hex">#E84080</div><div class="swatch-role">Same pink everywhere</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#2A9490"></div><div class="swatch-info"><div class="swatch-name">Teal (light)</div><div class="swatch-hex">#2A9490</div><div class="swatch-role">Darkened for light backgrounds</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#B8923A"></div><div class="swatch-info"><div class="swatch-name">Gold (light)</div><div class="swatch-hex">#B8923A</div><div class="swatch-role">Darkened for light backgrounds</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#1A1D23"></div><div class="swatch-info"><div class="swatch-name">Navy Text</div><div class="swatch-hex">#1A1D23</div><div class="swatch-role">Primary text base</div></div></div>
+    </div>
+
+    <!-- THE NO GREY RULE -->
+    <div class="sub-title" style="color:var(--pink);">The No Grey Rule</div>
+    <div class="body"><em>No grey hex codes. Anywhere. Ever.</em> Text hierarchy is built entirely with opacity. This keeps everything connected to the palette instead of introducing dead neutral tones.</div>
+
+    <div class="spec-grid">
+      <div class="spec-box" style="background:var(--navy);">
+        <div class="spec-box-title" style="color:var(--pink)">Dark Mode — Warm White Opacities</div>
+        <div class="opacity-row"><span class="opacity-pct">100%</span><span style="font-size:15px;font-weight:600;color:rgba(250,245,240,1)">Headlines, primary content</span></div>
+        <div class="opacity-row"><span class="opacity-pct">80%</span><span style="font-size:13px;font-weight:500;color:rgba(250,245,240,0.8)">Card headlines, section titles</span></div>
+        <div class="opacity-row"><span class="opacity-pct">60%</span><span style="font-size:12px;font-weight:400;color:rgba(250,245,240,0.6)">Navigation, secondary content</span></div>
+        <div class="opacity-row"><span class="opacity-pct">40%</span><span style="font-size:11px;font-weight:300;color:rgba(250,245,240,0.4)">Summaries, body text</span></div>
+        <div class="opacity-row"><span class="opacity-pct">25%</span><span style="font-size:10px;font-weight:400;color:rgba(250,245,240,0.25)">Timestamps, metadata</span></div>
+        <div style="margin-top:10px;padding:8px;background:rgba(250,245,240,0.03);border-radius:6px;font-size:10px;font-family:monospace;color:rgba(250,245,240,0.35);">rgba(250, 245, 240, 1.0 / 0.8 / 0.6 / 0.4 / 0.25)</div>
+      </div>
+      <div class="spec-box" style="background:var(--cool-white);border-color:rgba(13,27,42,0.08);">
+        <div class="spec-box-title" style="color:var(--pink)">Light Mode — Navy Opacities</div>
+        <div class="opacity-row" style="border-color:rgba(13,27,42,0.05)"><span class="opacity-pct" style="color:rgba(13,27,42,0.3)">100%</span><span style="font-size:15px;font-weight:600;color:rgba(13,27,42,1)">Headlines, primary content</span></div>
+        <div class="opacity-row" style="border-color:rgba(13,27,42,0.05)"><span class="opacity-pct" style="color:rgba(13,27,42,0.3)">80%</span><span style="font-size:13px;font-weight:500;color:rgba(13,27,42,0.8)">Card headlines, section titles</span></div>
+        <div class="opacity-row" style="border-color:rgba(13,27,42,0.05)"><span class="opacity-pct" style="color:rgba(13,27,42,0.3)">60%</span><span style="font-size:12px;font-weight:400;color:rgba(13,27,42,0.6)">Navigation, secondary content</span></div>
+        <div class="opacity-row" style="border-color:rgba(13,27,42,0.05)"><span class="opacity-pct" style="color:rgba(13,27,42,0.3)">40%</span><span style="font-size:11px;font-weight:300;color:rgba(13,27,42,0.4)">Summaries, body text</span></div>
+        <div class="opacity-row" style="border-bottom:none;"><span class="opacity-pct" style="color:rgba(13,27,42,0.3)">25%</span><span style="font-size:10px;font-weight:400;color:rgba(13,27,42,0.25)">Timestamps, metadata</span></div>
+        <div style="margin-top:10px;padding:8px;background:rgba(13,27,42,0.03);border-radius:6px;font-size:10px;font-family:monospace;color:rgba(13,27,42,0.35);">rgba(13, 27, 42, 1.0 / 0.8 / 0.6 / 0.4 / 0.25)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 04. TYPOGRAPHY                                -->
+<!-- ============================================ -->
+<div class="section" id="type">
+  <div class="container">
+    <div class="sec-num">04</div>
+    <div class="sec-title">Typography</div>
+    <div class="sec-desc">Sora everywhere. One family, weight range 200–800. Japanese-inspired geometric precision with enough warmth to avoid feeling clinical.</div>
+
+    <div class="body"><strong>Font family:</strong> Sora (Google Fonts)<br><strong>Weights used:</strong> 200 (ExtraLight), 300 (Light), 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold), 800 (ExtraBold)</div>
+
+    <table class="doc-table">
+      <tr><th>Element</th><th>Weight</th><th>Size</th><th>Tracking</th><th>Usage</th></tr>
+      <tr><td><span style="font-size:18px;font-weight:700;color:var(--pink)">PL</span></td><td>700</td><td>Variable</td><td>+2px</td><td>Logo wordmark</td></tr>
+      <tr><td><span style="font-size:18px;font-weight:300">HUB</span></td><td>300</td><td>Variable</td><td>+7px</td><td>Logo wordmark</td></tr>
+      <tr><td><span style="font-size:18px;font-weight:700">Page Title</span></td><td>700</td><td>24px</td><td>Default</td><td>Page headings, hero text</td></tr>
+      <tr><td><span style="font-size:16px;font-weight:600">Section Head</span></td><td>600</td><td>18px</td><td>Default</td><td>Section headers, sidebar titles</td></tr>
+      <tr><td><span style="font-size:14px;font-weight:600">Card Headline</span></td><td>600</td><td>15px</td><td>Default</td><td>StoryCard titles</td></tr>
+      <tr><td><span style="font-size:12px;font-weight:300;color:rgba(250,245,240,0.55)">Body text looks like this for summaries</span></td><td>300</td><td>13px</td><td>Default</td><td>Summaries, descriptions</td></tr>
+      <tr><td><span style="font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--teal)">UI LABEL</span></td><td>500</td><td>10px</td><td>+2px</td><td>Source labels, uppercase tags</td></tr>
+      <tr><td><span style="font-size:10px;font-weight:400;color:rgba(250,245,240,0.3)">12 min ago</span></td><td>400</td><td>10px</td><td>Default</td><td>Timestamps, metadata</td></tr>
+    </table>
+
+    <div class="sub-title">Score Formatting</div>
+    <div class="body">Live scores and fixture times use <strong>monospace</strong> type (system monospace stack) to echo Teletext data formatting. This is the only place a non-Sora font appears.</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 05. SOURCE LABELS                             -->
+<!-- ============================================ -->
+<div class="section" id="sources">
+  <div class="container">
+    <div class="sec-num">05</div>
+    <div class="sec-title">Source Label Colours</div>
+    <div class="sec-desc">Each RSS feed source gets a distinct colour label. These are editorial colours — they identify the source at a glance.</div>
+
+    <div class="example-row" style="flex-wrap:wrap;">
+      <div style="text-align:center;flex:1;min-width:120px;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:var(--gold);margin-bottom:4px;">BBC SPORT</div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3)">Gold</div>
+        <div style="font-size:9px;font-family:monospace;color:rgba(250,245,240,0.2)">#D4A843 / #B8923A</div>
+      </div>
+      <div style="text-align:center;flex:1;min-width:120px;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:var(--pink);margin-bottom:4px;">SKY SPORTS</div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3)">Pink</div>
+        <div style="font-size:9px;font-family:monospace;color:rgba(250,245,240,0.2)">#E84080 / #E84080</div>
+      </div>
+      <div style="text-align:center;flex:1;min-width:120px;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:var(--teal);margin-bottom:4px;">THE GUARDIAN</div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3)">Teal</div>
+        <div style="font-size:9px;font-family:monospace;color:rgba(250,245,240,0.2)">#3AAFA9 / #2A9490</div>
+      </div>
+      <div style="text-align:center;flex:1;min-width:120px;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:var(--ice);margin-bottom:4px;">TALKSPORT</div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3)">Ice</div>
+        <div style="font-size:9px;font-family:monospace;color:rgba(250,245,240,0.2)">#8AACCC / #5A7F9F</div>
+      </div>
+      <div style="text-align:center;flex:1;min-width:120px;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:var(--violet);margin-bottom:4px;">GOAL.COM</div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3)">Violet</div>
+        <div style="font-size:9px;font-family:monospace;color:rgba(250,245,240,0.2)">#C084FC / #9B59B6</div>
+      </div>
+      <div style="text-align:center;flex:1;min-width:120px;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:var(--orange);margin-bottom:4px;">90MIN</div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3)">Orange</div>
+        <div style="font-size:9px;font-family:monospace;color:rgba(250,245,240,0.2)">#F97316 / #D96A14</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:16px;">Values shown as <strong>dark / light</strong>. Light mode values are darkened for contrast against white backgrounds. The Guardian's teal is a coincidence of their brand colour — not a teal-system assignment.</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 06. TEAL SYSTEM                               -->
+<!-- ============================================ -->
+<div class="section" id="teal">
+  <div class="container">
+    <div class="sec-num">06</div>
+    <div class="sec-title">Where Teal Lives</div>
+    <div class="sec-desc">Teal is the structural and interactive colour. It appears in specific, consistent places. This is the complete list — teal does not appear anywhere else.</div>
+
+    <table class="doc-table">
+      <tr><th>Element</th><th>What it does</th><th>Dark hex</th><th>Light hex</th></tr>
+      <tr><td><strong>Card left border</strong></td><td>2px teal on every StoryCard — structural consistency</td><td style="color:var(--teal)">#3AAFA9</td><td style="color:var(--teal-lt)">#2A9490</td></tr>
+      <tr><td><strong>Club tags</strong></td><td>ARS, TOT, MUN pills — teal bg + teal text</td><td>rgba(58,175,169,0.12)</td><td>rgba(42,148,144,0.08)</td></tr>
+      <tr><td><strong>Links & interactive</strong></td><td>Clickable text, "read more", hover underlines</td><td style="color:var(--teal)">#3AAFA9</td><td style="color:var(--teal-lt)">#2A9490</td></tr>
+      <tr><td><strong>Table positions</strong></td><td>1, 2, 3 in league table sidebar</td><td style="color:var(--teal)">#3AAFA9</td><td style="color:var(--teal-lt)">#2A9490</td></tr>
+      <tr><td><strong>Snapshot ticker</strong></td><td>"p.100" page number, "Today: 6 matches"</td><td style="color:var(--teal)">#3AAFA9</td><td style="color:var(--teal-lt)">#2A9490</td></tr>
+      <tr><td><strong>Toggle states</strong></td><td>Dark/light mode toggle, filter switches</td><td style="color:var(--teal)">#3AAFA9</td><td style="color:var(--teal-lt)">#2A9490</td></tr>
+    </table>
+
+    <div class="sub-title-sm">Exceptions</div>
+    <div class="body">The Guardian's source label happens to be teal — that's their editorial colour, not a teal-system assignment. If The Guardian changed their brand colour, their label would change too. <strong>Teal is structural and interactive. It is not editorial.</strong></div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 07. BUTTON SYSTEM                             -->
+<!-- ============================================ -->
+<div class="section" id="buttons">
+  <div class="container">
+    <div class="sec-num">07</div>
+    <div class="sec-title">Button System</div>
+    <div class="sec-desc">Three tiers: primary for key actions, secondary for alternatives, ghost for low-emphasis text actions.</div>
+
+    <!-- Primary -->
+    <div class="sub-title">Primary — Pink</div>
+    <div class="body">Use for the single most important action in any context. "Load more", "Sign up", "Subscribe". <em>One primary button per view.</em></div>
+    <div class="state-demo">
+      <button class="btn btn-md btn-primary">Default</button>
+      <button class="btn btn-md btn-primary" style="background:#D03670">Hover</button>
+      <button class="btn btn-md btn-primary" style="background:#B82E60;transform:scale(0.98)">Active</button>
+      <button class="btn btn-md btn-primary" style="box-shadow:0 0 0 3px rgba(232,64,128,0.3)">Focus</button>
+      <button class="btn btn-md btn-primary" disabled>Disabled</button>
+      <button class="btn btn-md btn-primary" style="opacity:0.7;pointer-events:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20"/></svg> Loading</button>
+    </div>
+    <table class="doc-table" style="margin-top:12px;">
+      <tr><th>State</th><th>Background</th><th>Text</th><th>Other</th></tr>
+      <tr><td>Default</td><td>#E84080</td><td>White</td><td>—</td></tr>
+      <tr><td>Hover</td><td>#D03670</td><td>White</td><td>Smooth 0.2s transition</td></tr>
+      <tr><td>Active</td><td>#B82E60</td><td>White</td><td>scale(0.98)</td></tr>
+      <tr><td>Focus</td><td>#E84080</td><td>White</td><td>3px pink ring at 30% opacity</td></tr>
+      <tr><td>Disabled</td><td>rgba(232,64,128,0.3)</td><td>rgba(255,255,255,0.4)</td><td>cursor: not-allowed</td></tr>
+      <tr><td>Loading</td><td>#E84080 at 70% opacity</td><td>White</td><td>Spinner + text, pointer-events: none</td></tr>
+    </table>
+
+    <!-- Secondary -->
+    <div class="sub-title">Secondary — Outlined</div>
+    <div class="body">Use for alternative actions alongside a primary. "Cancel", "Filter", "Sign in".</div>
+    <div class="state-demo">
+      <button class="btn btn-md btn-secondary">Default</button>
+      <button class="btn btn-md btn-secondary" style="border-color:rgba(250,245,240,0.3);background:rgba(250,245,240,0.03)">Hover</button>
+      <button class="btn btn-md btn-secondary" style="background:rgba(250,245,240,0.06)">Active</button>
+      <button class="btn btn-md btn-secondary" style="box-shadow:0 0 0 3px rgba(250,245,240,0.1)">Focus</button>
+      <button class="btn btn-md btn-secondary" disabled>Disabled</button>
+    </div>
+
+    <!-- Ghost -->
+    <div class="sub-title">Ghost — Text Only</div>
+    <div class="body">Use for tertiary actions and inline text links. "Show more", "How this works", "or show latest".</div>
+    <div class="state-demo">
+      <button class="btn btn-md btn-ghost">Default</button>
+      <button class="btn btn-md btn-ghost" style="color:var(--pink);background:rgba(232,64,128,0.05)">Hover</button>
+      <button class="btn btn-md btn-ghost" style="background:rgba(232,64,128,0.1)">Active</button>
+      <button class="btn btn-md btn-ghost" style="box-shadow:0 0 0 3px rgba(58,175,169,0.15)">Focus</button>
+      <button class="btn btn-md btn-ghost" disabled>Disabled</button>
+    </div>
+
+    <!-- Sizes -->
+    <div class="sub-title">Button Sizes</div>
+    <div class="state-demo">
+      <button class="btn btn-sm btn-primary">Small — 12px / 8×16</button>
+      <button class="btn btn-md btn-primary">Medium — 13px / 10×20</button>
+      <button class="btn btn-lg btn-primary">Large — 14px / 12×24</button>
+    </div>
+    <div class="body" style="margin-top:12px;">Border radius: <strong>8px</strong> on all buttons. Font: <strong>Sora 500</strong>. Transition: <strong>all 0.2s ease</strong>.</div>
+
+    <!-- Light mode buttons -->
+    <div class="sub-title">Light Mode Variants</div>
+    <div class="example-card" style="background:var(--cool-white);padding:20px;border-color:rgba(13,27,42,0.08);">
+      <div class="state-demo">
+        <button class="btn btn-md" style="background:var(--pink);color:white;border:none;border-radius:8px;">Primary</button>
+        <button class="btn btn-md" style="background:transparent;color:var(--text-light);border:1px solid rgba(13,27,42,0.15);border-radius:8px;">Secondary</button>
+        <button class="btn btn-md" style="background:transparent;color:var(--teal-lt);border:none;border-radius:8px;">Ghost</button>
+      </div>
+      <div style="font-size:10px;color:rgba(13,27,42,0.3);margin-top:8px;">Pink stays the same. Secondary border uses navy at 15% opacity. Ghost uses darkened teal.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 08. CARD DESIGN                               -->
+<!-- ============================================ -->
+<div class="section" id="cards">
+  <div class="container">
+    <div class="sec-num">08</div>
+    <div class="sec-title">Card Design</div>
+    <div class="sec-desc">The StoryCard is the core content unit. Every story on PLHub lives inside one. Here's the full anatomy.</div>
+
+    <!-- Card anatomy mockup -->
+    <div class="sub-title">StoryCard Anatomy — Dark Mode</div>
+    <div style="max-width:600px;margin:16px 0;">
+      <div style="background:#112238;border:1px solid rgba(250,245,240,0.05);border-left:2px solid #3AAFA9;border-radius:10px;padding:16px;box-shadow:0 2px 6px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1);position:relative;">
+        <!-- Anatomy labels -->
+        <div style="position:absolute;right:-120px;top:8px;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--pink);font-weight:600;white-space:nowrap;">← Source label</div>
+        <div style="position:absolute;right:-120px;top:42px;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--pink);font-weight:600;white-space:nowrap;">← Headline</div>
+        <div style="position:absolute;right:-120px;top:80px;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--pink);font-weight:600;white-space:nowrap;">← Summary</div>
+        <div style="position:absolute;right:-120px;top:115px;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--pink);font-weight:600;white-space:nowrap;">← Footer row</div>
+        <div style="position:absolute;left:-90px;top:50%;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);font-weight:600;white-space:nowrap;transform:translateY(-50%);">Teal border →</div>
+
+        <!-- Card content -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:var(--gold)">BBC Sport</span>
+            <span style="font-size:10px;color:rgba(250,245,240,0.25)">·</span>
+            <span style="font-size:10px;color:rgba(250,245,240,0.25)">Bournemouth</span>
+            <span style="font-size:10px;color:rgba(250,245,240,0.25)">·</span>
+            <span style="font-size:10px;color:rgba(250,245,240,0.25)">16m ago</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:var(--gold)">⚡ 94</span>
+        </div>
+        <div style="font-size:15px;font-weight:600;color:rgba(250,245,240,1);line-height:1.35;margin-bottom:6px;">VAR controversy overshadows thrilling North London derby</div>
+        <div style="font-size:12px;font-weight:300;color:rgba(250,245,240,0.4);line-height:1.55;margin-bottom:10px;">Two key decisions went against Spurs in a match that saw five goals and a red card in a breathless second half.</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:var(--teal);background:rgba(58,175,169,0.12);padding:2px 6px;border-radius:3px;">ARS</span>
+          <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:var(--teal);background:rgba(58,175,169,0.12);padding:2px 6px;border-radius:3px;">TOT</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card spec table -->
+    <div class="sub-title">StoryCard Specification</div>
+    <table class="doc-table">
+      <tr><th>Property</th><th>Dark Mode</th><th>Light Mode</th></tr>
+      <tr><td>Background</td><td>#112238</td><td>#FFFFFF</td></tr>
+      <tr><td>Border</td><td>1px solid rgba(250,245,240,0.05)</td><td>1px solid rgba(13,27,42,0.08)</td></tr>
+      <tr><td>Left border</td><td>2px solid #3AAFA9</td><td>2px solid #2A9490</td></tr>
+      <tr><td>Shadow</td><td>0 2px 6px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1)</td><td>0 2px 6px rgba(13,27,42,0.05), 0 1px 2px rgba(13,27,42,0.03)</td></tr>
+      <tr><td>Border radius</td><td colspan="2">10px</td></tr>
+      <tr><td>Padding</td><td colspan="2">16px (mobile: 14px)</td></tr>
+      <tr><td>Gap between cards</td><td colspan="2">10px</td></tr>
+    </table>
+
+    <!-- Card internal hierarchy -->
+    <div class="sub-title">Card Internal Hierarchy</div>
+    <table class="doc-table">
+      <tr><th>Element</th><th>Font</th><th>Weight</th><th>Size</th><th>Opacity (dark)</th><th>Opacity (light)</th></tr>
+      <tr><td>Source label</td><td>Sora</td><td>600</td><td>10px</td><td colspan="2">Per-source colour (see Section 05)</td></tr>
+      <tr><td>Pulse score</td><td>Sora</td><td>600</td><td>11px</td><td>Gold #D4A843</td><td>Gold #B8923A</td></tr>
+      <tr><td>Headline</td><td>Sora</td><td>600</td><td>15px</td><td>100%</td><td>100%</td></tr>
+      <tr><td>Summary</td><td>Sora</td><td>300</td><td>12px</td><td>40%</td><td>60%</td></tr>
+      <tr><td>Timestamp</td><td>Sora</td><td>400</td><td>10px</td><td>25%</td><td>25%</td></tr>
+      <tr><td>Club tags</td><td>Sora</td><td>600</td><td>8px</td><td colspan="2">Teal bg + teal text</td></tr>
+    </table>
+
+    <!-- Light mode card -->
+    <div class="sub-title">StoryCard — Light Mode</div>
+    <div style="max-width:600px;margin:16px 0;">
+      <div style="background:#FFFFFF;border:1px solid rgba(13,27,42,0.08);border-left:2px solid #2A9490;border-radius:10px;padding:16px;box-shadow:0 2px 6px rgba(13,27,42,0.05), 0 1px 2px rgba(13,27,42,0.03);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;color:#B8923A">BBC Sport</span>
+            <span style="font-size:10px;color:rgba(13,27,42,0.25)">·</span>
+            <span style="font-size:10px;color:rgba(13,27,42,0.25)">Bournemouth</span>
+            <span style="font-size:10px;color:rgba(13,27,42,0.25)">·</span>
+            <span style="font-size:10px;color:rgba(13,27,42,0.25)">16m ago</span>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:#B8923A">⚡ 94</span>
+        </div>
+        <div style="font-size:15px;font-weight:600;color:rgba(13,27,42,1);line-height:1.35;margin-bottom:6px;">VAR controversy overshadows thrilling North London derby</div>
+        <div style="font-size:12px;font-weight:300;color:rgba(13,27,42,0.6);line-height:1.55;margin-bottom:10px;">Two key decisions went against Spurs in a match that saw five goals and a red card in a breathless second half.</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:#2A9490;background:rgba(42,148,144,0.08);padding:2px 6px;border-radius:3px;">ARS</span>
+          <span style="font-size:8px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:#2A9490;background:rgba(42,148,144,0.08);padding:2px 6px;border-radius:3px;">TOT</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- The Pundit's Take -->
+    <div class="sub-title">The Pundit's Take (Expandable)</div>
+    <div class="body">Below the card footer, an expandable drawer labelled "The Pundit's Take" with a teal <strong>SP</strong> badge. Tapping/clicking reveals the AI-generated commentary. The expand/collapse animation should be smooth (200ms ease-out).</div>
+    <div style="max-width:600px;background:#112238;border:1px solid rgba(250,245,240,0.05);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin:12px 0;">
+      <div style="width:28px;height:28px;border-radius:6px;background:rgba(58,175,169,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--teal);">SP</div>
+      <span style="font-size:12px;font-weight:500;color:rgba(250,245,240,0.6);flex:1;">The Pundit's Take</span>
+      <span style="font-size:14px;color:rgba(250,245,240,0.25);">▸</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 09. INTERACTION STATES                        -->
+<!-- ============================================ -->
+<div class="section" id="states">
+  <div class="container">
+    <div class="sec-num">09</div>
+    <div class="sec-title">Interaction States</div>
+    <div class="sec-desc">Every interactive element has six states: default, hover, active (pressed), focus (keyboard), disabled, and loading where applicable.</div>
+
+    <div class="sub-title">StoryCard States</div>
+    <table class="doc-table">
+      <tr><th>State</th><th>Change (Dark)</th><th>Change (Light)</th></tr>
+      <tr><td>Default</td><td>As specified in Section 08</td><td>As specified in Section 08</td></tr>
+      <tr><td>Hover</td><td>Border → rgba(250,245,240,0.1), shadow increases, subtle lift</td><td>Border → rgba(13,27,42,0.12), shadow increases</td></tr>
+      <tr><td>Active</td><td>scale(0.995), shadow reduces</td><td>scale(0.995), shadow reduces</td></tr>
+      <tr><td>Focus</td><td>2px pink outline offset by 2px</td><td>2px pink outline offset by 2px</td></tr>
+    </table>
+
+    <div class="sub-title">Link States</div>
+    <table class="doc-table">
+      <tr><th>State</th><th>Dark Mode</th><th>Light Mode</th></tr>
+      <tr><td>Default</td><td>Teal #3AAFA9, no underline</td><td>Teal #2A9490, no underline</td></tr>
+      <tr><td>Hover</td><td>Pink #E84080, underline</td><td>Pink #E84080, underline</td></tr>
+      <tr><td>Active</td><td>Pink darkened #D03670</td><td>Pink darkened #D03670</td></tr>
+      <tr><td>Focus</td><td>Teal with 2px outline</td><td>Teal with 2px outline</td></tr>
+      <tr><td>Visited</td><td>Same as default (no visited styling)</td><td>Same as default</td></tr>
+    </table>
+
+    <div class="sub-title">Club Filter Buttons</div>
+    <table class="doc-table">
+      <tr><th>State</th><th>Appearance</th></tr>
+      <tr><td>Default</td><td>Club crest, no background, 1px border at 5% white</td></tr>
+      <tr><td>Hover</td><td>Background lifts to rgba(250,245,240,0.05)</td></tr>
+      <tr><td>Active (selected)</td><td>Teal border, teal bg at 10% opacity</td></tr>
+      <tr><td>Focus</td><td>Pink outline ring</td></tr>
+    </table>
+
+    <div class="sub-title">Dark/Light Toggle</div>
+    <table class="doc-table">
+      <tr><th>State</th><th>Appearance</th></tr>
+      <tr><td>Default (dark mode)</td><td>Moon icon, teal colour, no background</td></tr>
+      <tr><td>Default (light mode)</td><td>Sun icon, gold colour, no background</td></tr>
+      <tr><td>Hover</td><td>Subtle bg appears (rgba teal/gold at 10%)</td></tr>
+      <tr><td>Active</td><td>Icon rotates 15° on press</td></tr>
+      <tr><td>Transition</td><td>Icon crossfades, 200ms ease. Page colours transition 300ms ease.</td></tr>
+    </table>
+
+    <div class="sub-title">Global Transition Rules</div>
+    <div class="body"><strong>Duration:</strong> 200ms for interactive elements, 300ms for page-level colour changes (dark/light toggle).</div>
+    <div class="body"><strong>Easing:</strong> ease-out for enters, ease-in for exits. Never linear — it feels mechanical.</div>
+    <div class="body"><strong>Transform origin:</strong> Centre for scale, top-left for reveals.</div>
+    <div class="body"><strong>Principle:</strong> Every interaction should feel premium and rewarding. Smooth transitions, gold accent for feedback, no jarring snaps. The site should feel like a nice place to be.</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 10. RESPONSIVE LAYOUT                         -->
+<!-- ============================================ -->
+<div class="section" id="layout">
+  <div class="container">
+    <div class="sec-num">10</div>
+    <div class="sec-title">Responsive Layout</div>
+    <div class="sec-desc">Mobile-first. Single column by default, three columns on desktop. Sidebars appear when there's room.</div>
+
+    <div class="spec-grid" style="grid-template-columns:repeat(3, 1fr);">
+      <!-- Mobile -->
+      <div class="spec-box" style="text-align:center;">
+        <div class="spec-box-title" style="color:var(--pink)">Mobile (&lt; 768px)</div>
+        <div style="width:60px;height:100px;background:var(--navy-card);border:1px solid rgba(250,245,240,0.08);border-radius:6px;margin:12px auto;padding:6px;">
+          <div style="width:100%;height:6px;background:rgba(250,245,240,0.1);border-radius:2px;margin-bottom:4px;"></div>
+          <div style="width:100%;height:60px;background:rgba(250,245,240,0.04);border-radius:3px;"></div>
+        </div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3);text-align:left;">
+          Single column<br>
+          Inline logo, centred<br>
+          Toggle right of nav<br>
+          No sidebars<br>
+          Full-width cards<br>
+          16px horizontal padding
+        </div>
+      </div>
+
+      <!-- Tablet -->
+      <div class="spec-box" style="text-align:center;">
+        <div class="spec-box-title" style="color:var(--teal)">Tablet (768–1023px)</div>
+        <div style="width:90px;height:100px;background:var(--navy-card);border:1px solid rgba(250,245,240,0.08);border-radius:6px;margin:12px auto;padding:6px;">
+          <div style="width:100%;height:6px;background:rgba(250,245,240,0.1);border-radius:2px;margin-bottom:4px;"></div>
+          <div style="width:100%;height:60px;background:rgba(250,245,240,0.04);border-radius:3px;"></div>
+        </div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3);text-align:left;">
+          Single column<br>
+          Inline logo, centred<br>
+          Toggle + sign in right<br>
+          No sidebars<br>
+          Max-width cards (640px)<br>
+          24px horizontal padding
+        </div>
+      </div>
+
+      <!-- Desktop -->
+      <div class="spec-box" style="text-align:center;">
+        <div class="spec-box-title" style="color:var(--gold)">Desktop (≥ 1024px)</div>
+        <div style="width:120px;height:100px;background:var(--navy-card);border:1px solid rgba(250,245,240,0.08);border-radius:6px;margin:12px auto;padding:6px;display:flex;gap:3px;">
+          <div style="width:20%;height:60px;background:rgba(250,245,240,0.04);border-radius:3px;margin-top:10px;"></div>
+          <div style="flex:1;">
+            <div style="width:100%;height:6px;background:rgba(250,245,240,0.1);border-radius:2px;margin-bottom:4px;"></div>
+            <div style="width:100%;height:60px;background:rgba(250,245,240,0.04);border-radius:3px;"></div>
+          </div>
+          <div style="width:20%;height:60px;background:rgba(250,245,240,0.04);border-radius:3px;margin-top:10px;"></div>
+        </div>
+        <div style="font-size:10px;color:rgba(250,245,240,0.3);text-align:left;">
+          Three columns: 280px / 1fr / 280px<br>
+          Inline logo, centred<br>
+          Toggle + sign in right<br>
+          Left sidebar: PL table<br>
+          Right sidebar: fixtures<br>
+          Max container: 1400px
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-title">Breakpoints</div>
+    <table class="doc-table">
+      <tr><th>Name</th><th>Min-width</th><th>Changes</th></tr>
+      <tr><td>Mobile</td><td>0px (default)</td><td>Single column, no sidebars, compact nav</td></tr>
+      <tr><td>Tablet</td><td>768px</td><td>Wider cards, more padding, still single column</td></tr>
+      <tr><td>Desktop</td><td>1024px</td><td>3-column grid, sidebars appear</td></tr>
+      <tr><td>Wide</td><td>1400px</td><td>Content maxes out, centred on page</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 11. DARK / LIGHT MODE                         -->
+<!-- ============================================ -->
+<div class="section" id="mode">
+  <div class="container">
+    <div class="sec-num">11</div>
+    <div class="sec-title">Dark / Light Mode</div>
+    <div class="sec-desc">Dark is the default. Light is the alternative. Both are first-class citizens.</div>
+
+    <div class="spec-grid">
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--pink)">Toggle Specification</div>
+        <div class="spec-row"><span class="spec-label">Icon</span><span class="spec-value" style="font-family:Sora,sans-serif">Sun ☀ / Moon ☾ (no label)</span></div>
+        <div class="spec-row"><span class="spec-label">Location</span><span class="spec-value" style="font-family:Sora,sans-serif">Nav bar, right side</span></div>
+        <div class="spec-row"><span class="spec-label">Visibility</span><span class="spec-value" style="font-family:Sora,sans-serif">Always visible (all breakpoints)</span></div>
+        <div class="spec-row"><span class="spec-label">Default</span><span class="spec-value" style="font-family:Sora,sans-serif">Dark mode</span></div>
+        <div class="spec-row"><span class="spec-label">Persistence</span><span class="spec-value" style="font-family:Sora,sans-serif">localStorage</span></div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--teal)">Transition Rules</div>
+        <div class="spec-row"><span class="spec-label">Page colours</span><span class="spec-value">300ms ease</span></div>
+        <div class="spec-row"><span class="spec-label">Icon swap</span><span class="spec-value">200ms crossfade</span></div>
+        <div class="spec-row"><span class="spec-label">Approach</span><span class="spec-value" style="font-family:Sora,sans-serif">CSS variables on :root</span></div>
+        <div class="spec-row"><span class="spec-label">Class</span><span class="spec-value">.dark (default) / .light</span></div>
+        <div class="spec-row"><span class="spec-label">No flash</span><span class="spec-value" style="font-family:Sora,sans-serif">Script in &lt;head&gt; reads pref</span></div>
+      </div>
+    </div>
+
+    <div class="body" style="margin-top:16px;"><strong>Implementation:</strong> Use CSS custom properties toggled by a class on <code>&lt;html&gt;</code>. A blocking <code>&lt;script&gt;</code> in <code>&lt;head&gt;</code> reads localStorage before paint to prevent flash-of-wrong-theme (FOWT). The toggle updates the class and persists the preference.</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 12. FUTURE FEATURES                           -->
+<!-- ============================================ -->
+<div class="section" id="future">
+  <div class="container">
+    <div class="sec-num">12</div>
+    <div class="sec-title">Future Features</div>
+    <div class="sec-desc">Scoped but not yet built. Design decisions captured here so they're consistent when implemented.</div>
+
+    <div class="future-grid">
+      <div class="future-card">
+        <div class="future-card-status" style="color:var(--gold)">Scoped</div>
+        <div class="future-card-title">The Snapshot Ticker</div>
+        <div class="future-card-body">Horizontal ticker bar below the nav. Shows live scores, p.100 page number, "Today: X matches". Monospace scores. Teal accents on page numbers and match count. Pink for LIVE indicator with pulsing dot. Background: slightly darker than page (rgba black overlay). Auto-scrolls on mobile, full-width on desktop.</div>
+      </div>
+      <div class="future-card">
+        <div class="future-card-status" style="color:var(--gold)">Scoped</div>
+        <div class="future-card-title">AI Pundit Characters</div>
+        <div class="future-card-body">Multiple named characters with distinct voices. The Secret Pundit (sharp, opinionated) already exists as "SP" badge. Future: tactical analyst, stats nerd, hot-take merchant, fan voice. Each gets a unique 2-letter badge and distinct colour from the palette. Characters defined in tone-of-voice work, visual treatment defined here.</div>
+      </div>
+      <div class="future-card">
+        <div class="future-card-status" style="color:var(--gold)">Scoped</div>
+        <div class="future-card-title">User Profiles / Auth</div>
+        <div class="future-card-body">Sign in via the nav bar (currently placeholder). Profile page will follow card design language — navy card background, teal structural elements. Avatar placeholder: diagonal frame icon. User preferences: favourite club, dark/light default, notification settings. Authentication via Supabase Auth.</div>
+      </div>
+      <div class="future-card">
+        <div class="future-card-status" style="color:var(--gold)">Scoped</div>
+        <div class="future-card-title">Notification Badges</div>
+        <div class="future-card-body">Small pink dot (8px) for unread counts on nav items. Larger pink pill with white number for counts > 9. Position: top-right of parent element, offset by -4px. Pulse animation on new notifications (same as LIVE dot). Use sparingly — this is not a social media app.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 13. TELETEXT NODS                             -->
+<!-- ============================================ -->
+<div class="section" id="teletext">
+  <div class="container">
+    <div class="sec-num">13</div>
+    <div class="sec-title">The Teletext Thread</div>
+    <div class="sec-desc">Not a theme. Not cosplay. A shared cultural memory baked subtly into the design language.</div>
+
+    <div class="body">The teal-on-navy palette already echoes Ceefax's cyan-on-dark aesthetic — this happened organically. The following elements make it intentional without making it a pastiche.</div>
+
+    <div class="spec-grid">
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--teal)">p.100 Page Numbers</div>
+        <div class="body" style="color:rgba(250,245,240,0.4);">The Snapshot bar uses "p.100" — a direct Ceefax reference. Subtle enough that under-25s think it's a design choice. Over-25s feel it instantly.</div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--teal)">Block Reveal</div>
+        <div class="body" style="color:rgba(250,245,240,0.4);">StoryCards load with a quick blocky reveal — content appears in horizontal strips, like a page rendering. CSS only, no performance cost.</div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--teal)">Monospace Scores</div>
+        <div class="body" style="color:rgba(250,245,240,0.4);">Live scores in the ticker use monospace type. The typewriter-style echoes Teletext's data formatting.</div>
+      </div>
+      <div class="spec-box">
+        <div class="spec-box-title" style="color:var(--teal)">Colour Language</div>
+        <div class="body" style="color:rgba(250,245,240,0.4);">Teal maps to Teletext cyan, gold to yellow, pink to magenta. The palette naturally aligns with the 8-colour Teletext system.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 14. ACCESSIBILITY & ADHD                      -->
+<!-- ============================================ -->
+<div class="section" id="a11y">
+  <div class="container">
+    <div class="sec-num">14</div>
+    <div class="sec-title">Accessibility & ADHD Principles</div>
+    <div class="sec-desc">PLHub is designed to be ADHD-friendly first. That means high contrast, scannable content, and no cognitive overhead.</div>
+
+    <div class="sub-title">WCAG Targets</div>
+    <table class="doc-table">
+      <tr><th>Requirement</th><th>Target</th><th>Notes</th></tr>
+      <tr><td>Text contrast (normal)</td><td>≥ 4.5:1 (AA)</td><td>All body text against backgrounds</td></tr>
+      <tr><td>Text contrast (large)</td><td>≥ 3:1 (AA)</td><td>18px+ or 14px bold</td></tr>
+      <tr><td>Interactive contrast</td><td>≥ 3:1 (AA)</td><td>Buttons, links against backgrounds</td></tr>
+      <tr><td>Focus indicators</td><td>Visible on all interactive elements</td><td>Pink outline, 2px, offset 2px</td></tr>
+      <tr><td>Target size</td><td>≥ 44×44px touch targets on mobile</td><td>Minimum for buttons, links, toggles</td></tr>
+      <tr><td>Motion</td><td>Respect prefers-reduced-motion</td><td>Disable block reveal, pulse animations</td></tr>
+    </table>
+
+    <div class="sub-title">ADHD-Friendly Design Constraints</div>
+    <div class="body"><strong>High contrast text.</strong> The no-grey rule exists because of this. Navy or warm white — never washed out neutral tones that require extra effort to read.</div>
+    <div class="body"><strong>Large, scannable fonts.</strong> Card headlines at 15px Sora 600. Body at 13px Sora 300. Nothing smaller than 10px. Line heights generous (1.35–1.55).</div>
+    <div class="body"><strong>Bite-sized AI summaries.</strong> The core USP. Every story gets a 1-2 sentence summary. You get the gist without clicking through. The Pundit's Take is one more tap for colour — never mandatory.</div>
+    <div class="body"><strong>No autoplay.</strong> No auto-playing video, audio, or animations that loop indefinitely. The LIVE pulse dot is the only continuous animation and it's 6px.</div>
+    <div class="body"><strong>Clear visual hierarchy.</strong> Source → Headline → Summary → Tags. The eye path is the same on every card. Consistency reduces cognitive load.</div>
+    <div class="body"><strong>No infinite scroll traps.</strong> "Load more stories" is a deliberate action. The user decides when to see more content.</div>
+    <div class="body"><strong>Rewarding interactions.</strong> Every tap/click should feel premium — smooth transitions, gold accent for feedback. The site should feel like a nice place to be, not an anxiety machine.</div>
+
+    <div class="sub-title">Reduced Motion</div>
+    <div class="code-block"><span class="code-comment">/* Respect user preferences */</span>
+@media (prefers-reduced-motion: reduce) {
+  <span class="code-prop">*</span> {
+    <span class="code-prop">animation-duration</span>: <span class="code-val">0.01ms !important</span>;
+    <span class="code-prop">transition-duration</span>: <span class="code-val">0.01ms !important</span>;
+  }
+}</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 15. AD POLICY                                 -->
+<!-- ============================================ -->
+<div class="section" id="ads">
+  <div class="container">
+    <div class="sec-num">15</div>
+    <div class="sec-title">Ad Policy</div>
+    <div class="sec-desc">Brief and non-negotiable.</div>
+    <div class="body" style="font-size:16px;color:var(--pink);font-weight:600;">No gambling content. Ever.</div>
+    <div class="body">No gambling ads, sponsorship, branded content, affiliate links, or odds integration. This is a hardcoded rule that applies to every placement on the site, in the app, on social media, and in any partnership. Monetisation strategy will be defined separately — this constraint is permanent regardless of what that strategy becomes.</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 16. BRAND RULES                               -->
+<!-- ============================================ -->
+<div class="section" id="rules">
+  <div class="container">
+    <div class="sec-num">16</div>
+    <div class="sec-title">Brand Rules</div>
+    <div class="sec-desc">The definitive do and don't list. If you're unsure about a design decision, check here first.</div>
+
+    <div class="rule-grid">
+      <div class="rule-col do">
+        <div class="rule-col-title" style="color:var(--teal)">Do</div>
+        <div class="rule-item">Use pink PL + white/dark HUB — always this weight split (700/300)</div>
+        <div class="rule-item">Keep gold restrained — icon bracket, pulse scores, and premium highlights only</div>
+        <div class="rule-item">Use teal for structural and interactive elements as defined in Section 06</div>
+        <div class="rule-item">Vary source labels by colour per feed (see Section 05)</div>
+        <div class="rule-item">Test all brand elements in both dark and light mode</div>
+        <div class="rule-item">Let the diagonal icon stand alone where space is tight</div>
+        <div class="rule-item">Use Sora 300 for body text — keep things light and readable</div>
+        <div class="rule-item">Use opacity on the base colour for text hierarchy — never grey hex codes</div>
+        <div class="rule-item">Use border + shadow on all cards in both modes</div>
+        <div class="rule-item">Use inline logo centred in nav on both mobile and desktop</div>
+        <div class="rule-item">Respect prefers-reduced-motion for all animations</div>
+        <div class="rule-item">Maintain 44×44px minimum touch targets on mobile</div>
+      </div>
+      <div class="rule-col dont">
+        <div class="rule-col-title" style="color:var(--pink)">Don't</div>
+        <div class="rule-item">Never put gold text for "HUB" on a black or dark background (PornHub pattern)</div>
+        <div class="rule-item">Never complete the frame with four brackets — always two, diagonal only</div>
+        <div class="rule-item">Never use the wordmark without the diagonal icon nearby</div>
+        <div class="rule-item">Never rotate or angle the diagonal frame mark</div>
+        <div class="rule-item">No gambling content, branding, or sponsorship — ever</div>
+        <div class="rule-item">Never use pure black (#000000) as a background — always navy</div>
+        <div class="rule-item">Never use pink for large blocks of body text — headlines and accents only</div>
+        <div class="rule-item">Never use grey hex codes for text — use opacity on the base colour</div>
+        <div class="rule-item">Never use warm/cream white for light mode backgrounds — cool white only</div>
+        <div class="rule-item">Never autoplay video, audio, or infinite looping animations</div>
+        <div class="rule-item">Never use the stacked logo in the nav bar — inline only</div>
+        <div class="rule-item">Never use fonts other than Sora (except monospace for scores)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 17. CSS REFERENCE                             -->
+<!-- ============================================ -->
+<div class="section" id="css">
+  <div class="container">
+    <div class="sec-num">17</div>
+    <div class="sec-title">CSS Implementation Reference</div>
+    <div class="sec-desc">Copy-paste these custom properties into your project. This is the single source of truth for the colour system in code.</div>
+
+    <div class="code-block"><span class="code-comment">/* ================================
+   PLHub Brand Tokens v2.0
+   ================================ */</span>
+
+<span class="code-comment">/* Dark mode (default) */</span>
+:root, .dark {
+  <span class="code-prop">--plh-bg</span>: <span class="code-val">#0D1B2A</span>;
+  <span class="code-prop">--plh-card</span>: <span class="code-val">#112238</span>;
+  <span class="code-prop">--plh-elevated</span>: <span class="code-val">#162D45</span>;
+  <span class="code-prop">--plh-text-100</span>: <span class="code-val">#FAF5F0</span>;
+  <span class="code-prop">--plh-text-80</span>: <span class="code-val">rgba(250,245,240,0.80)</span>;
+  <span class="code-prop">--plh-text-60</span>: <span class="code-val">rgba(250,245,240,0.60)</span>;
+  <span class="code-prop">--plh-text-40</span>: <span class="code-val">rgba(250,245,240,0.40)</span>;
+  <span class="code-prop">--plh-text-25</span>: <span class="code-val">rgba(250,245,240,0.25)</span>;
+  <span class="code-prop">--plh-pink</span>: <span class="code-val">#E84080</span>;
+  <span class="code-prop">--plh-pink-hover</span>: <span class="code-val">#D03670</span>;
+  <span class="code-prop">--plh-pink-active</span>: <span class="code-val">#B82E60</span>;
+  <span class="code-prop">--plh-gold</span>: <span class="code-val">#D4A843</span>;
+  <span class="code-prop">--plh-teal</span>: <span class="code-val">#3AAFA9</span>;
+  <span class="code-prop">--plh-ice</span>: <span class="code-val">#8AACCC</span>;
+  <span class="code-prop">--plh-violet</span>: <span class="code-val">#C084FC</span>;
+  <span class="code-prop">--plh-orange</span>: <span class="code-val">#F97316</span>;
+  <span class="code-prop">--plh-border</span>: <span class="code-val">rgba(250,245,240,0.05)</span>;
+  <span class="code-prop">--plh-shadow</span>: <span class="code-val">0 2px 6px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1)</span>;
+}
+
+<span class="code-comment">/* Light mode */</span>
+.light {
+  <span class="code-prop">--plh-bg</span>: <span class="code-val">#F8F9FB</span>;
+  <span class="code-prop">--plh-card</span>: <span class="code-val">#FFFFFF</span>;
+  <span class="code-prop">--plh-elevated</span>: <span class="code-val">#F0F1F4</span>;
+  <span class="code-prop">--plh-text-100</span>: <span class="code-val">#1A1D23</span>;
+  <span class="code-prop">--plh-text-80</span>: <span class="code-val">rgba(13,27,42,0.80)</span>;
+  <span class="code-prop">--plh-text-60</span>: <span class="code-val">rgba(13,27,42,0.60)</span>;
+  <span class="code-prop">--plh-text-40</span>: <span class="code-val">rgba(13,27,42,0.40)</span>;
+  <span class="code-prop">--plh-text-25</span>: <span class="code-val">rgba(13,27,42,0.25)</span>;
+  <span class="code-prop">--plh-pink</span>: <span class="code-val">#E84080</span>;
+  <span class="code-prop">--plh-pink-hover</span>: <span class="code-val">#D03670</span>;
+  <span class="code-prop">--plh-pink-active</span>: <span class="code-val">#B82E60</span>;
+  <span class="code-prop">--plh-gold</span>: <span class="code-val">#B8923A</span>;
+  <span class="code-prop">--plh-teal</span>: <span class="code-val">#2A9490</span>;
+  <span class="code-prop">--plh-ice</span>: <span class="code-val">#5A7F9F</span>;
+  <span class="code-prop">--plh-violet</span>: <span class="code-val">#9B59B6</span>;
+  <span class="code-prop">--plh-orange</span>: <span class="code-val">#D96A14</span>;
+  <span class="code-prop">--plh-border</span>: <span class="code-val">rgba(13,27,42,0.08)</span>;
+  <span class="code-prop">--plh-shadow</span>: <span class="code-val">0 2px 6px rgba(13,27,42,0.05), 0 1px 2px rgba(13,27,42,0.03)</span>;
+}
+
+<span class="code-comment">/* Font */</span>
+<span class="code-prop">--plh-font</span>: <span class="code-val">'Sora', sans-serif</span>;
+<span class="code-prop">--plh-font-mono</span>: <span class="code-val">'Consolas', 'Courier New', monospace</span>;
+
+<span class="code-comment">/* Transitions */</span>
+<span class="code-prop">--plh-transition-fast</span>: <span class="code-val">200ms ease-out</span>;
+<span class="code-prop">--plh-transition-page</span>: <span class="code-val">300ms ease</span>;
+
+<span class="code-comment">/* Spacing (4px base grid) */</span>
+<span class="code-prop">--plh-space-1</span>: <span class="code-val">4px</span>;
+<span class="code-prop">--plh-space-2</span>: <span class="code-val">8px</span>;
+<span class="code-prop">--plh-space-3</span>: <span class="code-val">12px</span>;
+<span class="code-prop">--plh-space-4</span>: <span class="code-val">16px</span>;
+<span class="code-prop">--plh-space-6</span>: <span class="code-val">24px</span>;
+<span class="code-prop">--plh-space-8</span>: <span class="code-val">32px</span>;
+<span class="code-prop">--plh-space-12</span>: <span class="code-val">48px</span>;
+
+<span class="code-comment">/* Border radius */</span>
+<span class="code-prop">--plh-radius-sm</span>: <span class="code-val">6px</span>;
+<span class="code-prop">--plh-radius-md</span>: <span class="code-val">8px</span>;
+<span class="code-prop">--plh-radius-lg</span>: <span class="code-val">10px</span>;
+<span class="code-prop">--plh-radius-xl</span>: <span class="code-val">14px</span>;</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- 18. VERSION HISTORY                           -->
+<!-- ============================================ -->
+<div class="section" id="versions">
+  <div class="container">
+    <div class="sec-num">18</div>
+    <div class="sec-title">Version History</div>
+    <div class="sec-desc">Update this table every time the brand evolves.</div>
+
+    <table class="doc-table">
+      <tr><th>Date</th><th>Version</th><th>Changes</th></tr>
+      <tr>
+        <td>28 Feb 2026</td>
+        <td>2.0</td>
+        <td>Complete brand system rebuild. Added: full button system (primary/secondary/ghost with all states), card anatomy with visual examples, interaction states for all elements, responsive layout spec, dark/light mode toggle spec, future feature scopes (Snapshot, AI Pundits, profiles, notifications), accessibility & ADHD principles, ad policy, mobile vs desktop logo usage, favicon scaling, CSS implementation reference with spacing and radius tokens.</td>
+      </tr>
+      <tr>
+        <td>28 Feb 2026</td>
+        <td>1.0</td>
+        <td>Initial brand identity. Logo, colours (dark + light), typography, card design basics, source labels, teal system, Teletext nods, brand rules.</td>
+      </tr>
+    </table>
+
+    <div style="margin-top:40px;padding:20px;text-align:center;border-top:1px solid rgba(250,245,240,0.04);">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+        <svg width="18" height="18" viewBox="0 0 36 36" fill="none"><path d="M4 14V4H14" stroke="#D4A843" stroke-width="4" stroke-linecap="round"/><path d="M32 22V32H22" stroke="#E84080" stroke-width="4" stroke-linecap="round"/></svg>
+        <span style="font-size:14px;font-weight:700;color:var(--pink)">PL</span><span style="font-size:14px;font-weight:300">HUB</span>
+      </div>
+      <div style="font-size:11px;color:rgba(250,245,240,0.2);font-style:italic;">This is a living document. Update the version history when changes are made.</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes spin { from { transform:rotate(0deg) } to { transform:rotate(360deg) } }
+</style>
+
+</body>
+</html>

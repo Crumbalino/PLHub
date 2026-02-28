@@ -1,6 +1,7 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
-import { Atkinson_Hyperlegible, Lexend } from 'next/font/google'
+import { Sora } from 'next/font/google'
+import { themeInitScript } from '@/lib/theme-init'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import MatchTicker from '@/components/MatchTicker'
@@ -8,12 +9,11 @@ import JsonLd from '@/components/JsonLd'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import BackToTopButton from '@/components/BackToTopButton'
 
-const atkinson = Atkinson_Hyperlegible({ subsets: ['latin'], weight: ['400', '700'] })
-const lexend = Lexend({
+const sora = Sora({
   subsets: ['latin'],
-  weight: ['300', '400'],
+  variable: '--font-sora',
   display: 'swap',
-  variable: '--font-lexend',
+  weight: ['200', '300', '400', '500', '600', '700', '800'],
 })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
@@ -57,6 +57,12 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  themeColor: '#0D1B2A',
+  width: 'device-width',
+  initialScale: 1,
+}
+
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -87,30 +93,32 @@ export default function RootLayout({
   const gaMeasurementId = process.env.GA_MEASUREMENT_ID
 
   return (
-    <html lang="en" className="bg-[#0B1F21]">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        {/* Blocking script: reads localStorage before paint to prevent flash-of-wrong-theme */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
       </head>
-      <body className={`${atkinson.className} ${lexend.variable} bg-[#0B1F21] text-white antialiased`} style={{ fontSize: '18px', lineHeight: '1.65', letterSpacing: '0.01em' }}>
-        {/* Content wrapper with z-index to sit above background gradient */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          {gaMeasurementId && (
-            <GoogleAnalytics measurementId={gaMeasurementId} />
-          )}
-          <Navbar />
-          <MatchTicker />
-          <main>{children}</main>
-          <BackToTopButton />
-          <footer className="mt-16 border-t border-white/5 px-4 py-10 text-center">
-            <p className="text-sm text-white/40">
-              PLHub — Premier League news from Reddit, BBC Sport, YouTube and more.
-            </p>
-            <p className="text-xs text-white/20 mt-2">
-              Not affiliated with the Premier League or its clubs.
-            </p>
-          </footer>
-        </div>
+      <body className={`${sora.variable} font-sora antialiased`}>
+        {gaMeasurementId && (
+          <GoogleAnalytics measurementId={gaMeasurementId} />
+        )}
+
+        <Navbar />
+        <MatchTicker />
+        <main>{children}</main>
+        <BackToTopButton />
+
+        {/* Footer */}
+        <footer className="mt-16 border-t border-white/5 px-4 py-10 text-center">
+          <p className="text-sm text-white/40">
+            PLHub — Premier League news from Reddit, BBC Sport, YouTube and more.
+          </p>
+          <p className="text-xs text-white/20 mt-2">
+            Not affiliated with the Premier League or its clubs.
+          </p>
+        </footer>
 
         {/* Google Analytics GA4 */}
         <Script
@@ -140,4 +148,3 @@ export default function RootLayout({
     </html>
   )
 }
-
