@@ -72,6 +72,11 @@ export interface FeedPost {
   timeDisplay: string
   readTimeLabel: string
   publishedAt: string
+  // Index scoring components (0-25 each)
+  scoreCredibility: number
+  scoreRecency: number
+  scoreEngagement: number
+  scoreSignificance: number
 }
 
 export interface ClubBadge {

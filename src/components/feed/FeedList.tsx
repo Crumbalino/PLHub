@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useFeed } from '@/hooks/useFeed'
 import { useExpandCard } from '@/hooks/useExpandCard'
 import StoryCard from './StoryCard'
@@ -26,6 +27,7 @@ const SORT_HEADINGS: Record<SortMode, { title: string; sub: string }> = {
 }
 
 export default function FeedList({ club = null }: FeedListProps) {
+  const [showHowItWorks, setShowHowItWorks] = useState(false)
   const {
     posts,
     isLoading,
@@ -47,10 +49,29 @@ export default function FeedList({ club = null }: FeedListProps) {
 
       {/* Section Heading */}
       <div className="mb-6 mt-6 border-l-3 border-l-[#C4A23E] pl-3">
-        <h2 className="text-xl font-bold text-white">
-          {heading.title}
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-bold text-white">
+            {heading.title}
+          </h2>
+          {sortMode === 'pulse' && (
+            <button
+              onClick={() => setShowHowItWorks(!showHowItWorks)}
+              className="text-xs text-[#C4A23E] hover:underline cursor-pointer transition-colors"
+            >
+              How this works
+            </button>
+          )}
+        </div>
         <p className="text-sm text-gray-400 mt-1">{heading.sub}</p>
+
+        {/* How it works explainer */}
+        {sortMode === 'pulse' && showHowItWorks && (
+          <div className="mt-4 overflow-hidden animate-in fade-in-0 slide-in-from-top-2 duration-300">
+            <div className="max-w-[600px] text-sm text-gray-200 leading-relaxed p-4 bg-white/5 rounded-lg border border-white/10">
+              Every story is scored 0–100 based on four things: how trusted the source is, how fresh the story is, how much people are talking about it, and how significant it actually is. No paid placement, no algorithms favouring advertisers. Just good stories, ranked fairly.
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Loading skeleton — shimmer effect */}

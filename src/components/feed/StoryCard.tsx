@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import type { FeedPost } from '@/lib/types'
+import IndexScoreTooltip from './IndexScoreTooltip'
 
 interface StoryCardProps {
   post: FeedPost
@@ -102,7 +103,9 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
   const [cardHovered, setCardHovered] = useState(false)
   const [animatedScore, setAnimatedScore] = useState(0)
   const [hasAnimatedScore, setHasAnimatedScore] = useState(false)
+  const [tooltipOpen, setTooltipOpen] = useState(false)
   const cardRef = useRef<HTMLElement>(null)
+  const scoreBadgeRef = useRef<HTMLDivElement>(null)
 
   const hasImage = !!post.imageUrl && !imgError
   const sourceName = getSourceName(post.sourceInfo.name)
@@ -151,6 +154,19 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
     setSummaryExpanded(!summaryExpanded)
     setTimeout(() => setSpPulsing(false), 300)
     setTimeout(() => setBorderPulsing(false), 500)
+  }
+
+  const handleScoreBadgeClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setTooltipOpen(!tooltipOpen)
+  }
+
+  const handleScoreBadgeHover = () => {
+    setTooltipOpen(true)
+  }
+
+  const handleScoreBadgeLeave = () => {
+    setTooltipOpen(false)
   }
 
   const scoreColor = getScoreColorClass(post.indexScore || 0)
@@ -224,7 +240,11 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
         {/* Right side: INDEX SCORE */}
         {post.indexScore && (
           <div
-            className={`${scoreColor.bg} ${scoreColor.text} ${scoreColor.border} text-sm font-bold rounded-md px-2 py-0.5 tabular-nums ${scoreColor.glow} transition-all duration-200 flex-shrink-0`}
+            ref={scoreBadgeRef}
+            onClick={handleScoreBadgeClick}
+            onMouseEnter={handleScoreBadgeHover}
+            onMouseLeave={handleScoreBadgeLeave}
+            className={`${scoreColor.bg} ${scoreColor.text} ${scoreColor.border} text-sm font-bold rounded-md px-2 py-0.5 tabular-nums ${scoreColor.glow} transition-all duration-200 flex-shrink-0 cursor-pointer hover:${scoreColor.border}`}
           >
             {displayScore}
           </div>
@@ -348,6 +368,23 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
             </div>
           </div>
         </>
+      )}
+
+      {/* Index Score Tooltip */}
+      {tooltipOpen && scoreBadgeRef.current && (
+        <div style={{
+          '--tooltip-top': `${scoreBadgeRef.current.getBoundingClientRect().top - 8}px`,
+        } as React.CSSProperties}>
+          <IndexScoreTooltip
+            totalScore={displayScore}
+            scoreCredibility={post.scoreCredibility}
+            scoreRecency={post.scoreRecency}
+            scoreEngagement={post.scoreEngagement}
+            scoreSignificance={post.scoreSignificance}
+            isOpen={tooltipOpen}
+            onClose={() => setTooltipOpen(false)}
+          />
+        </div>
       )}
     </article>
   )

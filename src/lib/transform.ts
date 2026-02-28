@@ -6,7 +6,7 @@
 // ============================================================
 
 import type { Post, FeedPost, TrendingPost } from './types'
-import { calculatePLHubIndex, calculateHeatLabel } from './scoring'
+import { calculatePLHubIndex, calculateHeatLabel, getIndexComponents } from './scoring'
 import { getSourceInfo } from './sources'
 import { detectAllClubs, toClubBadges } from './clubs'
 import {
@@ -25,6 +25,7 @@ import {
 export function transformPost(post: Post): FeedPost {
   const pulseIndex = calculatePLHubIndex(post)
   const heatLabel = calculateHeatLabel(pulseIndex)
+  const components = getIndexComponents(post)
   const sourceInfo = getSourceInfo(post)
   const detectedSlugs = detectAllClubs(post.title, post.content, post.summary, post.club_slug)
   const clubs = toClubBadges(detectedSlugs)
@@ -50,6 +51,10 @@ export function transformPost(post: Post): FeedPost {
     timeDisplay: getTimeDisplay(post.published_at),
     readTimeLabel: getReadTimeLabel(post.summary),
     publishedAt: post.published_at,
+    scoreCredibility: components.credibility,
+    scoreRecency: components.recency,
+    scoreEngagement: components.engagement,
+    scoreSignificance: components.significance,
   }
 }
 
