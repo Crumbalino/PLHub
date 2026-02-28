@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     // Check if summary already exists in Supabase
     const { data: post, error: fetchError } = await supabase
       .from('posts')
-      .select('summary, summary_hook')
+      .select('summary, summary_hook, score_significance')
       .eq('id', postId)
       .single()
 
@@ -29,11 +29,15 @@ export async function POST(request: Request) {
 
     // If summary exists, return it immediately
     if (post?.summary) {
-      return Response.json({ summary: post.summary, hook: post.summary_hook || null })
+      return Response.json({
+        summary: post.summary,
+        hook: post.summary_hook || null,
+        significance: post.score_significance || null,
+      })
     }
 
-    // Generate summary and hook if not exists
-    const { summary: generatedSummary, hook: generatedHook } = await generateSummary(title, content || null)
+    // Generate summary, hook, and significance if not exists
+    const { summary: generatedSummary, hook: generatedHook, significance: generatedSignificance } = await generateSummary(title, content || null)
 
     if (!generatedSummary) {
       return Response.json(
@@ -42,10 +46,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // Save summary and hook to Supabase
-    const updateData: Record<string, string | null> = { summary: generatedSummary }
+    // Save summary, hook, and significance to Supabase
+    const updateData: Record<string, string | number | null> = { summary: generatedSummary }
     if (generatedHook) {
       updateData.summary_hook = generatedHook
+    }
+    if (generatedSignificance !== null && generatedSignificance !== undefined) {
+      updateData.score_significance = generatedSignificance
     }
 
     const { error: updateError } = await supabase
@@ -55,11 +62,19 @@ export async function POST(request: Request) {
 
     if (updateError) {
       console.error('Supabase update error:', updateError)
-      // Still return the generated summary even if save fails
-      return Response.json({ summary: generatedSummary, hook: generatedHook || null })
+      // Still return the generated values even if save fails
+      return Response.json({
+        summary: generatedSummary,
+        hook: generatedHook || null,
+        significance: generatedSignificance || null,
+      })
     }
 
-    return Response.json({ summary: generatedSummary, hook: generatedHook || null })
+    return Response.json({
+      summary: generatedSummary,
+      hook: generatedHook || null,
+      significance: generatedSignificance || null,
+    })
   } catch (error) {
     console.error('Summary API error:', error)
     return Response.json(

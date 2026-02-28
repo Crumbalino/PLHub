@@ -21,13 +21,12 @@ export type {
 
 // Scoring
 export {
-  calculatePulseIndex,
-  calculateIndexScore,
+  calculatePLHubIndex,
+  calculateRecencyScore,
   calculateHeatLabel,
-  calculateHotScore,
   sortPosts,
-  getMaxScore,
   getIndexColor,
+  getIndexComponents,
 } from './scoring'
 
 // Clubs

@@ -6,7 +6,7 @@
 // ============================================================
 
 import type { Post, FeedPost, TrendingPost } from './types'
-import { calculatePulseIndex, calculateHeatLabel } from './scoring'
+import { calculatePLHubIndex, calculateHeatLabel } from './scoring'
 import { getSourceInfo } from './sources'
 import { detectAllClubs, toClubBadges } from './clubs'
 import {
@@ -23,7 +23,7 @@ import {
  * Every field the UI needs is computed here — components just render props.
  */
 export function transformPost(post: Post): FeedPost {
-  const pulseIndex = calculatePulseIndex(post)
+  const pulseIndex = calculatePLHubIndex(post)
   const heatLabel = calculateHeatLabel(pulseIndex)
   const sourceInfo = getSourceInfo(post)
   const detectedSlugs = detectAllClubs(post.title, post.content, post.summary, post.club_slug)
@@ -71,7 +71,7 @@ export function transformTrendingPosts(posts: Post[]): TrendingPost[] {
       id: post.id,
       rank: index + 1,
       title: decodeHtmlEntities(post.title),
-      indexScore: calculatePulseIndex(post),
+      indexScore: calculatePLHubIndex(post),
       clubs: toClubBadges(detectedSlugs),
     }
   })

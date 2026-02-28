@@ -32,23 +32,34 @@ export async function GET(req: NextRequest) {
 
     if (!posts || posts.length === 0) {
       // If no posts without summaries, try to fill in missing hooks
-      return await backfillMissingHooks(supabase, limit)
+      const hookResult = await backfillMissingHooks(supabase, limit)
+      // If we backfilled hooks and there are no more, try significance scores
+      if (hookResult.status === 200) {
+        const hookData = await hookResult.json()
+        if (hookData.processed === 0) {
+          return await backfillMissingSignificance(supabase, limit)
+        }
+      }
+      return hookResult
     }
 
     let updated = 0
     let failed = 0
 
     for (const post of posts) {
-      const { summary, hook } = await generateSummary(post.title, post.content)
+      const { summary, hook, significance } = await generateSummary(post.title, post.content)
 
       if (!summary) {
         failed++
         continue
       }
 
-      const updateData: Record<string, string | null> = { summary }
+      const updateData: Record<string, string | number | null> = { summary }
       if (hook) {
         updateData.summary_hook = hook
+      }
+      if (significance !== null && significance !== undefined) {
+        updateData.score_significance = significance
       }
 
       const { error: updateError } = await supabase
@@ -138,5 +149,63 @@ async function backfillMissingHooks(supabase: ReturnType<typeof createServerClie
     failed,
     remaining: remaining ?? 0,
     message: 'Backfilling missing hooks',
+  })
+}
+
+async function backfillMissingSignificance(supabase: ReturnType<typeof createServerClient>, limit: number) {
+  // Fetch posts that have summaries but no significance score yet
+  const { data: postsWithoutSignificance, error: fetchError } = await supabase
+    .from('posts')
+    .select('id, title, content, summary')
+    .not('summary', 'is', null)
+    .is('score_significance', null)
+    .limit(limit)
+
+  if (fetchError) {
+    return NextResponse.json({ error: fetchError.message }, { status: 500 })
+  }
+
+  if (!postsWithoutSignificance || postsWithoutSignificance.length === 0) {
+    return NextResponse.json({ success: true, processed: 0, message: 'All posts have significance scores.' })
+  }
+
+  let updated = 0
+  let failed = 0
+
+  for (const post of postsWithoutSignificance) {
+    const { significance } = await generateSummary(post.title, post.content)
+
+    if (significance === null || significance === undefined) {
+      failed++
+      continue
+    }
+
+    const { error: updateError } = await supabase
+      .from('posts')
+      .update({ score_significance: significance })
+      .eq('id', post.id)
+
+    if (updateError) {
+      console.error(`Failed to update significance for post ${post.id}:`, updateError)
+      failed++
+    } else {
+      updated++
+    }
+  }
+
+  // Count remaining posts without significance
+  const { count: remaining } = await supabase
+    .from('posts')
+    .select('*', { count: 'exact', head: true })
+    .not('summary', 'is', null)
+    .is('score_significance', null)
+
+  return NextResponse.json({
+    success: true,
+    processed: postsWithoutSignificance.length,
+    updated,
+    failed,
+    remaining: remaining ?? 0,
+    message: 'Backfilling missing significance scores',
   })
 }

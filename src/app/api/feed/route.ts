@@ -15,7 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { filterPLContent, deduplicatePosts } from '@/lib/content-filter'
-import { sortPosts } from '@/lib/scoring'
+import { sortPosts, calculatePLHubIndex } from '@/lib/scoring'
 import { transformPosts } from '@/lib/transform'
 import type { Post, SortMode, FeedResponse } from '@/lib/types'
 
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('posts')
       .select(
-        'id, external_id, title, url, summary, summary_hook, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, clubs(*)',
+        'id, external_id, title, url, summary, summary_hook, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, score_significance, clubs(*)',
         { count: 'exact' }
       )
 

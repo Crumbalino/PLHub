@@ -7,7 +7,7 @@
 
 import { supabase } from '@/lib/supabase'
 import { filterPLContent, deduplicatePosts } from '@/lib/content-filter'
-import { calculatePulseIndex, sortPosts } from '@/lib/scoring'
+import { calculatePLHubIndex, sortPosts } from '@/lib/scoring'
 import { getSourceInfo } from '@/lib/sources'
 import { decodeHtmlEntities, stripMarkdown, getPreviewBlurb } from '@/lib/formatting'
 
@@ -54,7 +54,7 @@ export async function generateDigestContent(): Promise<DigestContent | null> {
 
   const { data, error } = await supabase
     .from('posts')
-    .select('id, external_id, title, url, summary, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, clubs(*)')
+    .select('id, external_id, title, url, summary, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, score_significance, clubs(*)')
     .gte('published_at', since)
     .order('score', { ascending: false })
     .limit(100)
@@ -82,7 +82,7 @@ export async function generateDigestContent(): Promise<DigestContent | null> {
       source: post.source,
       sourceName: sourceInfo.name,
       url: post.url,
-      pulseIndex: calculatePulseIndex(post),
+      pulseIndex: calculatePLHubIndex(post),
       imageUrl: post.image_url || null,
     }
   }

@@ -102,16 +102,16 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
   const [cardHovered, setCardHovered] = useState(false)
   const [animatedScore, setAnimatedScore] = useState(0)
   const [hasAnimatedScore, setHasAnimatedScore] = useState(false)
-  const cardRef = useRef<HTMLArticleElement>(null)
+  const cardRef = useRef<HTMLElement>(null)
 
   const hasImage = !!post.imageUrl && !imgError
   const sourceName = getSourceName(post.sourceInfo.name)
   const sourceDomain = getSourceDomain(post.sourceInfo.name)
   const staggerDelay = index < 10 ? `${index * 60}ms` : '0ms'
   const hasSummary = !!post.summary
-  const paragraphs = hasSummary ? splitSummaryIntoParagraphs(post.summary) : []
+  const paragraphs = hasSummary && post.summary ? splitSummaryIntoParagraphs(post.summary) : []
   const spTriggerText = post.summaryHook || 'The Pundit\'s Take'
-  const teaser = hasSummary ? post.summary.substring(0, 60).trim() + '...' : null
+  const teaser = hasSummary && post.summary ? post.summary.substring(0, 60).trim() + '...' : null
 
   // Animated score count-up with IntersectionObserver
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
       ([entry]) => {
         if (entry.isIntersecting) {
           setHasAnimatedScore(true)
-          const target = post.indexScore
+          const target = post.indexScore || 0
           let current = 0
           const increment = target / 60 // 60 frames over ~1s
           const interval = setInterval(() => {

@@ -1,71 +1,164 @@
 // ============================================================
-// PLHub Scoring
+// PLHub Index: Four-Pillar Scoring System (0-100)
 // Platform-agnostic — pure math, no UI dependencies
+// ============================================================
+//
+// The PLHub Index combines four equally weighted pillars (0-25 each):
+// 1. SOURCE CREDIBILITY: Trust in the publication/author
+// 2. RECENCY: How fresh is the story (decays over time)
+// 3. ENGAGEMENT: Community interest (upvotes, comments)
+// 4. SIGNIFICANCE: Editorial importance (set by AI)
+//
+// Final score = credibility + live_recency + engagement + significance
 // ============================================================
 
 import type { Post, HeatLabel } from './types'
-import { SCORING } from './constants'
 
 /**
- * The PLHub Index: a combined score (1-99) factoring recency, engagement, and source quality.
- * This is the primary "pulse" sort — what makes PLHub feel alive.
- *
- * - Recency: full marks if just posted, decays to zero over 25 hours
- * - Engagement: logarithmic scale of Reddit score / social signals
- * - Source weight: RSS news outlets weighted slightly higher than Reddit (original reporting)
+ * Source credibility mapping (0-25 points)
  */
-export function calculatePulseIndex(post: Post): number {
-  const ageHours = (Date.now() - new Date(post.published_at).getTime()) / 36e5
-  const recencyScore = Math.max(0, 100 - ageHours * 4) // decays over 25 hours
-  const engagementScore = Math.min(100, Math.log10((post.score || 1) + 1) * 40)
-  const sourceWeight = post.source === 'reddit' ? 1 : 1.3
-  const index = Math.round((recencyScore * 0.4 + engagementScore * 0.6) * sourceWeight)
-  return Math.min(99, Math.max(1, index))
+function getSourceCredibility(source: string, subreddit: string | null, upvoteRatio?: number): number {
+  if (source === 'rss') {
+    const sourceMap: Record<string, number> = {
+      'bbc': 25,
+      'guardian': 24,
+      'athletic': 24,
+      'sky': 22,
+      'espn': 18,
+      'talksport': 14,
+    }
+
+    const lowerSource = subreddit?.toLowerCase() ?? ''
+    for (const [key, score] of Object.entries(sourceMap)) {
+      if (lowerSource.includes(key)) {
+        return score
+      }
+    }
+    return 10 // Unknown/other sources
+  }
+
+  // Reddit: base 8, plus bonus for upvote ratio (0-6 bonus, max 14)
+  if (source === 'reddit') {
+    if (upvoteRatio !== undefined && upvoteRatio > 0) {
+      // Upvote ratio bonus: high ratio (>0.8) gets more points
+      const ratio = Math.min(1, upvoteRatio)
+      const bonus = Math.round((ratio - 0.5) * 12) // 0.5 ratio = 0 bonus, 1.0 ratio = 6 bonus
+      return Math.min(14, 8 + Math.max(0, bonus))
+    }
+    return 8
+  }
+
+  // YouTube and other sources
+  return 10
 }
 
 /**
- * Calculate a logarithmic index score (0-100) for display.
- * Used for the visual score badge on cards.
- * Returns null if post has no meaningful score.
+ * Recency score (0-25 points, calculated fresh on each request)
  */
-export function calculateIndexScore(score: number, maxScore: number): number | null {
-  if (!score || score <= 0 || !maxScore || maxScore <= 0) return null
-  const logScore = Math.log(score + 1)
-  const logMax = Math.log(maxScore + 1)
-  return Math.max(1, Math.round((logScore / logMax) * 100))
+export function calculateRecencyScore(publishedAtStr: string): number {
+  const ageHours = (Date.now() - new Date(publishedAtStr).getTime()) / (1000 * 60 * 60)
+
+  if (ageHours <= 1) return 25
+  if (ageHours <= 3) return 20
+  if (ageHours <= 6) return 15
+  if (ageHours <= 12) return 10
+  if (ageHours <= 24) return 5
+  return 1
 }
 
 /**
- * Calculate a heat label based on pulse index.
+ * Engagement score (0-25 points)
+ * Reddit: logarithmic scale of upvotes + comments
+ * RSS: flat 12 (we can't measure engagement yet)
  */
-export function calculateHeatLabel(pulseIndex: number): HeatLabel {
-  if (pulseIndex >= 75) return 'Hot'
-  if (pulseIndex >= 50) return 'Warm'
-  if (pulseIndex >= 30) return 'Rising'
+function getEngagementScore(post: Post): number {
+  if (post.source === 'reddit') {
+    const totalEngagement = (post.score ?? 0) + (post.num_comments ?? 0) + 1
+    const score = Math.round(Math.log10(totalEngagement) * 10)
+    return Math.min(25, Math.max(0, score))
+  }
+
+  // RSS posts: flat engagement score
+  if (post.source === 'rss') {
+    return 12
+  }
+
+  // YouTube and other sources
+  return 12
+}
+
+/**
+ * Calculate the complete PLHub Index (0-100)
+ * Credibility + live recency + engagement + significance
+ */
+export function calculatePLHubIndex(post: Post): number {
+  const credibility = getSourceCredibility(post.source, post.subreddit, (post as any).upvote_ratio)
+  const recency = calculateRecencyScore(post.published_at)
+  const engagement = getEngagementScore(post)
+  const significance = (post as any).score_significance ?? 12
+
+  return credibility + recency + engagement + significance
+}
+
+/**
+ * Get component scores for display in tooltips
+ */
+export interface IndexComponents {
+  credibility: number
+  recency: number
+  engagement: number
+  significance: number
+  total: number
+}
+
+export function getIndexComponents(post: Post): IndexComponents {
+  const credibility = getSourceCredibility(post.source, post.subreddit, (post as any).upvote_ratio)
+  const recency = calculateRecencyScore(post.published_at)
+  const engagement = getEngagementScore(post)
+  const significance = (post as any).score_significance ?? 12
+
+  return {
+    credibility,
+    recency,
+    engagement,
+    significance,
+    total: credibility + recency + engagement + significance,
+  }
+}
+
+/**
+ * Calculate a heat label based on index score
+ */
+export function calculateHeatLabel(indexScore: number): HeatLabel {
+  if (indexScore >= 75) return 'Hot'
+  if (indexScore >= 50) return 'Warm'
+  if (indexScore >= 30) return 'Rising'
   return null
 }
 
 /**
- * "Hot" sort score: score / age^gravity.
- * Recent high-scoring posts rank highest.
+ * Get the colour for the pulse index badge
  */
-export function calculateHotScore(post: Post): number {
-  const score = post.score || 0
-  const publishedAt = new Date(post.published_at).getTime()
-  const hoursAgo = Math.max(1, (Date.now() - publishedAt) / (1000 * 60 * 60))
-  return score / Math.pow(hoursAgo, SCORING.hotGravity)
+export function getIndexColor(index: number): string {
+  if (index >= 75) return '#FF4500'
+  if (index >= 50) return '#F5C842'
+  return '#FFFFFF'
 }
 
 /**
- * Sort posts by the specified mode.
- * Returns a new array (does not mutate input).
+ * Sort posts by the specified mode
  */
 export function sortPosts(posts: Post[], mode: 'pulse' | 'hot' | 'new'): Post[] {
   const sorted = [...posts]
 
   switch (mode) {
     case 'hot':
-      sorted.sort((a, b) => calculateHotScore(b) - calculateHotScore(a))
+      // Hot: recent high-engagement posts
+      sorted.sort((a, b) => {
+        const aScore = (a.score ?? 0) / Math.pow(Math.max(1, (Date.now() - new Date(a.published_at).getTime()) / (1000 * 60 * 60)), 1.5)
+        const bScore = (b.score ?? 0) / Math.pow(Math.max(1, (Date.now() - new Date(b.published_at).getTime()) / (1000 * 60 * 60)), 1.5)
+        return bScore - aScore
+      })
       break
     case 'new':
       sorted.sort(
@@ -75,7 +168,7 @@ export function sortPosts(posts: Post[], mode: 'pulse' | 'hot' | 'new'): Post[] 
       break
     case 'pulse':
     default:
-      sorted.sort((a, b) => calculatePulseIndex(b) - calculatePulseIndex(a))
+      sorted.sort((a, b) => calculatePLHubIndex(b) - calculatePLHubIndex(a))
       break
   }
 
@@ -83,17 +176,8 @@ export function sortPosts(posts: Post[], mode: 'pulse' | 'hot' | 'new'): Post[] 
 }
 
 /**
- * Find the maximum score from an array of posts.
+ * Get the maximum index score from an array of posts
  */
 export function getMaxScore(posts: Post[]): number {
-  return Math.max(...posts.map(p => p.score ?? 0), 1)
-}
-
-/**
- * Get the colour for the pulse index badge.
- */
-export function getIndexColor(index: number): string {
-  if (index > 75) return '#FF4500'
-  if (index >= 50) return '#F5C842'
-  return '#FFFFFF'
+  return Math.max(...posts.map(p => calculatePLHubIndex(p)), 1)
 }
