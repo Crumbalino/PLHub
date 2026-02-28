@@ -4,30 +4,15 @@ import { useState } from 'react'
 import { useFeed } from '@/hooks/useFeed'
 import { useExpandCard } from '@/hooks/useExpandCard'
 import StoryCard from './StoryCard'
-import SortTabs from './SortTabs'
 import type { SortMode } from '@/lib/types'
 
 interface FeedListProps {
   club?: string | null
 }
 
-const SORT_HEADINGS: Record<SortMode, { title: string; sub: string }> = {
-  pulse: {
-    title: 'Ranked by the PLHub Index',
-    sub: 'Stories ranked by source credibility, recency, and community engagement — not paid placement, ever.',
-  },
-  hot: {
-    title: "What's heating up",
-    sub: 'Rising fast right now',
-  },
-  new: {
-    title: 'Latest stories',
-    sub: 'Fresh off the press',
-  },
-}
-
 export default function FeedList({ club = null }: FeedListProps) {
   const [showHowItWorks, setShowHowItWorks] = useState(false)
+  const [headingPhase, setHeadingPhase] = useState(0) // For fade animation
   const {
     posts,
     isLoading,
@@ -40,32 +25,45 @@ export default function FeedList({ club = null }: FeedListProps) {
 
   const { isExpanded, toggle } = useExpandCard()
 
-  const heading = SORT_HEADINGS[sortMode]
+  const handleToggleSort = () => {
+    setHeadingPhase(1)
+    setTimeout(() => {
+      setSortMode(sortMode === 'pulse' ? 'new' : 'pulse')
+      setHeadingPhase(0)
+    }, 100)
+  }
+
+  const isIndexSort = sortMode === 'pulse'
+  const title = isIndexSort ? 'Ranked by the PLHub Index' : 'Latest stories'
+  const toggleText = isIndexSort ? 'or show latest' : 'or rank by Index'
 
   return (
     <>
-      {/* Sort Tabs */}
-      <SortTabs current={sortMode} onChange={setSortMode} />
 
-      {/* Section Heading */}
-      <div className="mb-6 mt-6 border-l-3 border-l-[#C4A23E] pl-3">
-        <div className="flex items-center gap-2">
+      {/* Section Heading with inline sort toggle */}
+      <div className="mb-6 mt-4 border-l-3 border-l-[#C4A23E] pl-3">
+        <div className={`flex items-center gap-2 transition-opacity duration-200 ${headingPhase === 1 ? 'opacity-0' : 'opacity-100'}`}>
           <h2 className="text-xl font-bold text-white">
-            {heading.title}
+            {title}
           </h2>
-          {sortMode === 'pulse' && (
+          <button
+            onClick={handleToggleSort}
+            className="text-sm text-[#C4A23E] hover:underline cursor-pointer transition-colors whitespace-nowrap"
+          >
+            {toggleText}
+          </button>
+          {isIndexSort && (
             <button
               onClick={() => setShowHowItWorks(!showHowItWorks)}
-              className="text-xs text-[#C4A23E] hover:underline cursor-pointer transition-colors"
+              className="text-xs text-[#C4A23E] hover:underline cursor-pointer transition-colors ml-2"
             >
-              How this works
+              • How this works
             </button>
           )}
         </div>
-        <p className="text-sm text-gray-400 mt-1">{heading.sub}</p>
 
         {/* How it works explainer */}
-        {sortMode === 'pulse' && showHowItWorks && (
+        {isIndexSort && showHowItWorks && (
           <div className="mt-4 overflow-hidden animate-in fade-in-0 slide-in-from-top-2 duration-300">
             <div className="max-w-[600px] text-sm text-gray-200 leading-relaxed p-4 bg-white/5 rounded-lg border border-white/10">
               Every story is scored 0–100 based on four things: how trusted the source is, how fresh the story is, how much people are talking about it, and how significant it actually is. No paid placement, no algorithms favouring advertisers. Just good stories, ranked fairly.

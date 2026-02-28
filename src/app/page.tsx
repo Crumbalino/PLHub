@@ -51,11 +51,8 @@ export default async function HomePage({ searchParams }: PageProps) {
             {/* Club Filter Bar — between Trending and Feed */}
             <ClubFilterBar currentClub={clubSlug ?? undefined} />
 
-            {/* Divider between filter/trending and feed */}
-            <hr className="section-divider mb-6" />
-
-            {/* Feed with fade transition */}
-            <div className="transition-opacity duration-300" key={clubSlug || 'all'}>
+            {/* Feed with fade transition — tight spacing above */}
+            <div className="mt-4 transition-opacity duration-300" key={clubSlug || 'all'}>
               <FeedList club={clubSlug} />
             </div>
 
