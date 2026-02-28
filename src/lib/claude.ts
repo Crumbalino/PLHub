@@ -4,14 +4,19 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
+export interface SummaryAndHook {
+  summary: string | null
+  hook: string | null
+}
+
 export async function generateSummary(
   title: string,
   content: string | null,
   club?: string | null
-): Promise<string | null> {
+): Promise<SummaryAndHook> {
   if (!process.env.ANTHROPIC_API_KEY) {
     console.warn('ANTHROPIC_API_KEY not set — skipping summary generation')
-    return null
+    return { summary: null, hook: null }
   }
 
   const clubLine = club ? `\nClub: ${club}` : ''
@@ -30,13 +35,19 @@ Rules:
 - Never use the word 'crucial'. Never say 'fans will be delighted'. Never be tabloid.
 - Maximum 60 words. Punchy. Dry. British.
 
+Also provide a punchy 4-6 word hook that teases your take without giving it away. It should create curiosity and make the reader want to expand and read more. Write it as if you're a mate leaning over and starting a sentence they can't help but want to hear the end of. Examples of good hooks: 'Blaming everyone but himself...', 'The fee tells you everything...', 'And it's not who you think...', 'One moment changed everything...'. The hook should be specific to THIS story, not generic. End it with '...' to create intrigue.
+
+Return the response in this exact format:
+HOOK: [4-6 word hook with ... at the end]
+SUMMARY: [the 2-3 sentence summary]
+
 Story title: ${title}
 Story content: ${content ?? ''}${clubLine}`
 
   try {
     const message = await client.messages.create({
       model: 'claude-opus-4-6',
-      max_tokens: 200,
+      max_tokens: 300,
       messages: [
         {
           role: 'user',
@@ -46,13 +57,23 @@ Story content: ${content ?? ''}${clubLine}`
     })
 
     const block = message.content[0]
-    if (block.type === 'text') {
-      return block.text.trim()
+    if (block.type !== 'text') {
+      return { summary: null, hook: null }
     }
-    return null
+
+    const text = block.text.trim()
+
+    // Parse HOOK and SUMMARY from response
+    const hookMatch = text.match(/HOOK:\s*(.+?)(?:\nSUMMARY:|$)/)
+    const summaryMatch = text.match(/SUMMARY:\s*(.+?)$/s)
+
+    const hook = hookMatch ? hookMatch[1].trim() : null
+    const summary = summaryMatch ? summaryMatch[1].trim() : null
+
+    return { summary: summary || null, hook: hook || null }
   } catch (err) {
     console.error('Claude summary generation failed:', err)
-    return null
+    return { summary: null, hook: null }
   }
 }
 

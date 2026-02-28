@@ -31,23 +31,29 @@ export async function GET(req: NextRequest) {
     }
 
     if (!posts || posts.length === 0) {
-      return NextResponse.json({ success: true, processed: 0, message: 'All posts have summaries.' })
+      // If no posts without summaries, try to fill in missing hooks
+      return await backfillMissingHooks(supabase, limit)
     }
 
     let updated = 0
     let failed = 0
 
     for (const post of posts) {
-      const summary = await generateSummary(post.title, post.content)
+      const { summary, hook } = await generateSummary(post.title, post.content)
 
       if (!summary) {
         failed++
         continue
       }
 
+      const updateData: Record<string, string | null> = { summary }
+      if (hook) {
+        updateData.summary_hook = hook
+      }
+
       const { error: updateError } = await supabase
         .from('posts')
-        .update({ summary })
+        .update(updateData)
         .eq('id', post.id)
 
       if (updateError) {
@@ -75,4 +81,62 @@ export async function GET(req: NextRequest) {
     console.error('Backfill error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+}
+
+async function backfillMissingHooks(supabase: ReturnType<typeof createServerClient>, limit: number) {
+  // Fetch posts that have summaries but no hook yet
+  const { data: postsWithoutHooks, error: fetchError } = await supabase
+    .from('posts')
+    .select('id, title, content, summary')
+    .not('summary', 'is', null)
+    .is('summary_hook', null)
+    .limit(limit)
+
+  if (fetchError) {
+    return NextResponse.json({ error: fetchError.message }, { status: 500 })
+  }
+
+  if (!postsWithoutHooks || postsWithoutHooks.length === 0) {
+    return NextResponse.json({ success: true, processed: 0, message: 'All posts have hooks.' })
+  }
+
+  let updated = 0
+  let failed = 0
+
+  for (const post of postsWithoutHooks) {
+    const { hook } = await generateSummary(post.title, post.content)
+
+    if (!hook) {
+      failed++
+      continue
+    }
+
+    const { error: updateError } = await supabase
+      .from('posts')
+      .update({ summary_hook: hook })
+      .eq('id', post.id)
+
+    if (updateError) {
+      console.error(`Failed to update hook for post ${post.id}:`, updateError)
+      failed++
+    } else {
+      updated++
+    }
+  }
+
+  // Count remaining posts without hooks
+  const { count: remaining } = await supabase
+    .from('posts')
+    .select('*', { count: 'exact', head: true })
+    .not('summary', 'is', null)
+    .is('summary_hook', null)
+
+  return NextResponse.json({
+    success: true,
+    processed: postsWithoutHooks.length,
+    updated,
+    failed,
+    remaining: remaining ?? 0,
+    message: 'Backfilling missing hooks',
+  })
 }

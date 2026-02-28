@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     // Check if summary already exists in Supabase
     const { data: post, error: fetchError } = await supabase
       .from('posts')
-      .select('summary')
+      .select('summary, summary_hook')
       .eq('id', postId)
       .single()
 
@@ -29,11 +29,11 @@ export async function POST(request: Request) {
 
     // If summary exists, return it immediately
     if (post?.summary) {
-      return Response.json({ summary: post.summary })
+      return Response.json({ summary: post.summary, hook: post.summary_hook || null })
     }
 
-    // Generate summary if not exists
-    const generatedSummary = await generateSummary(title, content || null)
+    // Generate summary and hook if not exists
+    const { summary: generatedSummary, hook: generatedHook } = await generateSummary(title, content || null)
 
     if (!generatedSummary) {
       return Response.json(
@@ -42,19 +42,24 @@ export async function POST(request: Request) {
       )
     }
 
-    // Save summary to Supabase
+    // Save summary and hook to Supabase
+    const updateData: Record<string, string | null> = { summary: generatedSummary }
+    if (generatedHook) {
+      updateData.summary_hook = generatedHook
+    }
+
     const { error: updateError } = await supabase
       .from('posts')
-      .update({ summary: generatedSummary })
+      .update(updateData)
       .eq('id', postId)
 
     if (updateError) {
       console.error('Supabase update error:', updateError)
       // Still return the generated summary even if save fails
-      return Response.json({ summary: generatedSummary })
+      return Response.json({ summary: generatedSummary, hook: generatedHook || null })
     }
 
-    return Response.json({ summary: generatedSummary })
+    return Response.json({ summary: generatedSummary, hook: generatedHook || null })
   } catch (error) {
     console.error('Summary API error:', error)
     return Response.json(
