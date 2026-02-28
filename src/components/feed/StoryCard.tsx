@@ -158,7 +158,7 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
       ref={cardRef}
       id={`post-${post.id}`}
       onClick={handleCardClick}
-      className={`story-card bg-[#1A2A2B] rounded-xl overflow-hidden border border-white/5 p-4 sm:p-5 transition-all duration-200 ease-out hover:border-white/10 hover:shadow-lg hover:shadow-black/20 animate-card-enter ${
+      className={`story-card bg-[#1A2A2B] rounded-xl overflow-hidden border border-white/5 p-4 sm:p-5 pb-4 transition-all duration-200 ease-out hover:border-white/10 hover:shadow-lg hover:shadow-black/20 animate-card-enter ${
         hasSummary ? 'cursor-pointer' : ''
       } ${borderPulsing ? 'animate-border-pulse' : ''}`}
       style={{
@@ -166,10 +166,10 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
         borderColor: borderPulsing ? 'rgba(196,162,62,0.3)' : undefined,
       }}
     >
-      {/* ROW 1: SOURCE + CLUB + TIMESTAMP */}
+      {/* ROW 1: SOURCE + CLUB + TIMESTAMP + INDEX SCORE */}
       <div className="flex items-center justify-between mb-4 gap-3">
-        {/* Left side: Favicon, source name, club badge, club name */}
-        <div className="flex items-center gap-2 min-w-0">
+        {/* Left side: Favicon, source name, club badge, club name, timestamp */}
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
           {/* Favicon */}
           <img
             src={`https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=32`}
@@ -186,7 +186,7 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
           </span>
 
           {/* Separator dot */}
-          <span className="text-gray-400 mx-2">·</span>
+          <span className="text-gray-400 mx-1">·</span>
 
           {/* Club badge + short name */}
           {post.clubs.length > 0 && (
@@ -201,20 +201,32 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
                   className="w-full h-full object-contain rounded-full"
                 />
               </div>
-              <span className="text-xs text-gray-300">
+              <span className="text-xs text-gray-300 whitespace-nowrap">
                 {post.clubs[0].shortName}
               </span>
+
+              {/* Separator dot before timestamp */}
+              <span className="text-gray-400 mx-1">·</span>
             </>
           )}
+
+          {/* Timestamp */}
+          <span className="text-xs text-gray-400 whitespace-nowrap">
+            {post.timeDisplay}
+          </span>
         </div>
 
-        {/* Right side: Timestamp */}
-        <span className="text-xs text-gray-400 whitespace-nowrap ml-auto">
-          {post.timeDisplay}
-        </span>
+        {/* Right side: INDEX SCORE */}
+        {post.indexScore && (
+          <div
+            className={`${scoreColor.bg} ${scoreColor.text} ${scoreColor.border} text-sm font-bold rounded-md px-2 py-0.5 tabular-nums ${scoreColor.glow} transition-all duration-200 flex-shrink-0`}
+          >
+            {displayScore}
+          </div>
+        )}
       </div>
 
-      {/* IMAGE */}
+      {/* ROW 2: IMAGE */}
       {hasImage && (
         <div className="relative w-[calc(100%+2rem)] -mx-4 sm:-mx-5 sm:w-[calc(100%+2.5rem)] mb-4 h-[200px] sm:h-[300px] overflow-hidden rounded-lg">
           <img
@@ -237,12 +249,12 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
         </div>
       )}
 
-      {/* ROW 2: HEADLINE */}
+      {/* ROW 3: HEADLINE */}
       <h3 className="text-xl font-semibold text-white leading-tight mt-3 line-clamp-3">
         {post.title}
       </h3>
 
-      {/* ROW 3: SECRET PUNDIT REVEAL */}
+      {/* ROW 4: SECRET PUNDIT REVEAL */}
       {hasSummary && (
         <>
           {/* Trigger button */}
@@ -314,20 +326,6 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
             </div>
           </div>
         </>
-      )}
-
-      {/* ROW 4: FOOTER — INDEX SCORE */}
-      {post.indexScore && (
-        <div className="flex items-center justify-end mt-4 pt-3 border-t border-white/5">
-          <div
-            className={`${scoreColor.bg} ${scoreColor.text} ${scoreColor.border} text-lg font-bold rounded-lg px-3 py-1.5 flex items-center justify-center flex-col tabular-nums ${scoreColor.glow} transition-all duration-200`}
-          >
-            <span className="text-[9px] uppercase tracking-widest text-gray-400 text-center leading-none mb-0.5">
-              Index
-            </span>
-            <span>{displayScore}</span>
-          </div>
-        </div>
       )}
     </article>
   )
