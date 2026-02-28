@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * fetchLimit
 
     // Build query
+    // Note: score_significance column must exist in database (see scripts/rebuild-index-scoring.sql)
     let query = supabase
       .from('posts')
       .select(
@@ -66,6 +67,20 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('[/api/feed] Supabase error:', error)
+
+      // Check if it's a missing column error
+      if (error.message && error.message.includes('score_significance')) {
+        console.error('[/api/feed] Missing score_significance column. Run migration in MIGRATION_GUIDE.md')
+        return NextResponse.json(
+          {
+            error: 'Database setup incomplete',
+            detail: 'The score_significance column is missing from the posts table',
+            migration: 'Please run the SQL migration in MIGRATION_GUIDE.md or visit /api/cron/run-migration',
+          },
+          { status: 500 }
+        )
+      }
+
       return NextResponse.json(
         { error: 'Failed to fetch posts', detail: error.message },
         { status: 500 }
