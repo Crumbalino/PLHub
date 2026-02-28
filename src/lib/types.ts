@@ -23,6 +23,7 @@ export interface Post {
   url: string
   content: string | null
   summary: string | null
+  summary_hook: string | null
   source: 'reddit' | 'rss' | 'youtube'
   club_slug: string | null
   author: string | null
@@ -60,6 +61,7 @@ export interface FeedPost {
   url: string
   previewBlurb: string | null
   summary: string | null
+  summaryHook: string | null
   source: 'reddit' | 'rss' | 'youtube'
   sourceInfo: SourceInfo
   clubs: ClubBadge[]

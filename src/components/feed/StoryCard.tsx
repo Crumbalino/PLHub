@@ -99,6 +99,7 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
   const [summaryExpanded, setSummaryExpanded] = useState(false)
   const [spPulsing, setSpPulsing] = useState(false)
   const [borderPulsing, setBorderPulsing] = useState(false)
+  const [cardHovered, setCardHovered] = useState(false)
   const [animatedScore, setAnimatedScore] = useState(0)
   const [hasAnimatedScore, setHasAnimatedScore] = useState(false)
   const cardRef = useRef<HTMLArticleElement>(null)
@@ -109,6 +110,8 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
   const staggerDelay = index < 10 ? `${index * 60}ms` : '0ms'
   const hasSummary = !!post.summary
   const paragraphs = hasSummary ? splitSummaryIntoParagraphs(post.summary) : []
+  const spTriggerText = post.summaryHook || 'The Pundit\'s Take'
+  const teaser = hasSummary ? post.summary.substring(0, 60).trim() + '...' : null
 
   // Animated score count-up with IntersectionObserver
   useEffect(() => {
@@ -158,6 +161,8 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
       ref={cardRef}
       id={`post-${post.id}`}
       onClick={handleCardClick}
+      onMouseEnter={() => setCardHovered(true)}
+      onMouseLeave={() => setCardHovered(false)}
       className={`story-card bg-[#1A2A2B] rounded-xl overflow-hidden border border-white/5 p-4 sm:p-5 pb-4 transition-all duration-200 ease-out hover:border-white/10 hover:shadow-lg hover:shadow-black/20 animate-card-enter ${
         hasSummary ? 'cursor-pointer' : ''
       } ${borderPulsing ? 'animate-border-pulse' : ''}`}
@@ -254,6 +259,17 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
         {post.title}
       </h3>
 
+      {/* TEASER LINE: First 60 chars of summary */}
+      {teaser && (
+        <p
+          className={`text-sm mt-2 transition-colors duration-200 ease-out ${
+            cardHovered ? 'text-gray-200' : 'text-gray-300'
+          }`}
+        >
+          {teaser}
+        </p>
+      )}
+
       {/* ROW 4: SECRET PUNDIT REVEAL */}
       {hasSummary && (
         <>
@@ -265,7 +281,7 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
                 spPulsing ? 'animate-badge-pulse' : ''
               }`}
               style={
-                summaryExpanded
+                summaryExpanded || cardHovered
                   ? { boxShadow: '0 0 8px rgba(196,162,62,0.3)' }
                   : {}
               }
@@ -273,9 +289,15 @@ export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 
               SP
             </div>
 
-            {/* Label */}
-            <span className="text-sm text-gray-200 font-medium flex-1 text-left">
-              The Pundit's Take
+            {/* Label — shows hook if available, otherwise "The Pundit's Take" */}
+            <span
+              className={`text-sm font-medium flex-1 text-left transition-colors duration-200 ${
+                spTriggerText && spTriggerText !== 'The Pundit\'s Take'
+                  ? 'text-gray-200 italic'
+                  : 'text-gray-200'
+              }`}
+            >
+              {spTriggerText}
             </span>
 
             {/* Chevron */}

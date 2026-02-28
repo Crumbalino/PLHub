@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const { data: rawPosts, error } = await supabase
       .from('posts')
       .select(
-        'id, external_id, title, url, summary, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, clubs(*)'
+        'id, external_id, title, url, summary, summary_hook, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, clubs(*)'
       )
       .gte('published_at', twentyFourHoursAgo)
       .order('score', { ascending: false })

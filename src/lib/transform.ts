@@ -39,6 +39,7 @@ export function transformPost(post: Post): FeedPost {
     url: post.url,
     previewBlurb: getPreviewBlurb(post.content),
     summary: post.summary,
+    summaryHook: (post as any).summary_hook || null,
     source: post.source,
     sourceInfo,
     clubs,
