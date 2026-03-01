@@ -213,29 +213,29 @@ export const CLUBS_BY_SUBREDDIT: Record<string, string> = Object.fromEntries(
   CLUBS.map((c) => [c.subreddit.toLowerCase(), c.slug])
 )
 
-// --- Club Codes (PL CDN badge IDs) ---
+// --- Club Codes (three-letter display codes) ---
 
 export const CLUB_CODES: Record<string, string> = {
-  arsenal: '3',
-  'aston-villa': '7',
-  bournemouth: '91',
-  brentford: '94',
-  brighton: '36',
-  chelsea: '8',
-  'crystal-palace': '31',
-  everton: '11',
-  fulham: '54',
-  ipswich: '40',
-  leicester: '13',
-  liverpool: '14',
-  'man-city': '43',
-  'man-united': '1',
-  newcastle: '4',
-  'nottingham-forest': '17',
-  southampton: '20',
-  tottenham: '6',
-  'west-ham': '21',
-  wolves: '39',
+  arsenal: 'ARS',
+  'aston-villa': 'AVL',
+  bournemouth: 'BOU',
+  brentford: 'BRE',
+  brighton: 'BHA',
+  chelsea: 'CHE',
+  'crystal-palace': 'CRY',
+  everton: 'EVE',
+  fulham: 'FUL',
+  ipswich: 'IPS',
+  leicester: 'LEI',
+  liverpool: 'LIV',
+  'man-city': 'MCI',
+  'man-united': 'MUN',
+  newcastle: 'NEW',
+  'nottingham-forest': 'NFO',
+  southampton: 'SOU',
+  tottenham: 'TOT',
+  'west-ham': 'WHU',
+  wolves: 'WOL',
 }
 
 export function getClubCode(slug: string): string {
