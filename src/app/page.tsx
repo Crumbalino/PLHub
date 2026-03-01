@@ -4,6 +4,7 @@ import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
 import TrendingStrip from '@/components/trending/TrendingStrip'
 import FeedList from '@/components/feed/FeedList'
+import SnapshotShell from '@/components/snapshot/SnapshotShell'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +46,9 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           {/* CENTRE — Feed */}
           <main className="min-w-0">
+            {/* The Snapshot Shell */}
+            {!clubSlug && <SnapshotShell />}
+
             {/* Trending — only on unfiltered home */}
             {!clubSlug && <TrendingStrip />}
 
