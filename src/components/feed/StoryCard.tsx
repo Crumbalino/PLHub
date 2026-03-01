@@ -52,6 +52,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
 
   return (
     <article
+      id={`post-${post.id}`}
       className="
         bg-[var(--plh-card)]
         rounded-[10px]

@@ -1,5 +1,7 @@
 'use client'
 
+import SnapshotContent from './SnapshotContent'
+
 export default function SnapshotShell({ children }: { children?: React.ReactNode }) {
   return (
     <div className="relative mb-8">
@@ -72,12 +74,15 @@ export default function SnapshotShell({ children }: { children?: React.ReactNode
         {children ? (
           <div>{children}</div>
         ) : (
-          <div
-            className="text-center py-8 text-[12px]"
-            style={{ color: 'rgba(250, 245, 240, 0.3)' }}
-          >
-            Modules loading…
-          </div>
+          <>
+            <div
+              className="text-center py-8 text-[12px]"
+              style={{ color: 'rgba(250, 245, 240, 0.3)' }}
+            >
+              Modules loading…
+            </div>
+            <SnapshotContent />
+          </>
         )}
 
         {/* Sign-off */}
