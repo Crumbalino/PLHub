@@ -40,9 +40,11 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
     const client = getSupabase()
     const { data: posts, error } = await client
       .from('posts')
-      .select('*')
+      .select(
+        'id, external_id, title, url, summary, summary_hook, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, score_significance, clubs(*)'
+      )
       .gte('published_at', since)
-      .order('index_score', { ascending: false })
+      .order('published_at', { ascending: false })
       .limit(50)
 
     if (error) throw error
