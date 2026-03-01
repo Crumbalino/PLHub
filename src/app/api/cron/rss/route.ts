@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchAllRssFeeds } from "@/lib/rss"
+import { fetchSingleFeed, FEEDS } from "@/lib/rss"
 import { createServerClient } from '@/lib/supabase'
 import { upgradeImageUrl } from '@/lib/formatting'
 
@@ -22,7 +22,32 @@ export async function GET(req: NextRequest) {
       await supabase.from('posts').delete().ilike('title', `%${kw}%`)
     }
 
-    const posts = await fetchAllRssFeeds()
+    // Rotate one feed per run — same pattern as YouTube cron.
+    // With 5 feeds on a 15-min cron, each feed is checked every ~75 minutes.
+    const runIndex = Math.floor(Date.now() / (15 * 60 * 1000))
+    const feedIndex = runIndex % FEEDS.length
+    const { name: feedName, posts } = await fetchSingleFeed(feedIndex)
+
+    // Batch duplicate check: fetch all existing external_ids and urls in one query
+    const externalIds = posts.map(p => p.external_id)
+    const urls = posts.map(p => p.url).filter(Boolean)
+
+    const { data: existingByExtId } = await supabase
+      .from('posts')
+      .select('external_id, score')
+      .in('external_id', externalIds)
+
+    const { data: existingByUrl } = await supabase
+      .from('posts')
+      .select('url')
+      .in('url', urls)
+
+    const existingExtIds = new Map(
+      (existingByExtId ?? []).map(e => [e.external_id, e.score])
+    )
+    const existingUrls = new Set(
+      (existingByUrl ?? []).map(e => e.url)
+    )
 
     let inserted = 0
     let skipped = 0
@@ -30,13 +55,7 @@ export async function GET(req: NextRequest) {
 
     for (const post of posts) {
       // Check for duplicate by external_id
-      const { data: existing } = await supabase
-        .from('posts')
-        .select('id, score')
-        .eq('external_id', post.external_id)
-        .single()
-
-      if (existing) {
+      if (existingExtIds.has(post.external_id)) {
         // Post exists — update score
         const { error } = await supabase
           .from('posts')
@@ -55,18 +74,10 @@ export async function GET(req: NextRequest) {
         continue
       }
 
-      // Also check by URL to prevent duplicates
-      if (post.url) {
-        const { data: existingByUrl } = await supabase
-          .from('posts')
-          .select('id')
-          .eq('url', post.url)
-          .limit(1)
-
-        if (existingByUrl && existingByUrl.length > 0) {
-          skipped++
-          continue
-        }
+      // Check for duplicate by URL
+      if (post.url && existingUrls.has(post.url)) {
+        skipped++
+        continue
       }
 
       // Insert without summary — backfill-summaries cron will generate them
@@ -95,6 +106,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      feed: feedName,
+      feedIndex,
       total: posts.length,
       inserted,
       skipped,

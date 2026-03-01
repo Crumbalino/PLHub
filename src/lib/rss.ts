@@ -66,7 +66,7 @@ function isPremierLeagueContent(title: string, description: string): boolean {
   return true
 }
 
-const FEEDS = [
+export const FEEDS = [
   {
     name: 'BBC Sport',
     url: 'https://feeds.bbci.co.uk/sport/football/rss.xml',
@@ -208,3 +208,13 @@ export async function fetchAllRssFeeds(): Promise<FetchedRssPost[]> {
 
 // Keep named export for backwards compatibility
 export const fetchBBCSportRss = () => fetchFeed('BBC Sport', FEEDS[0].url)
+
+/**
+ * Fetch a single RSS feed by index — used by the rotation cron.
+ * Returns the feed name alongside the posts for logging.
+ */
+export async function fetchSingleFeed(index: number): Promise<{ name: string; posts: FetchedRssPost[] }> {
+  const feed = FEEDS[index % FEEDS.length]
+  const posts = await fetchFeed(feed.name, feed.url)
+  return { name: feed.name, posts }
+}

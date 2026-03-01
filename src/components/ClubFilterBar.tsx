@@ -63,7 +63,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
       <div
         className="hidden md:block rounded-[10px]"
         style={{
-          background: 'color-mix(in srgb, var(--plh-teal) 12%, var(--plh-card))',
+          background: 'color-mix(in srgb, var(--plh-teal) 8%, var(--plh-card))',
           padding: '18px 24px 22px',
           border: '1px solid var(--plh-border)',
           boxShadow: 'var(--plh-shadow)',
@@ -173,25 +173,23 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
         )}
       </div>
 
-      {/* MOBILE VERSION */}
-      <div className="md:hidden">
+      {/* MOBILE VERSION — compact, subtle */}
+      <div className="md:hidden mt-3 mb-3">
         {/* Trigger */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="w-full rounded-[10px] transition-all"
           style={{
-            background: 'color-mix(in srgb, var(--plh-teal) 12%, var(--plh-card))',
-            padding: '12px 16px',
+            background: 'var(--plh-card)',
+            padding: '10px 14px',
             border: '1px solid var(--plh-border)',
-            boxShadow: 'var(--plh-shadow)',
-            marginTop: '16px',
-            marginBottom: mobileOpen ? '0' : '16px',
+            borderRadius: mobileOpen ? '10px 10px 0 0' : '10px',
           }}
         >
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center gap-2">
             {isAllActive ? (
               <>
-                <span className="text-lg">⚽</span>
+                <span className="text-base">⚽</span>
                 <span className="text-sm" style={{ color: 'var(--plh-text-100)' }}>All clubs</span>
               </>
             ) : (
@@ -199,16 +197,16 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                 <Image
                   src={`https://resources.premierleague.com/premierleague/badges/t${selectedClubData?.id}.png`}
                   alt={selectedClubData?.name || ''}
-                  width={24}
-                  height={24}
+                  width={22}
+                  height={22}
                   unoptimized
-                  className="w-6 h-6"
+                  className="w-[22px] h-[22px]"
                 />
                 <span className="text-sm" style={{ color: 'var(--plh-text-100)' }}>{selectedClubData?.name}</span>
               </>
             )}
             <span
-              className="ml-auto transition-transform"
+              className="ml-auto transition-transform text-xs"
               style={{
                 color: 'var(--plh-text-40)',
                 transform: mobileOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -224,34 +222,18 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
           <div
             className="rounded-b-[10px] overflow-hidden"
             style={{
-              background: 'color-mix(in srgb, var(--plh-teal) 12%, var(--plh-card))',
+              background: 'var(--plh-card)',
               border: '1px solid var(--plh-border)',
               borderTop: 'none',
-              boxShadow: 'var(--plh-shadow)',
-              animation: 'scaleDown 0.25s ease-out',
+              animation: 'scaleDown 0.2s ease-out',
               transformOrigin: 'top',
-              marginBottom: '16px',
-              padding: '16px',
+              padding: '12px',
             }}
           >
             <style>{`
               @keyframes scaleDown {
-                from {
-                  transform: scaleY(0);
-                  opacity: 0;
-                }
-                to {
-                  transform: scaleY(1);
-                  opacity: 1;
-                }
-              }
-              @keyframes fadeIn {
-                from {
-                  opacity: 0;
-                }
-                to {
-                  opacity: 1;
-                }
+                from { transform: scaleY(0); opacity: 0; }
+                to { transform: scaleY(1); opacity: 1; }
               }
             `}</style>
 
@@ -260,7 +242,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(5, 1fr)',
-                gap: '12px',
+                gap: '10px',
               }}
             >
               {CLUBS.map((club) => {
@@ -273,8 +255,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                     key={club.slug}
                     onClick={() => handleClubSelect(club.slug)}
                     style={{
-                      width: '40px',
-                      height: '40px',
+                      width: '38px',
+                      height: '38px',
                       borderRadius: '50%',
                       opacity: opacity,
                       cursor: 'pointer',
@@ -287,25 +269,13 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                       margin: '0 auto',
                       padding: 0,
                     }}
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.opacity = '1'
-                      el.style.transform = 'scale(1.15)'
-                      el.style.boxShadow = '0 0 12px color-mix(in srgb, var(--plh-gold) 40%, transparent)'
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.transform = 'scale(1)'
-                      el.style.boxShadow = 'none'
-                      el.style.opacity = opacity.toString()
-                    }}
                     title={club.name}
                   >
                     <Image
                       src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
                       alt={club.name}
-                      width={36}
-                      height={36}
+                      width={34}
+                      height={34}
                       unoptimized
                       className="w-full h-full object-contain"
                     />
@@ -314,15 +284,9 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
               })}
             </div>
 
-            {/* Clear button - shown when filtered */}
+            {/* Clear button */}
             {selectedClub && (
-              <div
-                style={{
-                  textAlign: 'center',
-                  marginTop: '16px',
-                  animation: 'fadeIn 0.3s ease',
-                }}
-              >
+              <div style={{ textAlign: 'center', marginTop: '12px' }}>
                 <button
                   onClick={handleClear}
                   style={{
@@ -334,7 +298,6 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                     padding: 0,
                     fontWeight: 500,
                   }}
-                  className="hover:opacity-80 transition-opacity"
                 >
                   ✕ Clear
                 </button>
