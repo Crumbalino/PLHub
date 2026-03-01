@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 export default function BackToTopButton() {
   const [isVisible, setIsVisible] = useState(false)
+  const [hovered, setHovered] = useState(false)
 
   const toggleVisibility = () => {
     // Show button after scrolling past 3 screen heights (3 * 100vh = 300vh)
@@ -33,7 +34,16 @@ export default function BackToTopButton() {
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 bg-[#00555A] hover:bg-[#00666C] text-white rounded-full p-3 shadow-lg transition-opacity duration-200 opacity-100"
+          className="fixed bottom-6 right-6 z-50 rounded-full p-3 transition-all duration-200"
+          style={{
+            background: 'var(--plh-teal)',
+            color: 'white',
+            boxShadow: 'var(--plh-shadow)',
+            opacity: hovered ? 0.85 : 1,
+            transform: hovered ? 'scale(1.05)' : 'scale(1)',
+          }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
           aria-label="Back to top"
         >
           <svg

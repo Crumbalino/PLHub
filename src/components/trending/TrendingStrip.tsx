@@ -23,32 +23,42 @@ export default function TrendingStrip() {
   if (posts.length === 0) return null
 
   return (
-    <section className="mb-8 border-l-3 border-l-[#C4A23E] pl-3">
-      <h2 className="text-xl font-bold text-white mb-4">Trending</h2>
+    <section className="mb-8 pl-3" style={{ borderLeft: '3px solid var(--plh-gold)' }}>
+      <h2 className="text-xl font-bold text-[var(--plh-text-100)] mb-4">Trending</h2>
 
       <div className="flex flex-col gap-2">
         {posts.map((post, idx) => {
           const isTop = idx === 0
-          const scoreOpacity =
-            idx === 0 ? 'text-white' : idx <= 2 ? 'text-gray-200' : 'text-gray-300'
 
           return (
             <a
               key={post.id}
               href={`#post-${post.id}`}
-              className="trending-item flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 hover:bg-white/10 transition-colors group animate-card-enter"
-              style={{ animationDelay: `${idx * 80}ms` }}
+              className="trending-item flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors group animate-card-enter"
+              style={{
+                background: 'color-mix(in srgb, var(--plh-text-100) 5%, transparent)',
+                animationDelay: `${idx * 80}ms`,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'color-mix(in srgb, var(--plh-text-100) 10%, transparent)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'color-mix(in srgb, var(--plh-text-100) 5%, transparent)'
+              }}
             >
-              <span className="w-5 text-sm font-bold text-[#C4A23E]">{post.rank}</span>
-              <span className="text-green-400 text-xs font-bold">▲</span>
-              <span className="text-sm text-gray-100 line-clamp-1 flex-1 group-hover:text-[#C4A23E] transition-colors">
+              <span className="w-5 text-sm font-bold" style={{ color: 'var(--plh-gold)' }}>{post.rank}</span>
+              <span style={{ color: 'var(--plh-gold)', fontSize: '12px', fontWeight: 'bold' }}>▲</span>
+              <span className="text-sm text-[var(--plh-text-100)] line-clamp-1 flex-1 transition-colors" style={{ cursor: 'pointer' }}>
                 {post.title}
               </span>
               {post.indexScore && (
-                <div className="bg-[#00777A] text-white px-2 py-0.5 rounded-md text-sm font-medium flex items-center gap-1.5 shrink-0 tabular-nums">
+                <div className="px-2 py-0.5 rounded-md text-sm font-medium flex items-center gap-1.5 shrink-0 tabular-nums" style={{
+                  background: 'color-mix(in srgb, var(--plh-gold) 12%, transparent)',
+                  color: 'var(--plh-gold)',
+                }}>
                   <PulseIcon
                     size={14}
-                    color="white"
+                    color="var(--plh-gold)"
                     className={isTop ? 'animate-trending-pulse' : ''}
                   />
                   <span>{post.indexScore}</span>

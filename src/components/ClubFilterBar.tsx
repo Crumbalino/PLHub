@@ -61,12 +61,12 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
     <>
       {/* DESKTOP VERSION */}
       <div
-        className="hidden md:block rounded-xl"
+        className="hidden md:block rounded-[10px]"
         style={{
-          background: 'linear-gradient(160deg, #0A6E6E 0%, #004D50 50%, #003538 100%)',
+          background: 'color-mix(in srgb, var(--plh-teal) 12%, var(--plh-card))',
           padding: '18px 24px 22px',
-          border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
+          border: '1px solid var(--plh-border)',
+          boxShadow: 'var(--plh-shadow)',
           marginTop: '16px',
           marginBottom: '16px',
         }}
@@ -75,7 +75,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
         <div
           className="text-center mb-4"
           style={{
-            color: 'rgba(196,162,62,0.8)',
+            color: 'var(--plh-teal)',
             fontSize: '10px',
             fontWeight: 600,
             textTransform: 'uppercase',
@@ -112,7 +112,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                   opacity: opacity,
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  border: isSelected ? '2px solid #C4A23E' : '2px solid transparent',
+                  border: isSelected ? '2px solid var(--plh-gold)' : '2px solid transparent',
                   backgroundColor: 'transparent',
                   display: 'flex',
                   alignItems: 'center',
@@ -123,7 +123,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                   const el = e.currentTarget as HTMLElement
                   el.style.opacity = '1'
                   el.style.transform = 'scale(1.15)'
-                  el.style.boxShadow = '0 0 12px rgba(196,162,62,0.4)'
+                  el.style.boxShadow = '0 0 12px color-mix(in srgb, var(--plh-gold) 40%, transparent)'
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement
@@ -157,7 +157,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
             <button
               onClick={handleClear}
               style={{
-                color: '#C4A23E',
+                color: 'var(--plh-gold)',
                 fontSize: '12px',
                 cursor: 'pointer',
                 background: 'none',
@@ -178,12 +178,12 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
         {/* Trigger */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="w-full rounded-xl transition-all"
+          className="w-full rounded-[10px] transition-all"
           style={{
-            background: 'linear-gradient(160deg, #0A6E6E 0%, #004D50 50%, #003538 100%)',
+            background: 'color-mix(in srgb, var(--plh-teal) 12%, var(--plh-card))',
             padding: '12px 16px',
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
+            border: '1px solid var(--plh-border)',
+            boxShadow: 'var(--plh-shadow)',
             marginTop: '16px',
             marginBottom: mobileOpen ? '0' : '16px',
           }}
@@ -192,7 +192,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
             {isAllActive ? (
               <>
                 <span className="text-lg">⚽</span>
-                <span className="text-sm text-white">All clubs</span>
+                <span className="text-sm" style={{ color: 'var(--plh-text-100)' }}>All clubs</span>
               </>
             ) : (
               <>
@@ -204,12 +204,13 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                   unoptimized
                   className="w-6 h-6"
                 />
-                <span className="text-sm text-white">{selectedClubData?.name}</span>
+                <span className="text-sm" style={{ color: 'var(--plh-text-100)' }}>{selectedClubData?.name}</span>
               </>
             )}
             <span
-              className="text-gray-400 ml-auto transition-transform"
+              className="ml-auto transition-transform"
               style={{
+                color: 'var(--plh-text-40)',
                 transform: mobileOpen ? 'rotate(180deg)' : 'rotate(0deg)',
               }}
             >
@@ -221,12 +222,12 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
         {/* Dropdown */}
         {mobileOpen && (
           <div
-            className="rounded-b-xl overflow-hidden"
+            className="rounded-b-[10px] overflow-hidden"
             style={{
-              background: 'linear-gradient(160deg, #0A6E6E 0%, #004D50 50%, #003538 100%)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'color-mix(in srgb, var(--plh-teal) 12%, var(--plh-card))',
+              border: '1px solid var(--plh-border)',
               borderTop: 'none',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
+              boxShadow: 'var(--plh-shadow)',
               animation: 'scaleDown 0.25s ease-out',
               transformOrigin: 'top',
               marginBottom: '16px',
@@ -278,7 +279,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                       opacity: opacity,
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      border: isSelected ? '2px solid #C4A23E' : '2px solid transparent',
+                      border: isSelected ? '2px solid var(--plh-gold)' : '2px solid transparent',
                       backgroundColor: 'transparent',
                       display: 'flex',
                       alignItems: 'center',
@@ -290,7 +291,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                       const el = e.currentTarget as HTMLElement
                       el.style.opacity = '1'
                       el.style.transform = 'scale(1.15)'
-                      el.style.boxShadow = '0 0 12px rgba(196,162,62,0.4)'
+                      el.style.boxShadow = '0 0 12px color-mix(in srgb, var(--plh-gold) 40%, transparent)'
                     }}
                     onMouseLeave={(e) => {
                       const el = e.currentTarget as HTMLElement
@@ -325,7 +326,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                 <button
                   onClick={handleClear}
                   style={{
-                    color: '#C4A23E',
+                    color: 'var(--plh-gold)',
                     fontSize: '12px',
                     cursor: 'pointer',
                     background: 'none',

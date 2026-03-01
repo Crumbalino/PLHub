@@ -39,7 +39,14 @@ export default async function PLTable() {
 
   if (!table) {
     return (
-      <div className="rounded-xl border border-white/[0.08] px-4 py-6 text-center text-xs text-white/30">
+      <div
+        className="px-4 py-6 text-center text-xs"
+        style={{
+          borderRadius: '10px',
+          border: '1px solid var(--plh-border)',
+          color: 'var(--plh-text-40)',
+        }}
+      >
         Table unavailable
       </div>
     )

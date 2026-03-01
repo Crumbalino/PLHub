@@ -37,7 +37,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <aside className="hidden lg:block">
             <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide">
               <PLTable />
-              <div className="bg-[#183538] rounded-xl p-4 text-center text-xs text-white/30 h-[250px] flex items-center justify-center border border-white/5">
+              <div className="rounded-[10px] p-4 text-center text-xs h-[250px] flex items-center justify-center" style={{ background: 'var(--plh-card)', border: '1px solid var(--plh-border)', color: 'var(--plh-text-40)' }}>
                 Ad
               </div>
             </div>
@@ -61,8 +61,8 @@ export default async function HomePage({ searchParams }: PageProps) {
               <hr className="section-divider" />
               <details className="group">
                 <summary className="flex items-center justify-between cursor-pointer py-3">
-                  <h3 className="text-sm font-bold text-white">League Table</h3>
-                  <span className="text-white/40 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  <h3 className="text-sm font-bold" style={{ color: 'var(--plh-text-100)' }}>League Table</h3>
+                  <span className="text-xs group-open:rotate-180 transition-transform" style={{ color: 'var(--plh-text-40)' }}>▼</span>
                 </summary>
                 <div className="pt-2 pb-4">
                   <PLTable />
@@ -70,8 +70,8 @@ export default async function HomePage({ searchParams }: PageProps) {
               </details>
               <details className="group">
                 <summary className="flex items-center justify-between cursor-pointer py-3">
-                  <h3 className="text-sm font-bold text-white">Upcoming Fixtures</h3>
-                  <span className="text-white/40 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  <h3 className="text-sm font-bold" style={{ color: 'var(--plh-text-100)' }}>Upcoming Fixtures</h3>
+                  <span className="text-xs group-open:rotate-180 transition-transform" style={{ color: 'var(--plh-text-40)' }}>▼</span>
                 </summary>
                 <div className="pt-2 pb-4">
                   <NextFixtures />
@@ -84,7 +84,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <aside className="hidden lg:block">
             <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide">
               <NextFixtures />
-              <div className="bg-[#183538] rounded-xl p-4 text-center text-xs text-white/30 h-[600px] flex items-center justify-center border border-white/5">
+              <div className="rounded-[10px] p-4 text-center text-xs h-[600px] flex items-center justify-center" style={{ background: 'var(--plh-card)', border: '1px solid var(--plh-border)', color: 'var(--plh-text-40)' }}>
                 Ad
               </div>
             </div>
