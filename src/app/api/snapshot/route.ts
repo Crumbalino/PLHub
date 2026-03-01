@@ -151,11 +151,11 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
     } else {
       errorMessage = JSON.stringify(err)
     }
-    console.error('[Snapshot API] Error:', errorMessage, err)
+    console.error('[Snapshot API v1.1] Catch block — Error:', errorMessage, err)
     return NextResponse.json(
       {
         success: false,
-        error: errorMessage,
+        error: `[v1.1] ${errorMessage}`,
       },
       { status: 500 }
     )
