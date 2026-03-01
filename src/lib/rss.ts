@@ -87,6 +87,22 @@ export const FEEDS = [
     name: '90min',
     url: 'https://www.90min.com/feed',
   },
+  {
+    name: 'Football365',
+    url: 'https://www.football365.com/premier-league/rss',
+  },
+  {
+    name: 'The Independent',
+    url: 'https://www.independent.co.uk/sport/football/premier-league/rss',
+  },
+  {
+    name: 'ESPN FC',
+    url: 'https://www.espn.com/espn/rss/soccer/news',
+  },
+  {
+    name: 'FourFourTwo',
+    url: 'https://www.fourfourtwo.com/feeds.xml',
+  },
 ]
 
 export interface FetchedRssPost {
