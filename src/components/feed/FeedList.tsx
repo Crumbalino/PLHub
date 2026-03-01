@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useFeed } from '@/hooks/useFeed'
-import { useExpandCard } from '@/hooks/useExpandCard'
 import StoryCard from './StoryCard'
 import type { SortMode } from '@/lib/types'
 
@@ -22,8 +21,6 @@ export default function FeedList({ club = null }: FeedListProps) {
     loadMore,
     hasMore,
   } = useFeed({ club })
-
-  const { isExpanded, toggle } = useExpandCard()
 
   const handleToggleSort = () => {
     setHeadingPhase(1)
@@ -106,8 +103,6 @@ export default function FeedList({ club = null }: FeedListProps) {
               key={post.id}
               post={post}
               index={idx}
-              isExpanded={isExpanded(post.id)}
-              onToggleExpand={() => toggle(post.id)}
             />
           ))}
         </div>

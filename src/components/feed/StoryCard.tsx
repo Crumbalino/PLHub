@@ -1,391 +1,304 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
-import type { FeedPost } from '@/lib/types'
-import IndexScoreTooltip from './IndexScoreTooltip'
+import { useState } from 'react';
+import Image from 'next/image';
+import { getSourceColor } from '@/lib/theme';
+import type { FeedPost } from '@/lib/types';
 
-interface StoryCardProps {
-  post: FeedPost
-  isExpanded: boolean
-  onToggleExpand: () => void
-  index?: number
+// ──────────────────────────────────────────
+// SHARE FUNCTIONALITY
+// ──────────────────────────────────────────
+
+async function handleShare(e: React.MouseEvent, post: FeedPost) {
+  e.stopPropagation();
+
+  const shareData = {
+    title: post.title,
+    text: post.previewBlurb || undefined,
+    url: post.url,
+  };
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+    } else {
+      await navigator.clipboard.writeText(post.url);
+      // Visual feedback handled by caller
+    }
+  } catch {
+    // User cancelled share — do nothing
+  }
 }
 
-/**
- * Map source names to domains for favicon lookup
- */
-function getSourceDomain(source: string): string {
-  const domainMap: Record<string, string> = {
-    'bbc': 'bbc.co.uk',
-    'guardian': 'theguardian.com',
-    'sky': 'skysports.com',
-    'athletic': 'theathletic.com',
-    'espn': 'espn.com',
-    'talksport': 'talksport.com',
-    'reddit': 'reddit.com',
-    'goal': 'goal.com',
-    '90min': '90min.com',
-    'youtube': 'youtube.com',
-  }
+// ──────────────────────────────────────────
+// COMPONENT
+// ──────────────────────────────────────────
 
-  const lowerSource = source.toLowerCase()
-  for (const [key, domain] of Object.entries(domainMap)) {
-    if (lowerSource.includes(key)) return domain
-  }
-  return source
-}
+export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?: number }) {
+  const [punditOpen, setPunditOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const sourceColor = getSourceColor(post.sourceInfo.name);
+  const primaryClub = post.clubs[0];
 
-/**
- * Get the source name for display
- */
-function getSourceName(source: string): string {
-  const nameMap: Record<string, string> = {
-    'bbc': 'BBC Sport',
-    'guardian': 'The Guardian',
-    'sky': 'Sky Sports',
-    'athletic': 'The Athletic',
-    'espn': 'ESPN',
-    'talksport': 'talkSPORT',
-    'reddit': 'Reddit',
-    'goal': 'Goal.com',
-    '90min': '90min',
-    'youtube': 'YouTube',
-  }
+  async function onShare(e: React.MouseEvent) {
+    e.stopPropagation();
 
-  const lowerSource = source.toLowerCase()
-  for (const [key, name] of Object.entries(nameMap)) {
-    if (lowerSource.includes(key)) return name
-  }
-  return source
-}
-
-/**
- * Split summary into paragraphs on ". " followed by capital letter
- */
-function splitSummaryIntoParagraphs(summary: string): string[] {
-  return summary.split(/\.\s+(?=[A-Z])/).map(p => p.trim() + (p.endsWith('.') ? '' : '.'))
-}
-
-/**
- * Get index score color coding
- */
-function getScoreColorClass(score: number): { bg: string; text: string; border: string; glow: string } {
-  if (score >= 70) {
-    return {
-      bg: 'bg-[#C4A23E]/20',
-      text: 'text-[#C4A23E]',
-      border: 'border border-[#C4A23E]/30',
-      glow: 'shadow-lg shadow-[#C4A23E]/20',
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title,
+          text: post.previewBlurb || undefined,
+          url: post.url,
+        });
+      } catch {
+        // cancelled
+      }
+    } else {
+      await navigator.clipboard.writeText(post.url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   }
-  if (score >= 50) {
-    return {
-      bg: 'bg-white/10',
-      text: 'text-white',
-      border: 'border border-white/20',
-      glow: '',
-    }
-  }
-  return {
-    bg: 'bg-white/5',
-    text: 'text-gray-400',
-    border: 'border border-white/5',
-    glow: '',
-  }
-}
-
-export default function StoryCard({ post, isExpanded, onToggleExpand, index = 0 }: StoryCardProps) {
-  const [imgError, setImgError] = useState(false)
-  const [summaryExpanded, setSummaryExpanded] = useState(false)
-  const [spPulsing, setSpPulsing] = useState(false)
-  const [borderPulsing, setBorderPulsing] = useState(false)
-  const [cardHovered, setCardHovered] = useState(false)
-  const [animatedScore, setAnimatedScore] = useState(0)
-  const [hasAnimatedScore, setHasAnimatedScore] = useState(false)
-  const [tooltipOpen, setTooltipOpen] = useState(false)
-  const cardRef = useRef<HTMLElement>(null)
-  const scoreBadgeRef = useRef<HTMLDivElement>(null)
-
-  const hasImage = !!post.imageUrl && !imgError
-  const sourceName = getSourceName(post.sourceInfo.name)
-  const sourceDomain = getSourceDomain(post.sourceInfo.name)
-  const staggerDelay = index < 10 ? `${index * 60}ms` : '0ms'
-  const hasSummary = !!post.summary
-  const paragraphs = hasSummary && post.summary ? splitSummaryIntoParagraphs(post.summary) : []
-  const spTriggerText = post.summaryHook || 'The Pundit\'s Take'
-  const teaser = hasSummary && post.summary ? post.summary.substring(0, 60).trim() + '...' : null
-
-  // Animated score count-up with IntersectionObserver
-  useEffect(() => {
-    if (!post.indexScore || hasAnimatedScore || !cardRef.current) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setHasAnimatedScore(true)
-          const target = post.indexScore || 0
-          let current = 0
-          const increment = target / 60 // 60 frames over ~1s
-          const interval = setInterval(() => {
-            current += increment
-            if (current >= target) {
-              setAnimatedScore(target)
-              clearInterval(interval)
-            } else {
-              setAnimatedScore(Math.floor(current))
-            }
-          }, 16) // ~60fps
-
-          observer.unobserve(entry.target)
-        }
-      },
-      { threshold: 0.5 }
-    )
-
-    observer.observe(cardRef.current)
-    return () => observer.disconnect()
-  }, [post.indexScore, hasAnimatedScore])
-
-  const handleCardClick = () => {
-    if (!hasSummary) return
-    setSpPulsing(true)
-    setBorderPulsing(true)
-    setSummaryExpanded(!summaryExpanded)
-    setTimeout(() => setSpPulsing(false), 300)
-    setTimeout(() => setBorderPulsing(false), 500)
-  }
-
-  const handleScoreBadgeClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setTooltipOpen(!tooltipOpen)
-  }
-
-  const handleScoreBadgeHover = () => {
-    setTooltipOpen(true)
-  }
-
-  const handleScoreBadgeLeave = () => {
-    setTooltipOpen(false)
-  }
-
-  const scoreColor = getScoreColorClass(post.indexScore || 0)
-  const displayScore = hasAnimatedScore ? animatedScore : post.indexScore || 0
 
   return (
     <article
-      ref={cardRef}
-      id={`post-${post.id}`}
-      onClick={handleCardClick}
-      onMouseEnter={() => setCardHovered(true)}
-      onMouseLeave={() => setCardHovered(false)}
-      className={`story-card bg-[#1A2A2B] rounded-xl overflow-hidden border border-white/5 p-4 sm:p-5 pb-4 transition-all duration-200 ease-out hover:border-white/10 hover:shadow-lg hover:shadow-black/20 animate-card-enter ${
-        hasSummary ? 'cursor-pointer' : ''
-      } ${borderPulsing ? 'animate-border-pulse' : ''}`}
+      className="
+        bg-[var(--plh-card)]
+        rounded-[10px]
+        border border-[var(--plh-border)]
+        border-l-2 border-l-[var(--plh-teal)]
+        p-4
+        transition-all duration-200 ease-out
+        cursor-pointer
+        animate-card-enter
+      "
       style={{
-        animationDelay: staggerDelay,
-        borderColor: borderPulsing ? 'rgba(196,162,62,0.3)' : undefined,
+        boxShadow: 'var(--plh-shadow)',
+        animationDelay: `${index * 50}ms`,
       }}
+      onMouseEnter={(e) => {
+        const el = e.currentTarget;
+        el.style.borderColor = 'var(--plh-border-hover)';
+        el.style.borderLeftColor = 'var(--plh-teal)';
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget;
+        el.style.borderColor = 'var(--plh-border)';
+        el.style.borderLeftColor = 'var(--plh-teal)';
+      }}
+      onClick={() => window.open(post.url, '_blank', 'noopener')}
     >
-      {/* ROW 1: SOURCE + CLUB + TIMESTAMP + INDEX SCORE */}
-      <div className="flex items-center justify-between mb-4 gap-3">
-        {/* Left side: Favicon, source name, club badge, club name, timestamp */}
-        <div className="flex items-center gap-2 min-w-0 flex-wrap">
-          {/* Favicon */}
-          <img
-            src={`https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=32`}
-            alt={sourceName}
-            className="w-5 h-5 rounded-sm flex-shrink-0"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none'
-            }}
-          />
+      {/* ── META ROW ── */}
+      <div className="flex items-center justify-between mb-2 gap-3">
+        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+          {/* Source logo */}
+          {post.sourceInfo.logo && (
+            <Image
+              src={post.sourceInfo.logo}
+              alt={post.sourceInfo.name}
+              width={18}
+              height={18}
+              className="w-[18px] h-[18px] rounded-sm flex-shrink-0"
+            />
+          )}
 
           {/* Source name */}
-          <span className="text-xs text-gray-300 font-medium whitespace-nowrap">
-            {sourceName}
+          <span
+            className="text-[10px] font-semibold uppercase tracking-[1.5px] whitespace-nowrap"
+            style={{ color: sourceColor }}
+          >
+            {post.sourceInfo.name}
           </span>
 
-          {/* Separator dot */}
-          <span className="text-gray-400 mx-1">·</span>
-
-          {/* Club badge + short name */}
-          {post.clubs.length > 0 && (
+          {primaryClub && (
             <>
-              <div className="w-5 h-5 flex-shrink-0">
+              <span className="text-[var(--plh-text-40)] text-[10px]">·</span>
+              {primaryClub.badgeUrl && (
                 <Image
-                  src={post.clubs[0].badgeUrl}
-                  alt={post.clubs[0].shortName}
-                  width={20}
-                  height={20}
-                  unoptimized
-                  className="w-full h-full object-contain rounded-full"
+                  src={primaryClub.badgeUrl}
+                  alt={primaryClub.shortName}
+                  width={18}
+                  height={18}
+                  className="w-[18px] h-[18px] object-contain flex-shrink-0"
                 />
-              </div>
-              <span className="text-xs text-gray-300 whitespace-nowrap">
-                {post.clubs[0].shortName}
+              )}
+              <span className="text-[13px] text-[var(--plh-teal)] whitespace-nowrap">
+                {primaryClub.shortName}
               </span>
-
-              {/* Separator dot before timestamp */}
-              <span className="text-gray-400 mx-1">·</span>
             </>
           )}
 
-          {/* Timestamp */}
-          <span className="text-xs text-gray-400 whitespace-nowrap">
+          <span className="text-[var(--plh-text-40)] text-[10px]">·</span>
+
+          <span className="text-[10px] text-[var(--plh-text-50)] whitespace-nowrap">
             {post.timeDisplay}
           </span>
         </div>
 
-        {/* Right side: INDEX SCORE */}
-        {post.indexScore && (
-          <div
-            ref={scoreBadgeRef}
-            onClick={handleScoreBadgeClick}
-            onMouseEnter={handleScoreBadgeHover}
-            onMouseLeave={handleScoreBadgeLeave}
-            className={`${scoreColor.bg} ${scoreColor.text} ${scoreColor.border} text-sm font-bold rounded-md px-2 py-0.5 tabular-nums ${scoreColor.glow} transition-all duration-200 flex-shrink-0 cursor-pointer hover:${scoreColor.border}`}
-          >
-            {displayScore}
-          </div>
-        )}
+        {/* Pulse score */}
+        <span
+          className="text-[11px] font-bold tabular-nums flex-shrink-0 px-2 py-0.5 rounded-[6px]"
+          style={{
+            color: 'var(--plh-gold)',
+            background: 'color-mix(in srgb, var(--plh-gold) 12%, transparent)',
+          }}
+        >
+          ⚡ {post.indexScore}
+        </span>
       </div>
 
-      {/* ROW 2: IMAGE */}
-      {hasImage && (
-        <div className="relative w-[calc(100%+2rem)] -mx-4 sm:-mx-5 sm:w-[calc(100%+2.5rem)] mb-4 h-[200px] sm:h-[300px] overflow-hidden rounded-lg">
-          <img
-            src={post.imageUrl!}
-            alt=""
-            className="w-full h-full object-cover object-top"
-            onError={() => setImgError(true)}
-            loading="lazy"
-            decoding="async"
-          />
-
-          {/* YouTube play button */}
-          {post.source === 'youtube' && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                <span className="text-2xl text-white">▶</span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ROW 3: HEADLINE */}
-      <h3 className="text-xl font-semibold text-white leading-tight mt-3 line-clamp-3">
+      {/* ── HEADLINE ── */}
+      <h3 className="text-[18px] font-semibold text-[var(--plh-text-100)] leading-[1.35] line-clamp-3">
         {post.title}
       </h3>
 
-      {/* TEASER LINE: First 60 chars of summary */}
-      {teaser && (
-        <p
-          className={`text-sm mt-2 transition-colors duration-200 ease-out ${
-            cardHovered ? 'text-gray-200' : 'text-gray-300'
-          }`}
-        >
-          {teaser}
+      {/* ── BLURB — 75% opacity ── */}
+      {post.previewBlurb && (
+        <p className="text-[14px] font-light text-[var(--plh-text-75)] leading-[1.6] mt-1.5">
+          {post.previewBlurb}
         </p>
       )}
 
-      {/* ROW 4: SECRET PUNDIT REVEAL */}
-      {hasSummary && (
-        <>
-          {/* Trigger button */}
-          <div className="w-full mt-3 flex items-center gap-2 rounded-lg py-2.5 px-3 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-200 ease-out">
-            {/* SP Circle */}
+      {/* ── FOOTER ROW: club tags + share ── */}
+      <div className="flex items-center justify-between mt-3">
+        {/* Club tags (multi-club stories) */}
+        <div className="flex items-center gap-1.5">
+          {post.clubs.length > 1 &&
+            post.clubs.map((club) => (
+              <span
+                key={club.slug}
+                className="text-[8px] font-semibold uppercase tracking-[1px] text-[var(--plh-teal)] px-1.5 py-0.5 rounded-[3px]"
+                style={{ background: 'color-mix(in srgb, var(--plh-teal) 12%, transparent)' }}
+              >
+                {club.code}
+              </span>
+            ))}
+        </div>
+
+        {/* Share button */}
+        <button
+          onClick={onShare}
+          className="
+            flex items-center gap-1.5 px-2 py-1
+            text-[11px] font-medium
+            text-[var(--plh-text-50)]
+            rounded-[6px]
+            transition-all duration-200
+          "
+          onMouseEnter={(e) => {
+            const el = e.currentTarget;
+            el.style.color = 'var(--plh-teal)';
+            el.style.background = 'color-mix(in srgb, var(--plh-teal) 8%, transparent)';
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget;
+            el.style.color = 'var(--plh-text-50)';
+            el.style.background = 'transparent';
+          }}
+          aria-label="Share this story"
+        >
+          {copied ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--plh-teal)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span className="text-[var(--plh-teal)]">Copied</span>
+            </>
+          ) : (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+              <span>Share</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* ── PUNDIT'S TAKE ── */}
+      {post.summary && (
+        <div className="mt-3 pt-3 border-t border-[var(--plh-border)]">
+          <button
+            className="
+              w-full flex items-center gap-2.5
+              rounded-[8px] py-2 px-2
+              transition-all duration-200 ease-out
+              text-left
+            "
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background =
+                'color-mix(in srgb, var(--plh-teal) 4%, transparent)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = 'transparent';
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setPunditOpen(!punditOpen);
+            }}
+            aria-expanded={punditOpen}
+          >
             <div
-              className={`flex-shrink-0 w-7 h-7 rounded-full bg-[#00555A] text-white text-xs font-bold flex items-center justify-center transition-all duration-300 ${
-                spPulsing ? 'animate-badge-pulse' : ''
-              }`}
-              style={
-                summaryExpanded || cardHovered
-                  ? { boxShadow: '0 0 8px rgba(196,162,62,0.3)' }
-                  : {}
-              }
+              className="
+                flex-shrink-0 w-[28px] h-[28px]
+                rounded-[6px]
+                text-[var(--plh-teal)]
+                text-[10px] font-semibold
+                flex items-center justify-center
+              "
+              style={{ background: 'color-mix(in srgb, var(--plh-teal) 15%, transparent)' }}
             >
               SP
             </div>
 
-            {/* Label — shows hook if available, otherwise "The Pundit's Take" */}
-            <span
-              className={`text-sm font-medium flex-1 text-left transition-colors duration-200 ${
-                spTriggerText && spTriggerText !== 'The Pundit\'s Take'
-                  ? 'text-gray-200 italic'
-                  : 'text-gray-200'
-              }`}
-            >
-              {spTriggerText}
+            <span className="text-[13px] font-medium text-[var(--plh-text-75)] flex-1">
+              The Pundit&apos;s Take
             </span>
 
-            {/* Chevron */}
             <span
-              className="text-gray-300 text-sm transition-transform duration-300 flex-shrink-0"
-              style={{
-                transform: summaryExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-              }}
+              className="text-[13px] text-[var(--plh-text-40)] transition-transform duration-200"
+              style={{ transform: punditOpen ? 'rotate(90deg)' : 'none' }}
             >
               ▸
             </span>
-          </div>
+          </button>
 
-          {/* Summary container — smooth expand/collapse */}
-          <div
-            className="overflow-hidden transition-all ease-out"
-            style={{
-              maxHeight: summaryExpanded ? '1000px' : '0px',
-              opacity: summaryExpanded ? 1 : 0,
-              transitionDuration: summaryExpanded ? '0.35s' : '0.25s',
-              transitionTimingFunction: summaryExpanded ? 'ease-out' : 'ease-in',
-            }}
-          >
-            <div className="mt-2 pl-4 border-l-2 border-[#00555A] py-3 space-y-4">
-              {/* Summary paragraphs */}
-              {paragraphs.map((para, idx) => (
-                <p key={idx} className="text-base text-gray-200 leading-[1.8]">
-                  {para}
-                </p>
-              ))}
-
-              {/* CTA Link inside summary */}
-              <div className="mt-4 mb-2">
-                <a
-                  href={post.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-sm font-medium text-[#C4A23E] hover:underline transition-colors"
-                >
-                  {post.source === 'youtube'
-                    ? 'Watch video →'
-                    : post.source === 'reddit'
-                      ? 'Read thread →'
-                      : 'Read article →'}
-                </a>
-              </div>
+          {punditOpen && (
+            <div className="px-2 pt-2.5 pb-1">
+              <p className="text-[13px] font-light text-[var(--plh-text-75)] leading-[1.7]">
+                {post.summary}
+              </p>
+              <a
+                href={post.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="
+                  inline-block mt-3 text-[12px] font-medium
+                  text-[var(--plh-teal)]
+                  transition-colors duration-200
+                "
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget;
+                  el.style.color = 'var(--plh-pink)';
+                  el.style.textDecoration = 'underline';
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget;
+                  el.style.color = 'var(--plh-teal)';
+                  el.style.textDecoration = 'none';
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                Read full article →
+              </a>
             </div>
-          </div>
-        </>
-      )}
-
-      {/* Index Score Tooltip */}
-      {tooltipOpen && scoreBadgeRef.current && (
-        <div style={{
-          '--tooltip-top': `${scoreBadgeRef.current.getBoundingClientRect().top - 8}px`,
-        } as React.CSSProperties}>
-          <IndexScoreTooltip
-            totalScore={displayScore}
-            scoreCredibility={post.scoreCredibility}
-            scoreRecency={post.scoreRecency}
-            scoreEngagement={post.scoreEngagement}
-            scoreSignificance={post.scoreSignificance}
-            isOpen={tooltipOpen}
-            onClose={() => setTooltipOpen(false)}
-          />
+          )}
         </div>
       )}
     </article>
-  )
+  );
 }
