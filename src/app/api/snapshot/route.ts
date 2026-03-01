@@ -152,10 +152,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       errorMessage = JSON.stringify(err)
     }
     console.error('[Snapshot API v1.1] Catch block — Error:', errorMessage, err)
+    const timestamp = new Date().toISOString()
     return NextResponse.json(
       {
         success: false,
-        error: `[v1.1] ${errorMessage}`,
+        error: `[v1.1-${timestamp}] ${errorMessage}`,
+        timestamp,
       },
       { status: 500 }
     )
