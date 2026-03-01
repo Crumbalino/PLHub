@@ -50,7 +50,7 @@ export default function SnapshotShell({ children }: { children?: React.ReactNode
             className="text-[13px] font-medium uppercase tracking-[2px] mb-3"
             style={{ color: '#3AAFA9' }}
           >
-            p.100 · The Snapshot · Matchday 29
+            p.302 · The Snapshot · Matchday 29
           </div>
 
           {/* Headline */}
