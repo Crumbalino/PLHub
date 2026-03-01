@@ -72,10 +72,11 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
     }
 
     // Transform all posts
+    const typedPosts = (posts as unknown as Post[]) || []
     const transformed: FeedPost[] = []
-    for (const post of posts) {
+    for (const post of typedPosts) {
       try {
-        const feedPost = await transformPost(post as Post)
+        const feedPost = await transformPost(post)
         transformed.push(feedPost)
       } catch (err) {
         // Skip posts that fail transformation
