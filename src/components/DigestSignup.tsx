@@ -39,22 +39,28 @@ export default function DigestSignup() {
 
   if (state === 'success') {
     return (
-      <div className="bg-[#183538] rounded-xl p-6 border border-[#C4A23E]/20 text-center">
+      <div
+        className="rounded-xl p-6 text-center"
+        style={{
+          background: 'var(--plh-card)',
+          border: '1px solid color-mix(in srgb, var(--plh-gold) 20%, transparent)',
+        }}
+      >
         <div className="text-2xl mb-2">⚡</div>
-        <p className="text-sm text-white font-medium">{message}</p>
+        <p className="text-sm text-[var(--plh-text-100)] font-medium">{message}</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-[#183538] rounded-xl p-6 border border-white/5">
+    <div className="bg-[var(--plh-card)] rounded-xl p-6 border border-[var(--plh-border)]">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <PulseIcon size={16} />
-        <span className="text-sm font-bold text-white">Breakfast Digest</span>
+        <span className="text-sm font-bold text-[var(--plh-text-100)]">Breakfast Digest</span>
       </div>
 
-      <p className="text-sm text-gray-300 mb-4 leading-relaxed">
+      <p className="text-sm text-[var(--plh-text-70)] mb-4 leading-relaxed">
         The top Premier League stories in your inbox every morning at 7am.
         Free, no spam, unsubscribe anytime.
       </p>
@@ -70,12 +76,12 @@ export default function DigestSignup() {
           }}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
           placeholder="your@email.com"
-          className="flex-1 bg-[#0B1F21] text-white text-sm rounded-lg px-4 py-2.5 border border-white/10 focus:border-[#C4A23E] focus:outline-none placeholder:text-white/30 transition-colors"
+          className="flex-1 bg-[var(--plh-bg)] text-[var(--plh-text-100)] text-sm rounded-lg px-4 py-2.5 border border-[var(--plh-border)] focus:border-[var(--plh-teal)] focus:outline-none placeholder:text-[var(--plh-text-40)] transition-colors"
         />
         <button
           onClick={handleSubmit}
           disabled={state === 'loading' || !email}
-          className="bg-[#C4A23E] hover:bg-[#d4b24e] text-[#0B1F21] text-sm font-semibold rounded-lg px-5 py-2.5 transition-colors disabled:opacity-50 shrink-0"
+          className="bg-[var(--plh-pink)] hover:bg-[var(--plh-pink-hover)] text-white text-sm font-semibold rounded-lg px-5 py-2.5 transition-colors disabled:opacity-50 shrink-0"
         >
           {state === 'loading' ? '...' : 'Subscribe'}
         </button>

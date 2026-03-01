@@ -1,47 +1,49 @@
 // ============================================================
-// PLHub Constants & Design Tokens
+// PLHub Constants & Design Tokens v2.2
 // Platform-agnostic — no DOM, no React Native dependencies
 // ============================================================
 
-// --- Colour System ---
+// --- Colour System (v2.2 navy) ---
 
 export const COLORS = {
-  bgPage: '#0B1F21',
-  bgCard: '#183538',
-  bgCardHover: '#1D3D41',
-  bgCardExpanded: 'rgba(255,255,255,0.03)',
-  brandGold: '#C4A23E',
-  brandGoldMuted: '#C4A23E80',
-  brandTeal: '#00555A',
-  textPrimary: '#FFFFFF',
-  textSecondary: 'rgba(255,255,255,0.7)',
-  textMuted: 'rgba(255,255,255,0.5)',
-  textGhost: 'rgba(255,255,255,0.3)',
-  border: 'rgba(255,255,255,0.05)',
-  borderSubtle: 'rgba(255,255,255,0.1)',
+  bgPage: '#0D1B2A',
+  bgCard: '#112238',
+  bgCardHover: '#162D45',
+  bgCardExpanded: 'rgba(250,245,240,0.03)',
+  brandPink: '#E84080',
+  brandGold: '#D4A843',
+  brandGoldMuted: 'rgba(212,168,67,0.5)',
+  brandTeal: '#3AAFA9',
+  textPrimary: '#FAF5F0',
+  textSecondary: 'rgba(250,245,240,0.7)',
+  textMuted: 'rgba(250,245,240,0.5)',
+  textGhost: 'rgba(250,245,240,0.4)',
+  border: 'rgba(250,245,240,0.05)',
+  borderSubtle: 'rgba(250,245,240,0.1)',
 } as const
 
-// --- Source Colours ---
+// --- Source Colours (v2.2 editorial palette) ---
 
 export const SOURCE_COLORS: Record<string, string> = {
-  'BBC Sport': '#FFD008',
-  'Sky Sports': '#0072BC',
-  'The Guardian': '#052962',
-  'The Athletic': '#D4442E',
-  'talkSPORT': '#E4002B',
-  'Goal': '#00A550',
-  '90min': '#8B5CF6',
-  'The Telegraph': '#1D1D1B',
-  'Mirror': '#E00000',
-  'The Sun': '#C4122F',
-  'Reddit': '#FF4500',
-  'YouTube': '#FF0000',
-  'football.london': '#E63329',
-  'Manchester Evening News': '#004080',
-  'Liverpool Echo': '#C8102E',
-  'Chronicle Live': '#000000',
-  'FourFourTwo': '#E30613',
-  'Football365': '#00AEEF',
+  'BBC Sport': '#D4A843',
+  'Sky Sports': '#E84080',
+  'The Guardian': '#3AAFA9',
+  'talkSPORT': '#8AACCC',
+  'Goal': '#C084FC',
+  'Goal.com': '#C084FC',
+  '90min': '#F97316',
+  'Reddit': '#F97316',
+  'YouTube': '#E84080',
+  // Legacy fallbacks for any sources still using old names
+  'The Athletic': '#D4A843',
+  'The Telegraph': '#8AACCC',
+  'Mirror': '#E84080',
+  'FourFourTwo': '#F97316',
+  'Football365': '#3AAFA9',
+  'football.london': '#E84080',
+  'Manchester Evening News': '#8AACCC',
+  'Liverpool Echo': '#E84080',
+  'Chronicle Live': '#8AACCC',
 } as const
 
 // --- Source Logos (public path) ---

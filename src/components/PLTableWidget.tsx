@@ -50,27 +50,27 @@ const standings = [
 
 export default function PLTableWidget() {
   return (
-    <div className="rounded-xl bg-[#152B2E] border border-white/5 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+    <div className="rounded-xl bg-[var(--plh-card)] border border-[var(--plh-border)] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--plh-border)]">
         <div>
-          <span className="text-base font-semibold text-[#C4A23E]">Premier League</span>
-          <span className="text-[10px] text-gray-400 ml-2">2025/26</span>
+          <span className="text-base font-semibold text-[var(--plh-gold)]">Premier League</span>
+          <span className="text-[10px] text-[var(--plh-text-50)] ml-2">2025/26</span>
         </div>
       </div>
 
-      <div className="divide-y divide-white/5">
+      <div className="divide-y divide-[var(--plh-border)]">
         {standings.map((entry) => {
           const clubSlug = badgeToSlug[entry.badge] || ''
           return (
             <Link
               key={entry.pos}
               href={clubSlug ? `/?club=${clubSlug}` : '#'}
-              className="grid grid-cols-[20px_1fr_20px_20px_28px] gap-2 px-4 py-2 hover:bg-white/[0.05] transition-colors items-center border-l-2"
+              className="grid grid-cols-[20px_1fr_20px_20px_28px] gap-2 px-4 py-2 hover:bg-[var(--plh-elevated)] transition-colors items-center border-l-2"
               style={{
                 borderLeftColor: entry.pos <= 4 ? '#22c55e' : entry.pos >= 18 ? '#ef4444' : 'transparent',
               }}
             >
-            <span className="tabular-nums text-sm text-gray-400">{entry.pos}</span>
+            <span className="tabular-nums text-sm text-[var(--plh-text-50)]">{entry.pos}</span>
 
             <div className="flex items-center gap-2 min-w-0">
               <img
@@ -78,22 +78,22 @@ export default function PLTableWidget() {
                 alt=""
                 className="w-4 h-4 object-contain shrink-0"
               />
-              <span className="text-sm text-white truncate">{entry.short}</span>
+              <span className="text-sm text-[var(--plh-text-100)] truncate">{entry.short}</span>
             </div>
 
-            <span className="text-sm text-gray-300 tabular-nums text-center">{entry.p}</span>
-            <span className="text-sm text-gray-300 tabular-nums text-center">{entry.w}</span>
-            <span className="text-sm font-semibold text-white tabular-nums text-center">{entry.pts}</span>
+            <span className="text-sm text-[var(--plh-text-70)] tabular-nums text-center">{entry.p}</span>
+            <span className="text-sm text-[var(--plh-text-70)] tabular-nums text-center">{entry.w}</span>
+            <span className="text-sm font-semibold text-[var(--plh-text-100)] tabular-nums text-center">{entry.pts}</span>
             </Link>
           )
         })}
       </div>
 
-      <div className="flex gap-3 px-4 py-2 border-t border-white/5 text-[10px]">
+      <div className="flex gap-3 px-4 py-2 border-t border-[var(--plh-border)] text-[10px]">
         <span className="text-green-400/70">■ UCL</span>
         <span className="text-red-400/70">■ Relegation</span>
       </div>
-      <p className="text-xs text-gray-400 mt-2 text-center pb-2">Correct as of 26 Feb 2026</p>
+      <p className="text-xs text-[var(--plh-text-50)] mt-2 text-center pb-2">Correct as of 26 Feb 2026</p>
     </div>
   )
 }

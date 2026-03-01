@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ================================
-   PLHub Brand Tokens v2.1
+   PLHub Brand Tokens v2.2
    Dark mode = default. Light mode via .light on <html>.
    No grey hex codes. Opacity on base colour only.
    ================================ */
@@ -35,13 +35,17 @@
   --plh-border-hover: rgba(250, 245, 240, 0.1);
   --plh-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
 
-  /* Legacy compat vars for existing components */
-  --background: #0B1F21;
-  --foreground: #ededed;
-  --brand-teal: #00555A;
-  --brand-gold: #C4A23E;
-  --card-bg: #183538;
-  --card-bg-hover: #1c3d41;
+  /* v2.2 — Inline logo (monochrome on-site) */
+  --plh-logo-text: #FAF5F0;
+  --plh-logo-bracket-opacity: 0.2;
+
+  /* Legacy compat — mapped to navy system */
+  --background: #0D1B2A;
+  --foreground: #FAF5F0;
+  --brand-teal: #3AAFA9;
+  --brand-gold: #D4A843;
+  --card-bg: #112238;
+  --card-bg-hover: #162D45;
 }
 
 /* Light mode */
@@ -70,9 +74,17 @@
   --plh-border-hover: rgba(13, 27, 42, 0.12);
   --plh-shadow: 0 2px 6px rgba(13, 27, 42, 0.05), 0 1px 2px rgba(13, 27, 42, 0.03);
 
-  /* Legacy compat vars */
+  /* v2.2 — Inline logo (monochrome on-site) */
+  --plh-logo-text: #1A1D23;
+  --plh-logo-bracket-opacity: 0.15;
+
+  /* Legacy compat — mapped to light system */
   --background: #F8F9FB;
   --foreground: #1A1D23;
+  --brand-teal: #2A9490;
+  --brand-gold: #B8923A;
+  --card-bg: #FFFFFF;
+  --card-bg-hover: #F0F1F4;
 }
 
 /* ================================
@@ -190,11 +202,11 @@ article[id^="post-"] {
   animation: cardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Card glow on expand */
+/* Card glow on expand — uses brand gold */
 @keyframes cardGlow {
-  0% { box-shadow: 0 0 0 rgba(196,162,62,0); }
-  40% { box-shadow: 0 0 30px rgba(196,162,62,0.12); }
-  100% { box-shadow: 0 0 10px rgba(196,162,62,0.04); }
+  0% { box-shadow: 0 0 0 rgba(212,168,67,0); }
+  40% { box-shadow: 0 0 30px rgba(212,168,67,0.12); }
+  100% { box-shadow: 0 0 10px rgba(212,168,67,0.04); }
 }
 
 .animate-card-glow {
@@ -228,20 +240,26 @@ article[id^="post-"] {
   animation: badgePulse 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Border pulse on card expand */
+/* Border pulse on card expand — uses brand gold */
 @keyframes borderPulse {
-  0% { border-color: rgba(196,162,62,0.3); }
-  100% { border-color: rgba(255,255,255,0.05); }
+  0% { border-color: rgba(212,168,67,0.3); }
+  100% { border-color: var(--plh-border); }
 }
 
 .animate-border-pulse {
   animation: borderPulse 500ms ease-out forwards;
 }
 
-/* Trending #1 heartbeat glow */
+/* v2.2: LIVE pulse dot */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Trending #1 heartbeat glow — uses brand gold */
 @keyframes trendingPulse {
-  0%, 100% { opacity: 1; filter: drop-shadow(0 0 0px #C4A23E); }
-  50% { opacity: 0.8; filter: drop-shadow(0 0 8px #C4A23E); }
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 0px var(--plh-gold)); }
+  50% { opacity: 0.8; filter: drop-shadow(0 0 8px var(--plh-gold)); }
 }
 
 .animate-trending-pulse {
@@ -285,30 +303,30 @@ article[id^="post-"] {
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(255,255,255,0.03) 25%,
-    rgba(255,255,255,0.06) 50%,
-    rgba(255,255,255,0.03) 75%
+    rgba(var(--plh-text-base), 0.03) 25%,
+    rgba(var(--plh-text-base), 0.06) 50%,
+    rgba(var(--plh-text-base), 0.03) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
 }
 
 /* ============================================
-   HEAT BADGES
+   HEAT BADGES — uses brand gold
    ============================================ */
 .heat-hot {
-  background: linear-gradient(135deg, #C4A23E 0%, #E8C84A 100%);
-  color: #0B1F21;
+  background: linear-gradient(135deg, var(--plh-gold) 0%, #E8C84A 100%);
+  color: var(--plh-bg);
 }
 
 .heat-warm {
-  background: rgba(196, 162, 62, 0.15);
-  color: #C4A23E;
+  background: color-mix(in srgb, var(--plh-gold) 15%, transparent);
+  color: var(--plh-gold);
 }
 
 .heat-rising {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.7);
+  background: rgba(var(--plh-text-base), 0.08);
+  color: var(--plh-text-70);
 }
 
 /* ============================================
@@ -349,7 +367,7 @@ article[id^="post-"] {
 }
 
 /* ============================================
-   LOAD MORE BUTTON
+   LOAD MORE BUTTON — uses brand gold
    ============================================ */
 .load-more-btn {
   position: relative;
@@ -360,7 +378,7 @@ article[id^="post-"] {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, transparent 0%, rgba(196,162,62,0.05) 100%);
+  background: linear-gradient(135deg, transparent 0%, color-mix(in srgb, var(--plh-gold) 5%, transparent) 100%);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -407,7 +425,7 @@ article[id^="post-"] {
 .section-divider {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(var(--plh-text-base), 0.08) 50%, transparent 100%);
 }
 
 /* ============================================
@@ -422,15 +440,15 @@ details summary::-webkit-details-marker {
 }
 
 details[open] summary {
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--plh-border);
   margin-bottom: 0.5rem;
 }
 
 /* ============================================
-   FOCUS STYLES (accessibility)
+   FOCUS STYLES (accessibility) — uses brand pink
    ============================================ */
 :focus-visible {
-  outline: 2px solid #C4A23E;
+  outline: 2px solid var(--plh-pink);
   outline-offset: 2px;
   border-radius: 4px;
 }

@@ -51,7 +51,7 @@ export function getSourceInfo(post: Post): SourceInfo {
     return {
       name: 'Reddit',
       logo: SOURCE_LOGOS['Reddit'] ?? null,
-      color: SOURCE_COLORS['Reddit'] ?? '#FF4500',
+      color: SOURCE_COLORS['Reddit'] ?? '#F97316',
     }
   }
 
@@ -59,7 +59,7 @@ export function getSourceInfo(post: Post): SourceInfo {
     return {
       name: 'YouTube',
       logo: null,
-      color: SOURCE_COLORS['YouTube'] ?? '#FF0000',
+      color: SOURCE_COLORS['YouTube'] ?? '#E84080',
     }
   }
 
@@ -71,7 +71,7 @@ export function getSourceInfo(post: Post): SourceInfo {
       return {
         name,
         logo: SOURCE_LOGOS[name] ?? null,
-        color: SOURCE_COLORS[name] ?? '#C4A23E',
+        color: SOURCE_COLORS[name] ?? '#3AAFA9',
       }
     }
   }
@@ -80,7 +80,7 @@ export function getSourceInfo(post: Post): SourceInfo {
   return {
     name: domain || 'News',
     logo: null,
-    color: '#C4A23E',
+    color: '#3AAFA9',
   }
 }
 

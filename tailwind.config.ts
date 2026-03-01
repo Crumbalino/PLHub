@@ -9,13 +9,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: '#0B1F21',
-        surface: '#183538',
-        'surface-hover': '#1c3d41',
-        'surface-raised': '#152B2E',
-        border: '#222222',
-        'brand-teal': '#00555A',
-        'brand-gold': '#C4A23E',
+        // v2.2 — Navy system (replaces old green-teal)
+        background: '#0D1B2A',
+        surface: '#112238',
+        'surface-hover': '#162D45',
+        'surface-raised': '#112238',
+        border: 'rgba(250, 245, 240, 0.05)',
+
+        // Brand
+        'brand-pink': '#E84080',
+        'brand-teal': '#3AAFA9',
+        'brand-gold': '#D4A843',
       },
       animation: {
         'card-enter': 'cardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',

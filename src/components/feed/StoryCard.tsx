@@ -6,31 +6,6 @@ import { getSourceColor } from '@/lib/theme';
 import type { FeedPost } from '@/lib/types';
 
 // ──────────────────────────────────────────
-// SHARE FUNCTIONALITY
-// ──────────────────────────────────────────
-
-async function handleShare(e: React.MouseEvent, post: FeedPost) {
-  e.stopPropagation();
-
-  const shareData = {
-    title: post.title,
-    text: post.previewBlurb || undefined,
-    url: post.url,
-  };
-
-  try {
-    if (navigator.share) {
-      await navigator.share(shareData);
-    } else {
-      await navigator.clipboard.writeText(post.url);
-      // Visual feedback handled by caller
-    }
-  } catch {
-    // User cancelled share — do nothing
-  }
-}
-
-// ──────────────────────────────────────────
 // COMPONENT
 // ──────────────────────────────────────────
 
@@ -40,21 +15,36 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
   const sourceColor = getSourceColor(post.sourceInfo.name);
   const primaryClub = post.clubs[0];
 
+  // v2.2: Priority detection — pink border for LIVE / BREAKING
+  const isLive = post.title.toLowerCase().includes('live') ||
+    post.sourceInfo.name.toLowerCase().includes('live');
+  const isBreaking = post.title.toUpperCase().includes('BREAKING');
+  const isPriority = isLive || isBreaking;
+  const borderColor = isPriority ? 'var(--plh-pink)' : 'var(--plh-teal)';
+
+  // v2.2: Share always points to PLHub, never to the original source
+  // TODO: Update to plhub.co.uk/story/[slug] when story pages are built
   async function onShare(e: React.MouseEvent) {
     e.stopPropagation();
 
+    const plhubUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}`
+      : 'https://plhub.co.uk';
+
+    const shareData = {
+      title: post.title,
+      text: post.previewBlurb || undefined,
+      url: plhubUrl,
+    };
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: post.title,
-          text: post.previewBlurb || undefined,
-          url: post.url,
-        });
+        await navigator.share(shareData);
       } catch {
         // cancelled
       }
     } else {
-      await navigator.clipboard.writeText(post.url);
+      await navigator.clipboard.writeText(plhubUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -66,27 +56,33 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
         bg-[var(--plh-card)]
         rounded-[10px]
         border border-[var(--plh-border)]
-        border-l-2 border-l-[var(--plh-teal)]
+        border-l-2
         p-4
         transition-all duration-200 ease-out
         cursor-pointer
         animate-card-enter
       "
       style={{
+        borderLeftColor: borderColor,
         boxShadow: 'var(--plh-shadow)',
         animationDelay: `${index * 50}ms`,
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget;
         el.style.borderColor = 'var(--plh-border-hover)';
-        el.style.borderLeftColor = 'var(--plh-teal)';
+        el.style.borderLeftColor = borderColor;
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget;
         el.style.borderColor = 'var(--plh-border)';
-        el.style.borderLeftColor = 'var(--plh-teal)';
+        el.style.borderLeftColor = borderColor;
       }}
-      onClick={() => window.open(post.url, '_blank', 'noopener')}
+      // v2.2: Card tap opens Pundit's Take — does NOT navigate to source
+      onClick={() => {
+        if (post.summary) {
+          setPunditOpen(!punditOpen);
+        }
+      }}
     >
       {/* ── META ROW ── */}
       <div className="flex items-center justify-between mb-2 gap-3">
@@ -109,6 +105,30 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
           >
             {post.sourceInfo.name}
           </span>
+
+          {/* v2.2: LIVE / BREAKING badges */}
+          {isLive && (
+            <>
+              <span className="text-[var(--plh-text-40)] text-[10px]">·</span>
+              <span className="flex items-center gap-1">
+                <span
+                  className="w-[6px] h-[6px] rounded-full bg-[var(--plh-pink)]"
+                  style={{ animation: 'livePulse 2s ease-in-out infinite' }}
+                />
+                <span className="text-[9px] font-bold uppercase tracking-[1.5px] text-[var(--plh-pink)]">
+                  LIVE
+                </span>
+              </span>
+            </>
+          )}
+          {isBreaking && !isLive && (
+            <>
+              <span className="text-[var(--plh-text-40)] text-[10px]">·</span>
+              <span className="text-[9px] font-bold uppercase tracking-[1.5px] text-[var(--plh-pink)]">
+                BREAKING
+              </span>
+            </>
+          )}
 
           {primaryClub && (
             <>
@@ -268,10 +288,11 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
           </button>
 
           {punditOpen && (
-            <div className="px-2 pt-2.5 pb-1">
+            <div className="px-2 pt-2.5 pb-1 animate-summary-reveal">
               <p className="text-[13px] font-light text-[var(--plh-text-75)] leading-[1.7]">
                 {post.summary}
               </p>
+              {/* Read original — deliberate extra step, opens source in new tab */}
               <a
                 href={post.url}
                 target="_blank"
@@ -293,7 +314,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                Read full article →
+                Read original →
               </a>
             </div>
           )}

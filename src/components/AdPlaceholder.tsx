@@ -11,8 +11,8 @@ export default function AdPlaceholder({ size = '300x250' }: AdPlaceholderProps) 
   }
 
   return (
-    <div className={`${sizeMap[size]} border border-dashed border-white/10 rounded-lg bg-[#0B1F21] flex items-center justify-center`}>
-      <span className="text-xs text-white/20">Ad</span>
+    <div className={`${sizeMap[size]} border border-dashed border-[var(--plh-border)] rounded-lg bg-[var(--plh-bg)] flex items-center justify-center`}>
+      <span className="text-xs text-[var(--plh-text-40)]">Ad</span>
     </div>
   )
 }

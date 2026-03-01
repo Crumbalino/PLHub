@@ -98,29 +98,29 @@ export default async function ClubPage({
     <>
       <JsonLd data={clubPageSchema} />
 
-      <div className="min-h-screen bg-[#0B1F21]">
+      <div className="min-h-screen bg-[var(--plh-bg)]">
         <div className="max-w-3xl mx-auto px-4 pt-2">
           {/* Breadcrumb */}
-          <nav className="text-sm text-white/50 mb-6" aria-label="Breadcrumb">
+          <nav className="text-sm text-[var(--plh-text-50)] mb-6" aria-label="Breadcrumb">
             <ol className="flex items-center gap-1.5">
               <li>
-                <Link href="/" className="hover:text-white transition-colors">
+                <Link href="/" className="hover:text-[var(--plh-text-100)] transition-colors">
                   PLHub
                 </Link>
               </li>
               <li aria-hidden="true">/</li>
               <li>
-                <Link href="/" className="hover:text-white transition-colors">
+                <Link href="/" className="hover:text-[var(--plh-text-100)] transition-colors">
                   Clubs
                 </Link>
               </li>
               <li aria-hidden="true">/</li>
-              <li className="text-white font-medium">{club.name}</li>
+              <li className="text-white font-medium text-[var(--plh-text-100)]">{club.name}</li>
             </ol>
           </nav>
 
           {/* Club Hero */}
-          <header className="flex items-center gap-4 mb-8 pb-6 border-b border-white/10">
+          <header className="flex items-center gap-4 mb-8 pb-6 border-b border-[var(--plh-border)]">
             <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0">
               <Image
                 src={club.badgeUrl}
@@ -132,10 +132,10 @@ export default async function ClubPage({
               />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[var(--plh-text-100)]">
                 {club.name}
               </h1>
-              <p className="text-sm text-white/60 mt-1">
+              <p className="text-sm text-[var(--plh-text-50)] mt-1">
                 News, transfers and fan discussion — ranked by the PLHub Index
               </p>
             </div>
@@ -146,7 +146,7 @@ export default async function ClubPage({
             {prevClub ? (
               <Link
                 href={`/clubs/${prevClub.slug}`}
-                className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-[var(--plh-text-50)] hover:text-[var(--plh-text-100)] transition-colors"
               >
                 <span>←</span>
                 <Image
@@ -164,14 +164,14 @@ export default async function ClubPage({
             )}
             <Link
               href="/"
-              className="text-xs text-white/40 hover:text-white/70 transition-colors"
+              className="text-xs text-[var(--plh-text-40)] hover:text-[var(--plh-text-70)] transition-colors"
             >
               All clubs
             </Link>
             {nextClub ? (
               <Link
                 href={`/clubs/${nextClub.slug}`}
-                className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-sm text-[var(--plh-text-50)] hover:text-[var(--plh-text-100)] transition-colors"
               >
                 <span className="hidden sm:inline">{nextClub.shortName}</span>
                 <Image

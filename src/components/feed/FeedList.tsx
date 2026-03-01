@@ -38,21 +38,21 @@ export default function FeedList({ club = null }: FeedListProps) {
     <>
 
       {/* Section Heading with inline sort toggle */}
-      <div className="mb-6 mt-4 border-l-3 border-l-[#C4A23E] pl-3">
+      <div className="mb-6 mt-4 border-l-[3px] border-l-[var(--plh-teal)] pl-3">
         <div className={`flex items-center gap-2 transition-opacity duration-200 ${headingPhase === 1 ? 'opacity-0' : 'opacity-100'}`}>
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold text-[var(--plh-text-100)]">
             {title}
           </h2>
           <button
             onClick={handleToggleSort}
-            className="text-sm text-[#C4A23E] hover:underline cursor-pointer transition-colors whitespace-nowrap"
+            className="text-sm text-[var(--plh-teal)] hover:underline cursor-pointer transition-colors whitespace-nowrap"
           >
             {toggleText}
           </button>
           {isIndexSort && (
             <button
               onClick={() => setShowHowItWorks(!showHowItWorks)}
-              className="text-xs text-[#C4A23E] hover:underline cursor-pointer transition-colors ml-2"
+              className="text-xs text-[var(--plh-teal)] hover:underline cursor-pointer transition-colors ml-2"
             >
               • How this works
             </button>
@@ -62,7 +62,10 @@ export default function FeedList({ club = null }: FeedListProps) {
         {/* How it works explainer */}
         {isIndexSort && showHowItWorks && (
           <div className="mt-4 overflow-hidden animate-in fade-in-0 slide-in-from-top-2 duration-300">
-            <div className="max-w-[600px] text-sm text-gray-200 leading-relaxed p-4 bg-white/5 rounded-lg border border-white/10">
+            <div
+              className="max-w-[600px] text-sm text-[var(--plh-text-75)] leading-relaxed p-4 rounded-lg border border-[var(--plh-border)]"
+              style={{ background: 'color-mix(in srgb, var(--plh-text-100) 5%, transparent)' }}
+            >
               Every story is scored 0–100 based on four things: how trusted the source is, how fresh the story is, how much people are talking about it, and how significant it actually is. No paid placement, no algorithms favouring advertisers. Just good stories, ranked fairly.
             </div>
           </div>
@@ -75,20 +78,20 @@ export default function FeedList({ club = null }: FeedListProps) {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="skeleton-shimmer rounded-xl border-l-4 border-white/5 overflow-hidden"
+              className="skeleton-shimmer rounded-xl border-l-4 border-[var(--plh-border)] overflow-hidden"
               style={{ animationDelay: `${i * 150}ms` }}
             >
               {/* Image placeholder */}
-              {i < 2 && <div className="w-full h-[160px] sm:h-[200px] bg-white/[0.02]" />}
+              {i < 2 && <div className="w-full h-[160px] sm:h-[200px]" style={{ background: 'rgba(var(--plh-text-base), 0.02)' }} />}
               {/* Text placeholders */}
               <div className="p-5 space-y-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-white/5" />
-                  <div className="w-20 h-3 rounded bg-white/5" />
+                  <div className="w-5 h-5 rounded-full" style={{ background: 'rgba(var(--plh-text-base), 0.05)' }} />
+                  <div className="w-20 h-3 rounded" style={{ background: 'rgba(var(--plh-text-base), 0.05)' }} />
                 </div>
-                <div className="w-[85%] h-5 rounded bg-white/5" />
-                <div className="w-[60%] h-5 rounded bg-white/5" />
-                <div className="w-[40%] h-3 rounded bg-white/5 mt-2" />
+                <div className="w-[85%] h-5 rounded" style={{ background: 'rgba(var(--plh-text-base), 0.05)' }} />
+                <div className="w-[60%] h-5 rounded" style={{ background: 'rgba(var(--plh-text-base), 0.05)' }} />
+                <div className="w-[40%] h-3 rounded mt-2" style={{ background: 'rgba(var(--plh-text-base), 0.05)' }} />
               </div>
             </div>
           ))}
@@ -110,10 +113,10 @@ export default function FeedList({ club = null }: FeedListProps) {
 
       {/* Empty state */}
       {!isLoading && posts.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 py-16 text-center animate-fadeIn">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--plh-border)] py-16 text-center animate-fadeIn">
           <span className="text-4xl">⚽</span>
-          <h3 className="mt-4 text-base font-semibold text-white">No stories yet</h3>
-          <p className="mt-2 max-w-sm text-sm text-gray-400">
+          <h3 className="mt-4 text-base font-semibold text-[var(--plh-text-100)]">No stories yet</h3>
+          <p className="mt-2 max-w-sm text-sm text-[var(--plh-text-50)]">
             News will appear here once the cron jobs have fetched the latest posts.
           </p>
         </div>
@@ -122,13 +125,13 @@ export default function FeedList({ club = null }: FeedListProps) {
       {/* Load More */}
       {!isLoading && hasMore && posts.length > 0 && (
         <div className="text-center mt-10 mb-4">
-          <p className="text-xs text-gray-400 mb-3">
+          <p className="text-xs text-[var(--plh-text-50)] mb-3">
             Showing {posts.length} stories
           </p>
           <button
             onClick={loadMore}
             disabled={isLoadingMore}
-            className="load-more-btn bg-[#152B2E] hover:bg-[#1A3235] text-white rounded-xl py-3.5 px-10 text-sm font-medium transition-all disabled:opacity-50"
+            className="load-more-btn bg-[var(--plh-card)] hover:bg-[var(--plh-elevated)] text-[var(--plh-text-100)] rounded-xl py-3.5 px-10 text-sm font-medium transition-all disabled:opacity-50"
           >
             {isLoadingMore ? (
               <span className="flex items-center gap-2">

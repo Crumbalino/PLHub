@@ -27,13 +27,12 @@ export default function IndexScoreTooltip({
 
   // Determine color tier based on total score
   const getTierColor = () => {
-    if (totalScore >= 70) return '#C4A23E' // Gold
-    if (totalScore >= 50) return 'white'
-    return '#9CA3AF' // gray-400
+    if (totalScore >= 70) return 'var(--plh-gold)'
+    if (totalScore >= 50) return 'var(--plh-text-100)'
+    return 'var(--plh-text-50)'
   }
 
   const tierColor = getTierColor()
-  const trackBg = 'bg-white/10'
 
   const bars = [
     { label: 'Source', value: scoreCredibility },
@@ -96,25 +95,28 @@ export default function IndexScoreTooltip({
         <div
           className="absolute -bottom-1 left-1/2 w-2 h-2 transform -translate-x-1/2 rotate-45"
           style={{
-            backgroundColor: '#1A2A2B',
-            borderRight: '1px solid rgba(255,255,255,0.1)',
-            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            backgroundColor: 'var(--plh-elevated)',
+            borderRight: '1px solid var(--plh-border-hover)',
+            borderBottom: '1px solid var(--plh-border-hover)',
           }}
         />
 
         {/* Tooltip content */}
-        <div className="bg-[#1A2A2B] border border-white/10 rounded-xl p-4 shadow-xl shadow-black/30">
+        <div
+          className="border border-[var(--plh-border-hover)] rounded-xl p-4 shadow-xl"
+          style={{ backgroundColor: 'var(--plh-elevated)', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}
+        >
           {/* Four pillar bars */}
           <div className="space-y-3">
             {bars.map((bar, idx) => (
               <div key={bar.label} className="flex items-center gap-3">
                 {/* Label */}
-                <span className="text-xs text-gray-300 w-[100px] flex-shrink-0">
+                <span className="text-xs text-[var(--plh-text-70)] w-[100px] flex-shrink-0">
                   {bar.label}
                 </span>
 
                 {/* Progress bar */}
-                <div className={`flex-1 h-1.5 rounded-full ${trackBg} overflow-hidden`}>
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(var(--plh-text-base), 0.1)' }}>
                   <div
                     className="h-full rounded-full transition-all duration-500 ease-out"
                     style={{
@@ -137,10 +139,10 @@ export default function IndexScoreTooltip({
           </div>
 
           {/* Divider */}
-          <div className="border-t border-white/5 mt-3 pt-3">
+          <div className="border-t border-[var(--plh-border)] mt-3 pt-3">
             {/* Total score */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] uppercase tracking-widest text-gray-400">
+              <span className="text-[9px] uppercase tracking-widest text-[var(--plh-text-50)]">
                 INDEX
               </span>
               <span

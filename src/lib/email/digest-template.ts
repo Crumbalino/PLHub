@@ -9,14 +9,14 @@
 import type { DigestContent, DigestStory } from './digest-content'
 
 const COLORS = {
-  bg: '#0B1F21',
-  card: '#183538',
-  gold: '#C4A23E',
-  teal: '#00555A',
-  text: '#ffffff',
-  textMuted: '#ffffff99',
-  textFaint: '#ffffff66',
-  border: '#ffffff1a',
+  bg: '#0D1B2A',
+  card: '#112238',
+  gold: '#D4A843',
+  teal: '#3AAFA9',
+  text: '#FAF5F0',
+  textMuted: 'rgba(250,245,240,0.6)',
+  textFaint: 'rgba(250,245,240,0.4)',
+  border: 'rgba(250,245,240,0.1)',
 }
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'

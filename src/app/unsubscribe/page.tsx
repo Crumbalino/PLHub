@@ -34,23 +34,23 @@ export default function UnsubscribePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1F21] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--plh-bg)] flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
-        <h1 className="text-2xl font-bold text-white mb-4">Unsubscribe</h1>
+        <h1 className="text-2xl font-bold text-[var(--plh-text-100)] mb-4">Unsubscribe</h1>
 
         {state === 'success' ? (
           <div>
-            <p className="text-white/70 mb-6">{message}</p>
+            <p className="text-[var(--plh-text-70)] mb-6">{message}</p>
             <Link
               href="/"
-              className="text-[#C4A23E] hover:text-[#d4b24e] text-sm font-medium transition-colors"
+              className="text-[var(--plh-teal)] hover:text-[var(--plh-pink)] text-sm font-medium transition-colors"
             >
               ← Back to PLHub
             </Link>
           </div>
         ) : (
           <div>
-            <p className="text-white/60 text-sm mb-6">
+            <p className="text-[var(--plh-text-50)] text-sm mb-6">
               Enter your email to unsubscribe from the PLHub Breakfast Digest.
             </p>
 
@@ -61,12 +61,12 @@ export default function UnsubscribePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleUnsubscribe()}
                 placeholder="your@email.com"
-                className="flex-1 bg-[#183538] text-white text-sm rounded-lg px-4 py-2.5 border border-white/10 focus:border-[#C4A23E] focus:outline-none placeholder:text-white/30"
+                className="flex-1 bg-[var(--plh-card)] text-[var(--plh-text-100)] text-sm rounded-lg px-4 py-2.5 border border-[var(--plh-border)] focus:border-[var(--plh-teal)] focus:outline-none placeholder:text-[var(--plh-text-40)]"
               />
               <button
                 onClick={handleUnsubscribe}
                 disabled={state === 'loading' || !email}
-                className="bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-lg px-5 py-2.5 transition-colors disabled:opacity-50"
+                className="bg-[var(--plh-elevated)] hover:bg-[var(--plh-border-hover)] text-[var(--plh-text-100)] text-sm font-medium rounded-lg px-5 py-2.5 transition-colors disabled:opacity-50"
               >
                 {state === 'loading' ? '...' : 'Unsubscribe'}
               </button>
@@ -78,7 +78,7 @@ export default function UnsubscribePage() {
 
             <Link
               href="/"
-              className="text-white/40 hover:text-white/70 text-xs transition-colors"
+              className="text-[var(--plh-text-40)] hover:text-[var(--plh-text-70)] text-xs transition-colors"
             >
               ← Back to PLHub
             </Link>

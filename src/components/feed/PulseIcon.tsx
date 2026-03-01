@@ -2,11 +2,11 @@
 export default function PulseIcon({
   size = 14,
   className = '',
-  color = '#C4A23E',
+  color = 'var(--plh-gold)',
 }: {
   size?: number
   className?: string
-  /** Stroke color. Defaults to brand gold. Use '#0B1F21' for dark-on-light badges. */
+  /** Stroke color. Defaults to brand gold via CSS variable. */
   color?: string
 }) {
   return (

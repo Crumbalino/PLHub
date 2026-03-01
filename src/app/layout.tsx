@@ -110,12 +110,12 @@ export default function RootLayout({
         <main>{children}</main>
         <BackToTopButton />
 
-        {/* Footer */}
-        <footer className="mt-16 border-t border-white/5 px-4 py-10 text-center">
-          <p className="text-sm text-white/40">
+        {/* Footer — uses brand variables, works in both modes */}
+        <footer className="mt-16 border-t border-[var(--plh-border)] px-4 py-10 text-center">
+          <p className="text-sm text-[var(--plh-text-40)]">
             PLHub — Premier League news from Reddit, BBC Sport, YouTube and more.
           </p>
-          <p className="text-xs text-white/20 mt-2">
+          <p className="text-xs text-[var(--plh-text-40)] mt-2" style={{ opacity: 0.6 }}>
             Not affiliated with the Premier League or its clubs.
           </p>
         </footer>

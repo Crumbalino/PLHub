@@ -35,13 +35,16 @@ export default function Navbar() {
         {/* Left spacer — balances sign-in on the right */}
         <div className="w-20 sm:w-24" />
 
-        {/* Logo — inline variant, centred */}
+        {/* Logo — inline variant, centred, MONOCHROME (v2.2) */}
         <a
           href="/"
           className="flex items-center gap-1.5 sm:gap-2 select-none group"
           aria-label="PLHub home"
         >
-          <span className="text-[22px] sm:text-[28px] font-bold text-[var(--plh-pink)] leading-none tracking-[2px]">
+          <span
+            className="text-[22px] sm:text-[28px] font-bold leading-none tracking-[2px]"
+            style={{ color: 'var(--plh-text-100)' }}
+          >
             PL
           </span>
           <svg
@@ -54,18 +57,23 @@ export default function Navbar() {
           >
             <path
               d="M4 14V4H14"
-              stroke="var(--plh-gold)"
+              stroke="var(--plh-text-100)"
               strokeWidth="4"
               strokeLinecap="round"
+              opacity="0.2"
             />
             <path
               d="M32 22V32H22"
-              stroke="var(--plh-pink)"
+              stroke="var(--plh-text-100)"
               strokeWidth="4"
               strokeLinecap="round"
+              opacity="0.2"
             />
           </svg>
-          <span className="text-[22px] sm:text-[28px] font-light text-[var(--plh-text-100)] leading-none tracking-[5px]">
+          <span
+            className="text-[22px] sm:text-[28px] font-light leading-none tracking-[5px]"
+            style={{ color: 'var(--plh-text-100)' }}
+          >
             HUB
           </span>
         </a>
@@ -81,9 +89,6 @@ export default function Navbar() {
               text-[var(--plh-teal)]
               transition-all duration-200
             "
-            style={{
-              // Hover handled via group
-            }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.background =
                 'color-mix(in srgb, var(--plh-teal) 10%, transparent)';
