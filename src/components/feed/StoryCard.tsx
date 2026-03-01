@@ -101,7 +101,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
 
           {/* Source name */}
           <span
-            className="text-[10px] font-semibold uppercase tracking-[1.5px] whitespace-nowrap"
+            className="text-[12px] font-semibold uppercase tracking-[1.5px] whitespace-nowrap"
             style={{ color: sourceColor }}
           >
             {post.sourceInfo.name}
@@ -143,7 +143,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
                   className="w-[18px] h-[18px] object-contain flex-shrink-0"
                 />
               )}
-              <span className="text-[13px] text-[var(--plh-teal)] whitespace-nowrap">
+              <span className="text-[15px] font-medium text-[var(--plh-teal)] whitespace-nowrap">
                 {primaryClub.shortName}
               </span>
             </>
@@ -151,14 +151,14 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
 
           <span className="text-[var(--plh-text-40)] text-[10px]">·</span>
 
-          <span className="text-[10px] text-[var(--plh-text-50)] whitespace-nowrap">
+          <span className="text-[13px] text-[rgba(250,245,240,0.7)] whitespace-nowrap">
             {post.timeDisplay}
           </span>
         </div>
 
         {/* Pulse score */}
         <span
-          className="text-[11px] font-bold tabular-nums flex-shrink-0 px-2 py-0.5 rounded-[6px]"
+          className="text-[13px] font-bold tabular-nums flex-shrink-0 px-2 py-0.5 rounded-[6px]"
           style={{
             color: 'var(--plh-gold)',
             background: 'color-mix(in srgb, var(--plh-gold) 12%, transparent)',
@@ -169,13 +169,13 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
       </div>
 
       {/* ── HEADLINE ── */}
-      <h3 className="text-[18px] font-semibold text-[var(--plh-text-100)] leading-[1.35] line-clamp-3">
+      <h3 className="text-[20px] font-semibold text-[var(--plh-text-100)] leading-[1.35] line-clamp-3">
         {post.title}
       </h3>
 
-      {/* ── BLURB — 75% opacity ── */}
+      {/* ── BLURB — 85% opacity ── */}
       {post.previewBlurb && (
-        <p className="text-[14px] font-light text-[var(--plh-text-75)] leading-[1.6] mt-1.5">
+        <p className="text-[16px] font-light text-[rgba(250,245,240,0.85)] leading-[1.6] mt-2">
           {post.previewBlurb}
         </p>
       )}
@@ -188,7 +188,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
             post.clubs.map((club) => (
               <span
                 key={club.slug}
-                className="text-[8px] font-semibold uppercase tracking-[1px] text-[var(--plh-teal)] px-1.5 py-0.5 rounded-[3px]"
+                className="text-[12px] font-semibold uppercase tracking-[1px] text-[var(--plh-teal)] px-2 py-1 rounded-[3px]"
                 style={{ background: 'color-mix(in srgb, var(--plh-teal) 12%, transparent)' }}
               >
                 {club.code}
@@ -201,8 +201,8 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
           onClick={onShare}
           className="
             flex items-center gap-1.5 px-2 py-1
-            text-[11px] font-medium
-            text-[var(--plh-text-50)]
+            text-[13px] font-medium
+            text-[rgba(250,245,240,0.7)]
             rounded-[6px]
             transition-all duration-200
           "
@@ -213,7 +213,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget;
-            el.style.color = 'var(--plh-text-50)';
+            el.style.color = 'rgba(250,245,240,0.7)';
             el.style.background = 'transparent';
           }}
           aria-label="Share this story"
@@ -276,12 +276,12 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
               SP
             </div>
 
-            <span className="text-[13px] font-medium text-[var(--plh-text-75)] flex-1">
+            <span className="text-[14px] font-semibold text-[var(--plh-text-75)] flex-1">
               The Pundit&apos;s Take
             </span>
 
             <span
-              className="text-[13px] text-[var(--plh-text-40)] transition-transform duration-200"
+              className="text-[13px] text-[rgba(250,245,240,0.7)] transition-transform duration-200"
               style={{ transform: punditOpen ? 'rotate(90deg)' : 'none' }}
             >
               ▸
@@ -290,7 +290,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
 
           {punditOpen && (
             <div className="px-2 pt-2.5 pb-1 animate-summary-reveal">
-              <p className="text-[13px] font-light text-[var(--plh-text-75)] leading-[1.7]">
+              <p className="text-[15px] font-light text-[rgba(250,245,240,0.85)] leading-[1.7]">
                 {post.summary}
               </p>
               {/* Read original — deliberate extra step, opens source in new tab */}

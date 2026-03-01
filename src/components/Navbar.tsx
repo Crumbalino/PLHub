@@ -42,18 +42,18 @@ export default function Navbar() {
           aria-label="PLHub home"
         >
           <span
-            className="text-[22px] sm:text-[28px] font-bold leading-none tracking-[2px]"
+            className="text-[28px] sm:text-[36px] font-bold leading-none tracking-[2px]"
             style={{ color: 'var(--plh-text-100)' }}
           >
             PL
           </span>
           <svg
-            width="20"
-            height="20"
+            width="24"
+            height="24"
             viewBox="0 0 36 36"
             fill="none"
             aria-hidden="true"
-            className="sm:w-6 sm:h-6 transition-transform duration-200 group-hover:scale-105"
+            className="sm:w-7 sm:h-7 transition-transform duration-200 group-hover:scale-105"
           >
             <path
               d="M4 14V4H14"
@@ -71,7 +71,7 @@ export default function Navbar() {
             />
           </svg>
           <span
-            className="text-[22px] sm:text-[28px] font-light leading-none tracking-[5px]"
+            className="text-[28px] sm:text-[36px] font-light leading-none tracking-[5px]"
             style={{ color: 'var(--plh-text-100)' }}
           >
             HUB
@@ -121,8 +121,8 @@ export default function Navbar() {
           <button
             className="
               hidden sm:flex items-center
-              text-[12px] font-medium tracking-wide
-              text-[var(--plh-text-70)]
+              text-[13px] font-medium tracking-wide
+              text-[var(--plh-text-85)]
               border border-[var(--plh-border)]
               rounded-[8px] px-3.5 py-1.5
               transition-all duration-200
