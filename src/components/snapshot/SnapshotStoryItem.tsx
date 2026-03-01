@@ -46,16 +46,16 @@ export default function SnapshotStoryItem({
       {/* Story item */}
       <div className="px-4 py-3">
         {/* Top row: source · timestamp | index score */}
-        <div className="flex items-center justify-between gap-3 mb-1.5">
+        <div className="flex items-center justify-between gap-3 mb-2">
           <span
-            className="text-[9px] font-semibold uppercase tracking-[1.5px] flex-shrink-0"
+            className="text-[12px] font-semibold uppercase tracking-[1.5px] flex-shrink-0"
             style={{ color: sourceColor }}
           >
             {source}
           </span>
           <span
-            className="text-[9px] flex-shrink-0"
-            style={{ color: 'rgba(250, 245, 240, 0.5)' }}
+            className="text-[12px] flex-shrink-0"
+            style={{ color: 'rgba(250, 245, 240, 0.7)' }}
           >
             {timeDisplay}
           </span>
@@ -78,7 +78,7 @@ export default function SnapshotStoryItem({
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="text-[12px] font-semibold tabular-nums">
+              <span className="text-[14px] font-semibold tabular-nums">
                 {indexScore}
               </span>
             </div>
@@ -90,10 +90,10 @@ export default function SnapshotStoryItem({
           onClick={handleAnchor}
           className="
             text-left w-full
-            text-[14px] font-semibold text-[rgba(250,245,240,1)]
-            leading-[1.4]
+            text-[18px] font-semibold text-[rgba(250,245,240,1)]
+            leading-[1.35]
             line-clamp-2
-            mb-1
+            mb-2
             cursor-pointer
             transition-colors duration-200
             hover:text-[#3AAFA9]
@@ -105,8 +105,8 @@ export default function SnapshotStoryItem({
         {/* Summary (if exists, max 2 sentences) */}
         {displaySummary && (
           <p
-            className="text-[12px] font-light leading-[1.5] mb-2"
-            style={{ color: 'rgba(250, 245, 240, 0.65)' }}
+            className="text-[16px] font-light leading-[1.5] mb-2"
+            style={{ color: 'rgba(250, 245, 240, 0.85)' }}
           >
             {displaySummary}
           </p>
@@ -118,7 +118,7 @@ export default function SnapshotStoryItem({
             {clubs.map(club => (
               <span
                 key={club.slug}
-                className="text-[8px] font-semibold uppercase tracking-[1px] px-1.5 py-0.5 rounded-[3px]"
+                className="text-[12px] font-semibold uppercase tracking-[1px] px-2 py-1 rounded-[3px]"
                 style={{
                   color: '#3AAFA9',
                   background: 'rgba(58, 175, 169, 0.12)',

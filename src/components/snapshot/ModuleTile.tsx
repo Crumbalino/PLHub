@@ -33,7 +33,7 @@ export default function ModuleTile({
 
   // Size values
   const iconSize = compact ? 12 : 14
-  const labelSize = compact ? 11 : 12
+  const labelSize = compact ? 16 : 20
   const chevronSize = compact ? 9 : 10
   const bracketSize = compact ? 8 : 10
   const bracketOffset = compact ? 4 : 6
@@ -47,10 +47,8 @@ export default function ModuleTile({
     ? 'rgba(250, 245, 240, 0.06)'
     : 'rgba(250, 245, 240, 0.04)'
 
-  // Label color
-  const labelColor = isOpen
-    ? 'rgba(250, 245, 240, 0.9)'
-    : 'rgba(250, 245, 240, 0.65)'
+  // Label color — always full white opacity
+  const labelColor = 'rgba(250, 245, 240, 1.0)'
 
   // Bracket opacity
   const bracketOpacity = isHovering ? 0.5 : isOpen ? 0.2 : 0.3
@@ -140,15 +138,8 @@ export default function ModuleTile({
 
         {/* Header content */}
         <div className="flex items-center justify-between">
-          {/* Left: Icon + Label */}
-          <div
-            className="flex items-center gap-2 transition-colors"
-            style={{
-              gap: compact ? 6 : 8,
-              transitionDuration,
-            }}
-          >
-            <span style={{ fontSize: `${iconSize}px` }}>{icon}</span>
+          {/* Left: Label only (emoji removed) */}
+          <div className="flex items-center">
             <span
               className="font-semibold transition-colors"
               style={{
@@ -166,7 +157,7 @@ export default function ModuleTile({
             className="flex-shrink-0 transition-all"
             style={{
               fontSize: `${chevronSize}px`,
-              color: 'rgba(250, 245, 240, 0.3)',
+              color: 'rgba(250, 245, 240, 0.7)',
               transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
               transitionDuration,
               transitionProperty: 'transform, color',

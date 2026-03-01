@@ -47,7 +47,7 @@ export default function SnapshotShell({ children }: { children?: React.ReactNode
         <div className="text-center mb-6">
           {/* Ticker line */}
           <div
-            className="text-[10px] font-medium uppercase tracking-[2px] mb-2"
+            className="text-[13px] font-medium uppercase tracking-[2px] mb-3"
             style={{ color: '#3AAFA9' }}
           >
             p.100 · The Snapshot · Matchday 29
@@ -55,16 +55,16 @@ export default function SnapshotShell({ children }: { children?: React.ReactNode
 
           {/* Headline */}
           <h1
-            className="text-[18px] font-semibold mb-1"
-            style={{ color: 'rgba(250, 245, 240, 0.9)' }}
+            className="text-[32px] font-bold mb-2"
+            style={{ color: 'rgba(250, 245, 240, 1.0)', lineHeight: '1.2' }}
           >
             Your Premier League briefing
           </h1>
 
           {/* Subline */}
           <p
-            className="text-[13px] font-normal"
-            style={{ color: 'rgba(250, 245, 240, 0.5)' }}
+            className="text-[16px] font-normal"
+            style={{ color: '#3AAFA9' }}
           >
             Today: 4 matches
           </p>
@@ -75,20 +75,14 @@ export default function SnapshotShell({ children }: { children?: React.ReactNode
           <div>{children}</div>
         ) : (
           <>
-            <div
-              className="text-center py-8 text-[12px]"
-              style={{ color: 'rgba(250, 245, 240, 0.3)' }}
-            >
-              Modules loading…
-            </div>
             <SnapshotContent />
           </>
         )}
 
         {/* Sign-off */}
         <div
-          className="text-center text-[13px] font-normal mt-6"
-          style={{ color: 'rgba(250, 245, 240, 0.6)' }}
+          className="text-center text-[16px] font-medium mt-6"
+          style={{ color: '#3AAFA9' }}
         >
           You're up to speed
         </div>
