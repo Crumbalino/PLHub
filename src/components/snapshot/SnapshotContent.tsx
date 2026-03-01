@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import GetCaughtUp from './GetCaughtUp'
+import SnapshotTable from './SnapshotTable'
+import SnapshotFixtures from './SnapshotFixtures'
 import type { FeedPost } from '@/lib/types'
 
 interface SnapshotData {
@@ -72,7 +74,13 @@ export default function SnapshotContent() {
 
   // Render modules
   if (data?.data?.modules) {
-    return <GetCaughtUp stories={data.data.modules.caughtUp} />
+    return (
+      <div className="flex flex-col gap-2">
+        <GetCaughtUp stories={data.data.modules.caughtUp} />
+        <SnapshotTable />
+        <SnapshotFixtures />
+      </div>
+    )
   }
 
   return null
