@@ -89,7 +89,7 @@ function getEngagementScore(post: Post): number {
 
 /**
  * Calculate the complete PLHub Index (0-100)
- * Credibility + live recency + engagement + significance
+ * Credibility + live recency + engagement + significance + multiSource bonus
  */
 export function calculatePLHubIndex(post: Post): number {
   const credibility = getSourceCredibility(post.source, post.subreddit, (post as any).upvote_ratio)
@@ -97,7 +97,10 @@ export function calculatePLHubIndex(post: Post): number {
   const engagement = getEngagementScore(post)
   const significance = (post as any).score_significance ?? 12
 
-  return credibility + recency + engagement + significance
+  const sourceCount = (post as any).source_count ?? 1
+  const multiSourceBonus = sourceCount >= 3 ? 8 : sourceCount >= 2 ? 4 : 0
+
+  return Math.min(100, credibility + recency + engagement + significance + multiSourceBonus)
 }
 
 /**
@@ -108,6 +111,7 @@ export interface IndexComponents {
   recency: number
   engagement: number
   significance: number
+  multiSource: number
   total: number
 }
 
@@ -117,12 +121,16 @@ export function getIndexComponents(post: Post): IndexComponents {
   const engagement = getEngagementScore(post)
   const significance = (post as any).score_significance ?? 12
 
+  const sourceCount = (post as any).source_count ?? 1
+  const multiSource = sourceCount >= 3 ? 8 : sourceCount >= 2 ? 4 : 0
+
   return {
     credibility,
     recency,
     engagement,
     significance,
-    total: credibility + recency + engagement + significance,
+    multiSource,
+    total: credibility + recency + engagement + significance + multiSource,
   }
 }
 

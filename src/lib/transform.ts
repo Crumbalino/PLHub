@@ -55,6 +55,7 @@ export function transformPost(post: Post): FeedPost {
     scoreRecency: components.recency,
     scoreEngagement: components.engagement,
     scoreSignificance: components.significance,
+    scoreMultiSource: components.multiSource,
   }
 }
 
