@@ -5,7 +5,9 @@ import GetCaughtUp from './GetCaughtUp'
 import SnapshotTable from './SnapshotTable'
 import SnapshotFixtures from './SnapshotFixtures'
 import TransfersModule from './TransfersModule'
+import TheQuote from './TheQuote'
 import BeyondBigSix from './BeyondBigSix'
+import AndFinally from './AndFinally'
 import type { FeedPost } from '@/lib/types'
 
 interface SnapshotData {
@@ -82,7 +84,9 @@ export default function SnapshotContent() {
         <SnapshotTable />
         <SnapshotFixtures />
         <TransfersModule stories={data.data.modules.transfers} />
+        <TheQuote quote={data.data.modules.quote} />
         <BeyondBigSix stories={data.data.modules.beyondBigSix} />
+        <AndFinally story={data.data.modules.andFinally} />
       </div>
     )
   }
