@@ -4,26 +4,17 @@ import ModuleTile from './ModuleTile'
 import SnapshotStoryItem from './SnapshotStoryItem'
 import type { FeedPost } from '@/lib/types'
 
-interface GetCaughtUpProps {
+interface TransfersModuleProps {
   stories: FeedPost[]
 }
 
-export default function GetCaughtUp({ stories }: GetCaughtUpProps) {
-  if (stories.length === 0) {
-    return (
-      <ModuleTile icon="📰" label="Get Caught Up" defaultOpen={true}>
-        <div
-          className="text-center py-6 text-[13px]"
-          style={{ color: 'rgba(250, 245, 240, 0.5)' }}
-        >
-          No stories yet
-        </div>
-      </ModuleTile>
-    )
+export default function TransfersModule({ stories }: TransfersModuleProps) {
+  if (!stories || stories.length === 0) {
+    return null
   }
 
   return (
-    <ModuleTile icon="📰" label="Get Caught Up" defaultOpen={true}>
+    <ModuleTile icon="🔄" label="Transfers & Contracts">
       <div className="space-y-0">
         {stories.map((story, idx) => (
           <SnapshotStoryItem

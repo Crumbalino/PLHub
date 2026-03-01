@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import GetCaughtUp from './GetCaughtUp'
 import SnapshotTable from './SnapshotTable'
 import SnapshotFixtures from './SnapshotFixtures'
+import TransfersModule from './TransfersModule'
+import BeyondBigSix from './BeyondBigSix'
 import type { FeedPost } from '@/lib/types'
 
 interface SnapshotData {
@@ -79,6 +81,8 @@ export default function SnapshotContent() {
         <GetCaughtUp stories={data.data.modules.caughtUp} />
         <SnapshotTable />
         <SnapshotFixtures />
+        <TransfersModule stories={data.data.modules.transfers} />
+        <BeyondBigSix stories={data.data.modules.beyondBigSix} />
       </div>
     )
   }
