@@ -136,7 +136,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       }
     )
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : String(err)
+    let errorMessage = 'Unknown error'
+    if (err instanceof Error) {
+      errorMessage = err.message
+    } else if (typeof err === 'object' && err !== null && 'message' in err) {
+      errorMessage = String((err as any).message)
+    } else if (typeof err === 'string') {
+      errorMessage = err
+    } else {
+      errorMessage = JSON.stringify(err)
+    }
     console.error('[Snapshot API] Error:', errorMessage, err)
     return NextResponse.json(
       {
