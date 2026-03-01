@@ -1,3 +1,6 @@
+// Snapshot API v1.1 — queries posts table, sections into modules
+// Queries published_at with correct column selection (no index_score)
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { transformPost } from '@/lib/transform'
