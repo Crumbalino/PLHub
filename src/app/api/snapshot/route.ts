@@ -136,11 +136,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       }
     )
   } catch (err) {
-    console.error('[Snapshot API]', err)
+    const errorMessage = err instanceof Error ? err.message : String(err)
+    console.error('[Snapshot API] Error:', errorMessage, err)
     return NextResponse.json(
       {
         success: false,
-        error: err instanceof Error ? err.message : 'Failed to generate snapshot',
+        error: errorMessage,
       },
       { status: 500 }
     )
