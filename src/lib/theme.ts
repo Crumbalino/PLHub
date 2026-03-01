@@ -164,6 +164,10 @@ const sourceColors: Record<string, { dark: string; light: string }> = {
   'Goal.com':      { dark: colors.violet, light: colors.violetLight },
   'Goal':          { dark: colors.violet, light: colors.violetLight },
   '90min':         { dark: colors.orange, light: colors.orangeLight },
+  'Football365':   { dark: '#E84080',     light: '#D03670' },
+  'The Independent': { dark: '#C4A23E',   light: '#B8923A' },
+  'ESPN FC':       { dark: '#D00000',     light: '#C41E3A' },
+  'FourFourTwo':   { dark: '#1A8B5E',     light: '#0F6B48' },
   'Reddit':        { dark: colors.orange, light: colors.orangeLight },
   'YouTube':       { dark: colors.pink,   light: colors.pink },
 };
