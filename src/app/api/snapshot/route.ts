@@ -133,6 +133,15 @@ interface SnapshotResponse {
 }
 
 /**
+ * Truncate text to a maximum number of words, adding ellipsis if needed
+ */
+function truncateToWords(text: string, maxWords: number): string {
+  const words = text.split(/\s+/)
+  if (words.length <= maxWords) return text
+  return words.slice(0, maxWords).join(' ') + '…'
+}
+
+/**
  * Convert FeedPost to SnapshotStory
  */
 function toSnapshotStory(feedPost: FeedPost): SnapshotStory {
@@ -157,6 +166,7 @@ function toSnapshotStory(feedPost: FeedPost): SnapshotStory {
 async function getStandings(highlightedClub: string | null): Promise<{
   standings: SnapshotTableEntry[]
   highlighted_club: string | null
+  matchday: number
 } | null> {
   try {
     const apiKey = process.env.FOOTBALL_DATA_API_KEY
@@ -194,9 +204,12 @@ async function getStandings(highlightedClub: string | null): Promise<{
       }
     })
 
+    const currentMatchday = data.season?.currentMatchday ?? 30
+
     return {
       standings,
       highlighted_club: highlightedClub,
+      matchday: currentMatchday,
     }
   } catch (err) {
     console.error('[Snapshot API] Error fetching standings:', err)
@@ -294,6 +307,23 @@ function mapMatchStatus(status: string): 'upcoming' | 'live' | 'finished' {
   return 'upcoming'
 }
 
+/**
+ * Deduplication helpers — track stories by both ID and URL
+ */
+class StoryTracker {
+  private usedIds = new Set<string>()
+  private usedUrls = new Set<string>()
+
+  isUsed(post: FeedPost): boolean {
+    return this.usedIds.has(post.id) || this.usedUrls.has(post.url)
+  }
+
+  markUsed(story: SnapshotStory): void {
+    this.usedIds.add(story.id)
+    this.usedUrls.add(story.source.url)
+  }
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse<SnapshotResponse>> {
   try {
     const { searchParams } = new URL(request.url)
@@ -362,14 +392,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       filtered = transformed.filter((p) => p.clubs.some((c) => c.slug === club))
     }
 
-    const usedIds = new Set<string>()
+    const tracker = new StoryTracker()
 
-    // 1. Get Caught Up: top 5 by PLHub Index
+    // 1. Get Caught Up: top 5 by PLHub Index (must have at least one PL club tag)
     const getCaughtUp = filtered
+      .filter((p) => p.clubs.length > 0) // Must have at least one PL club tag
       .sort((a, b) => (b.indexScore ?? 0) - (a.indexScore ?? 0))
       .slice(0, 5)
       .map(toSnapshotStory)
-    getCaughtUp.forEach((s) => usedIds.add(s.id))
+    getCaughtUp.forEach((s) => tracker.markUsed(s))
 
     // 2. The Table: standings
     const standings = await getStandings(club)
@@ -377,18 +408,19 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
     // 3. Fixture Focus: fixtures with stakes
     const fixtures = await getFixtures(club, standings?.standings ?? null)
 
-    // 4. Transfers: filter by transfer/contract tags
+    // 4. Transfers: filter by transfer/contract tags (must have at least one PL club tag)
     const transfers = filtered
       .filter(
         (p) =>
-          !usedIds.has(p.id) &&
+          !tracker.isUsed(p) &&
+          p.clubs.length > 0 && // Must have at least one PL club tag
           (p.title.toLowerCase().includes('transfer') ||
             p.title.toLowerCase().includes('contract') ||
             p.title.toLowerCase().includes('deal'))
       )
       .slice(0, 5)
       .map(toSnapshotStory)
-    transfers.forEach((s) => usedIds.add(s.id))
+    transfers.forEach((s) => tracker.markUsed(s))
 
     // 5. The Quote: placeholder (would query separate quotes table)
     const theQuote = {
@@ -399,27 +431,30 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       context: null,
     }
 
-    // 6. Beyond Big Six: filter to non-Big-Six primary clubs
+    // 6. Beyond Big Six: filter to non-Big-Six primary clubs (must have at least one PL club tag)
     const beyondBigSix = filtered
       .filter(
         (p) =>
-          !usedIds.has(p.id) &&
-          !p.clubs.some((c) => BIG_SIX.includes(c.slug))
+          !tracker.isUsed(p) &&
+          p.clubs.length > 0 && // Must have at least one PL club tag
+          !p.clubs.some((c) => BIG_SIX.includes(c.slug)) // None of them Big Six
       )
       .slice(0, 5)
       .map(toSnapshotStory)
-    beyondBigSix.forEach((s) => usedIds.add(s.id))
+    beyondBigSix.forEach((s) => tracker.markUsed(s))
 
     // 7. By The Numbers: placeholder
     const byTheNumbers = null
 
-    // 8. And Finally: last remaining story
-    const lastStory = filtered.find((p) => !usedIds.has(p.id))
+    // 8. And Finally: last remaining story (must have at least one PL club tag)
+    const lastStory = filtered.find(
+      (p) => !tracker.isUsed(p) && p.clubs.length > 0
+    )
     const andFinally = lastStory
       ? {
           has_content: true,
-          headline: lastStory.title.length > 25 ? lastStory.title.substring(0, 25) : lastStory.title,
-          colour_line: lastStory.summary?.substring(0, 100) ?? null,
+          headline: truncateToWords(lastStory.title, 25),
+          colour_line: lastStory.summary ? truncateToWords(lastStory.summary, 20) : null,
         }
       : {
           has_content: false,
@@ -432,7 +467,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       data: {
         metadata: {
           generatedAt: new Date().toISOString(),
-          matchday: 30,
+          matchday: standings?.matchday ?? 30, // Dynamic with fallback to 30
           postsCount: transformed.length,
         },
         modules: {
