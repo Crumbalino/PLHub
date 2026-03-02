@@ -14,11 +14,11 @@ interface SnapshotStory {
   story_card_id: string
 }
 
-interface BeyondBigSixProps {
+interface TransfersContractsProps {
   club?: string | null
 }
 
-export default function BeyondBigSix({ club = null }: BeyondBigSixProps) {
+export default function TransfersContracts({ club = null }: TransfersContractsProps) {
   const [stories, setStories] = useState<SnapshotStory[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -31,11 +31,8 @@ export default function BeyondBigSix({ club = null }: BeyondBigSixProps) {
           '/api/snapshot',
           typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
         )
-        // Don't fetch if on a club page — this module is only for homepage
         if (club) {
-          setStories([])
-          setIsLoading(false)
-          return
+          url.searchParams.set('club', club)
         }
 
         const response = await fetch(url.toString())
@@ -44,14 +41,14 @@ export default function BeyondBigSix({ club = null }: BeyondBigSixProps) {
         }
 
         const data = await response.json()
-        if (data.success && data.data?.modules?.beyond_big_six) {
-          setStories(data.data.modules.beyond_big_six || [])
+        if (data.success && data.data?.modules?.transfers) {
+          setStories(data.data.modules.transfers || [])
           setError(null)
         } else {
           throw new Error(data.error || 'Invalid response format')
         }
       } catch (err) {
-        console.error('[BeyondBigSix] Error fetching data:', err)
+        console.error('[TransfersContracts] Error fetching data:', err)
         setError(err instanceof Error ? err.message : 'Unknown error')
         setStories([])
       } finally {
@@ -61,11 +58,6 @@ export default function BeyondBigSix({ club = null }: BeyondBigSixProps) {
 
     fetchData()
   }, [club])
-
-  // Don't render if on a club page
-  if (club) {
-    return null
-  }
 
   // Don't render if no stories
   if (!isLoading && stories.length === 0) {
@@ -81,12 +73,12 @@ export default function BeyondBigSix({ club = null }: BeyondBigSixProps) {
           className="text-[11px] font-semibold uppercase tracking-[2px] mb-4"
           style={{ color: 'var(--plh-teal)' }}
         >
-          Beyond the Big Six
+          Transfers & Contracts
         </h2>
 
         {/* Story skeletons */}
         <div className="space-y-3">
-          {[0, 1].map((i) => (
+          {[0, 1, 2].map((i) => (
             <div
               key={`skeleton-${i}`}
               className="p-3 sm:p-4 rounded-lg animate-pulse space-y-2"
@@ -116,8 +108,8 @@ export default function BeyondBigSix({ club = null }: BeyondBigSixProps) {
     return null
   }
 
-  // Show top 2 stories
-  const displayStories = stories.slice(0, 2)
+  // Show top 3 stories
+  const displayStories = stories.slice(0, 3)
 
   return (
     <div>
@@ -126,7 +118,7 @@ export default function BeyondBigSix({ club = null }: BeyondBigSixProps) {
         className="text-[11px] font-semibold uppercase tracking-[2px] mb-4"
         style={{ color: 'var(--plh-teal)' }}
       >
-        Beyond the Big Six
+        Transfers & Contracts
       </h2>
 
       {/* Stories */}

@@ -3,6 +3,8 @@
 import GetCaughtUp from './GetCaughtUp'
 import TheTable from './TheTable'
 import FixtureFocus from './FixtureFocus'
+import TransfersContracts from './TransfersContracts'
+import BeyondBigSix from './BeyondBigSix'
 
 interface SnapshotContainerProps {
   matchday?: string
@@ -16,9 +18,7 @@ export default function SnapshotContainer({
   children,
 }: SnapshotContainerProps) {
   const placeholderModules = [
-    'Transfers & Contracts',
     'The Quote',
-    'Beyond the Big Six',
     'By The Numbers',
     'And Finally',
   ]
@@ -110,6 +110,12 @@ export default function SnapshotContainer({
 
             {/* Fixture Focus Module (S5) */}
             <FixtureFocus club={club} />
+
+            {/* Transfers & Contracts Module (S6) */}
+            <TransfersContracts club={club} />
+
+            {/* Beyond the Big Six Module (S6) */}
+            <BeyondBigSix club={club} />
 
             {/* Other module placeholders */}
             {placeholderModules.map((moduleName) => (
