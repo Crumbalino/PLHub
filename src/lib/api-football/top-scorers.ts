@@ -12,7 +12,7 @@ const LEAGUE_ID = 39
 const SEASON = 2025
 const CACHE_TTL = 43200 // 12 hours
 
-interface TopScorer {
+export interface TopScorer {
   player: {
     id: number
     name: string
@@ -101,7 +101,7 @@ interface TopScorer {
   }>
 }
 
-interface TopScorersResponse {
+export interface TopScorersResponse {
   scorers: TopScorer[]
 }
 

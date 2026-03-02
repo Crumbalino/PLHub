@@ -10,7 +10,7 @@ import { getCachedOrFetch } from './cache'
 
 const CACHE_TTL = 86400 // 24 hours
 
-interface H2HFixture {
+export interface H2HFixture {
   id: number
   date: string
   teams: {
@@ -43,7 +43,7 @@ interface H2HFixture {
   }
 }
 
-interface H2HResponse {
+export interface H2HResponse {
   fixture: {
     id: number
     date: string

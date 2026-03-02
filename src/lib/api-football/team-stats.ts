@@ -12,7 +12,7 @@ const LEAGUE_ID = 39
 const SEASON = 2025
 const CACHE_TTL = 43200 // 12 hours
 
-interface TeamStatsResponse {
+export interface TeamStatsResponse {
   team: {
     id: number
     name: string

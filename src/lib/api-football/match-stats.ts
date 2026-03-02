@@ -10,7 +10,7 @@ import { getCachedOrFetch } from './cache'
 
 const PERMANENT_TTL = 365 * 24 * 60 * 60 // 1 year (effectively permanent)
 
-interface TeamStats {
+export interface TeamStats {
   team: {
     id: number
     name: string
@@ -22,7 +22,7 @@ interface TeamStats {
   }>
 }
 
-interface FixtureStatsResponse {
+export interface FixtureStatsResponse {
   fixture: {
     id: number
     date: string
