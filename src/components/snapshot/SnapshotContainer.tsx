@@ -5,6 +5,7 @@ import TheTable from './TheTable'
 import FixtureFocus from './FixtureFocus'
 import TransfersContracts from './TransfersContracts'
 import BeyondBigSix from './BeyondBigSix'
+import ByTheNumbers from './ByTheNumbers'
 import TheQuote from './TheQuote'
 import AndFinally from './AndFinally'
 
@@ -19,9 +20,7 @@ export default function SnapshotContainer({
   club = null,
   children,
 }: SnapshotContainerProps) {
-  const placeholderModules = [
-    'By The Numbers',
-  ]
+  const placeholderModules: string[] = []
 
   return (
     <div
@@ -116,6 +115,9 @@ export default function SnapshotContainer({
 
             {/* Beyond the Big Six Module (S6) */}
             <BeyondBigSix club={club} />
+
+            {/* By The Numbers Module (S8) */}
+            <ByTheNumbers club={club} />
 
             {/* The Quote Module (S7) */}
             <TheQuote club={club} />

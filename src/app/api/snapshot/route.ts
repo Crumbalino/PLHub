@@ -12,6 +12,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { transformPost } from '@/lib/transform'
 import { detectAllClubs, toClubBadges } from '@/lib/clubs'
+import { getTopScorers, getFixtures as getFixturesFromApi } from '@/lib/api-football'
+import { BY_THE_NUMBERS_SYSTEM_PROMPT, BY_THE_NUMBERS_API_CONFIG } from '@/lib/prompts/by-the-numbers'
 import type { Post, FeedPost } from '@/lib/types'
 
 const BIG_SIX = ['arsenal', 'chelsea', 'liverpool', 'man-city', 'man-united', 'tottenham']
@@ -121,7 +123,15 @@ interface SnapshotResponse {
         context: string | null
       }
       beyond_big_six: SnapshotStory[]
-      by_the_numbers: null
+      by_the_numbers: {
+        tiles: Array<{
+          number: string
+          label: string
+          context: string
+          accent: boolean
+        }>
+        matchday: number
+      } | null
       and_finally: {
         has_content: boolean
         headline: string | null
@@ -324,6 +334,153 @@ class StoryTracker {
   }
 }
 
+/**
+ * Fetch and contextualise stats for By The Numbers module
+ * Uses AI to generate compelling stat tiles from API-Football data
+ */
+async function getByTheNumbersData(matchday: number): Promise<{
+  tiles: Array<{
+    number: string
+    label: string
+    context: string
+    accent: boolean
+  }>
+  matchday: number
+} | null> {
+  try {
+    // Calculate date range for last 14 days of fixtures
+    const today = new Date()
+    const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000)
+    const fromDate = twoWeeksAgo.toISOString().split('T')[0]
+    const toDate = today.toISOString().split('T')[0]
+
+    // Fetch raw stats from API-Football
+    const [topScorers, recentFixtures] = await Promise.all([
+      getTopScorers(),
+      getFixturesFromApi(fromDate, toDate),
+    ])
+
+    if (!topScorers || !recentFixtures) {
+      return null
+    }
+
+    // Extract raw stats
+    const topScorer = topScorers[0]
+    if (!topScorer) return null
+
+    const scorerName = topScorer.player.name
+    const scorerGoals = topScorer.statistics?.[0]?.goals?.total ?? 0
+    const scorerTeam = topScorer.statistics?.[0]?.team?.name ?? 'Unknown'
+
+    // Analyze recent fixtures (from api-football Fixture interface)
+    const finishedMatches = recentFixtures.filter((f) => f.status?.short === 'FT')
+    const matchdayGoals = finishedMatches.reduce((sum, m) => sum + ((m.goals?.home ?? 0) + (m.goals?.away ?? 0)), 0)
+    const cleanSheets = finishedMatches.filter((m) => (m.goals?.home ?? 0) === 0 || (m.goals?.away ?? 0) === 0).length
+
+    // Find biggest win
+    let biggestWin = { home: 'N/A', away: 'N/A', score: '0-0' }
+    let maxDiff = 0
+    for (const match of finishedMatches) {
+      const home = match.goals?.home ?? 0
+      const away = match.goals?.away ?? 0
+      const diff = Math.abs(home - away)
+      if (diff > maxDiff) {
+        maxDiff = diff
+        biggestWin = {
+          home: match.teams?.home?.name ?? 'Unknown',
+          away: match.teams?.away?.name ?? 'Unknown',
+          score: `${home}-${away}`,
+        }
+      }
+    }
+
+    // Prepare raw stats for AI
+    const rawStats = {
+      topScorer: { name: scorerName, goals: scorerGoals, team: scorerTeam },
+      matchdayGoals,
+      cleanSheets,
+      biggestWin,
+    }
+
+    // Try to get AI contextualisation
+    try {
+      const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: BY_THE_NUMBERS_API_CONFIG.model,
+          max_tokens: BY_THE_NUMBERS_API_CONFIG.max_tokens,
+          temperature: BY_THE_NUMBERS_API_CONFIG.temperature,
+          system: BY_THE_NUMBERS_SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: JSON.stringify(rawStats) }],
+        }),
+      })
+
+      if (!anthropicResponse.ok) {
+        throw new Error(`Anthropic API error: ${anthropicResponse.status}`)
+      }
+
+      const anthropicData = await anthropicResponse.json() as any
+      const responseText = anthropicData.content?.[0]?.text
+
+      if (!responseText) {
+        throw new Error('No response from Anthropic')
+      }
+
+      // Parse AI response — it returns { tiles: [...], accent_index: number }
+      const parsedResponse = JSON.parse(responseText)
+
+      // Transform accent_index to accent boolean
+      const tiles = parsedResponse.tiles.map((tile: any, i: number) => ({
+        number: tile.number,
+        label: tile.label,
+        context: tile.context,
+        accent: i === parsedResponse.accent_index,
+      }))
+
+      return { tiles, matchday }
+    } catch (aiErr) {
+      console.error('[Snapshot API] Anthropic error, using fallback tiles:', aiErr)
+
+      // Fallback tiles if AI fails
+      const fallbackTiles = [
+        {
+          number: scorerGoals.toString(),
+          label: `${scorerName} goals`,
+          context: `${scorerTeam} striker leading the charge`,
+          accent: true,
+        },
+        {
+          number: matchdayGoals.toString(),
+          label: 'matchday goals',
+          context: 'Total goals across recent fixtures',
+          accent: false,
+        },
+        {
+          number: cleanSheets.toString(),
+          label: 'clean sheets',
+          context: 'Recent matches without conceding',
+          accent: false,
+        },
+        {
+          number: biggestWin.score,
+          label: 'biggest win',
+          context: `${biggestWin.home} vs ${biggestWin.away}`,
+          accent: false,
+        },
+      ]
+
+      return { tiles: fallbackTiles, matchday }
+    }
+  } catch (err) {
+    console.error('[Snapshot API] Error fetching By The Numbers data:', err)
+    return null
+  }
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse<SnapshotResponse>> {
   try {
     const { searchParams } = new URL(request.url)
@@ -443,8 +600,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       .map(toSnapshotStory)
     beyondBigSix.forEach((s) => tracker.markUsed(s))
 
-    // 7. By The Numbers: placeholder
-    const byTheNumbers = null
+    // 7. By The Numbers: AI-contextualised stat tiles
+    const matchday = standings?.matchday ?? 30
+    const byTheNumbers = await getByTheNumbersData(matchday)
 
     // 8. And Finally: last remaining story (must have at least one PL club tag)
     const lastStory = filtered.find(
@@ -467,7 +625,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       data: {
         metadata: {
           generatedAt: new Date().toISOString(),
-          matchday: standings?.matchday ?? 30, // Dynamic with fallback to 30
+          matchday,
           postsCount: transformed.length,
         },
         modules: {
