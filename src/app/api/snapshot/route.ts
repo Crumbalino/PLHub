@@ -73,6 +73,7 @@ interface SnapshotStory {
   plhub_index: number | null
   published_at: string
   story_card_id: string
+  image_url: string | null
 }
 
 interface SnapshotTableEntry {
@@ -167,6 +168,7 @@ function toSnapshotStory(feedPost: FeedPost): SnapshotStory {
     plhub_index: feedPost.indexScore,
     published_at: feedPost.publishedAt,
     story_card_id: feedPost.id,
+    image_url: feedPost.imageUrl || null,
   }
 }
 
