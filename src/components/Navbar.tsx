@@ -43,8 +43,8 @@ export default function Navbar() {
         >
           {/* TL bracket */}
           <svg
-            width="20"
-            height="20"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
@@ -66,13 +66,13 @@ export default function Navbar() {
           <div className="inline-flex items-center gap-1">
             <span
               className="font-bold leading-none"
-              style={{ color: 'var(--plh-text-100)', fontSize: '24px' }}
+              style={{ color: 'var(--plh-text-100)', fontSize: '32px' }}
             >
               PL
             </span>
             <span
               className="font-light leading-none tracking-[3px]"
-              style={{ color: 'var(--plh-text-100)', fontSize: '24px' }}
+              style={{ color: 'var(--plh-text-100)', fontSize: '32px' }}
             >
               HUB
             </span>
@@ -80,8 +80,8 @@ export default function Navbar() {
 
           {/* BR bracket */}
           <svg
-            width="20"
-            height="20"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
