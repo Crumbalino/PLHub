@@ -35,47 +35,69 @@ export default function Navbar() {
         {/* Left spacer — balances sign-in on the right */}
         <div className="w-20 sm:w-24" />
 
-        {/* Logo — inline variant, centred, MONOCHROME (v2.2) */}
+        {/* Logo — inline variant, centred, Brand v3.1 Tier 2 Inline */}
         <a
           href="/"
-          className="flex items-center gap-1.5 sm:gap-2 select-none group"
+          className="inline-flex items-center select-none group"
           aria-label="PLHub home"
         >
-          <span
-            className="text-[28px] sm:text-[36px] font-bold leading-none tracking-[2px]"
-            style={{ color: 'var(--plh-text-100)' }}
-          >
-            PL
-          </span>
+          {/* TL bracket */}
           <svg
-            width="24"
-            height="24"
-            viewBox="0 0 36 36"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
-            className="sm:w-7 sm:h-7 transition-transform duration-200 group-hover:scale-105"
+            style={{
+              position: 'relative',
+              top: '-5px',
+              marginRight: '5px',
+            }}
           >
             <path
-              d="M4 14V4H14"
-              stroke="var(--plh-text-100)"
-              strokeWidth="4"
+              d="M2 14V2H14"
+              stroke="rgba(250,245,240,0.2)"
+              strokeWidth="3.5"
               strokeLinecap="round"
-              opacity="0.2"
-            />
-            <path
-              d="M32 22V32H22"
-              stroke="var(--plh-text-100)"
-              strokeWidth="4"
-              strokeLinecap="round"
-              opacity="0.2"
             />
           </svg>
-          <span
-            className="text-[28px] sm:text-[36px] font-light leading-none tracking-[5px]"
-            style={{ color: 'var(--plh-text-100)' }}
+
+          {/* Wordmark: PL + HUB */}
+          <div className="inline-flex items-center gap-1">
+            <span
+              className="text-sm font-bold leading-none"
+              style={{ color: 'var(--plh-text-100)' }}
+            >
+              PL
+            </span>
+            <span
+              className="text-sm font-light leading-none tracking-[3px]"
+              style={{ color: 'var(--plh-text-100)' }}
+            >
+              HUB
+            </span>
+          </div>
+
+          {/* BR bracket */}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+            style={{
+              position: 'relative',
+              top: '5px',
+              marginLeft: '5px',
+            }}
           >
-            HUB
-          </span>
+            <path
+              d="M22 10V22H10"
+              stroke="rgba(250,245,240,0.2)"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+            />
+          </svg>
         </a>
 
         {/* Right side: theme toggle + sign in */}
