@@ -43,8 +43,8 @@ export default function Navbar() {
         >
           {/* TL bracket */}
           <svg
-            width="14"
-            height="14"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
@@ -56,7 +56,7 @@ export default function Navbar() {
           >
             <path
               d="M2 14V2H14"
-              stroke="rgba(250,245,240,0.2)"
+              stroke="#E84080"
               strokeWidth="3.5"
               strokeLinecap="round"
             />
@@ -65,14 +65,14 @@ export default function Navbar() {
           {/* Wordmark: PL + HUB */}
           <div className="inline-flex items-center gap-1">
             <span
-              className="text-sm font-bold leading-none"
-              style={{ color: 'var(--plh-text-100)' }}
+              className="font-bold leading-none"
+              style={{ color: 'var(--plh-text-100)', fontSize: '24px' }}
             >
               PL
             </span>
             <span
-              className="text-sm font-light leading-none tracking-[3px]"
-              style={{ color: 'var(--plh-text-100)' }}
+              className="font-light leading-none tracking-[3px]"
+              style={{ color: 'var(--plh-text-100)', fontSize: '24px' }}
             >
               HUB
             </span>
@@ -80,8 +80,8 @@ export default function Navbar() {
 
           {/* BR bracket */}
           <svg
-            width="14"
-            height="14"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
@@ -93,7 +93,7 @@ export default function Navbar() {
           >
             <path
               d="M22 10V22H10"
-              stroke="rgba(250,245,240,0.2)"
+              stroke="#E84080"
               strokeWidth="3.5"
               strokeLinecap="round"
             />
