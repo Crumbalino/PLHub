@@ -39,7 +39,7 @@ export default function StoryTile({
   if (variant === 'compact') {
     return (
       <div
-        className="py-2.5 px-0 cursor-pointer transition-colors duration-200"
+        className="py-2 px-0 cursor-pointer transition-colors duration-200"
         style={{
           borderBottom: '1px solid rgba(250, 245, 240, 0.04)',
           backgroundColor: isHovering ? 'rgba(250, 245, 240, 0.03)' : 'transparent',
@@ -48,7 +48,7 @@ export default function StoryTile({
         onMouseLeave={() => setIsHovering(false)}
         onClick={handleClick}
       >
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0">
           {/* Source badge */}
           <span
             className="text-[9px] font-semibold uppercase tracking-[0.5px] flex-shrink-0"
@@ -72,7 +72,7 @@ export default function StoryTile({
   // FULL VARIANT
   return (
     <div
-      className="p-3 sm:p-4 cursor-pointer transition-colors duration-200 rounded-lg"
+      className="p-2 sm:p-3 cursor-pointer transition-colors duration-200 rounded-lg"
       style={{
         backgroundColor: isHovering ? 'rgba(250, 245, 240, 0.03)' : 'transparent',
       }}
@@ -81,7 +81,7 @@ export default function StoryTile({
       onClick={handleClick}
     >
       {/* Source badge */}
-      <div className="mb-2">
+      <div className="mb-1">
         <span
           className="inline-block text-[10px] font-semibold uppercase tracking-[1px] px-2 py-1 rounded"
           style={{
@@ -95,7 +95,7 @@ export default function StoryTile({
 
       {/* Headline */}
       <h3
-        className="text-base sm:text-lg font-semibold leading-[1.3] mb-2 line-clamp-2"
+        className="text-sm sm:text-base font-semibold leading-[1.3] mb-1 line-clamp-2"
         style={{ color: 'rgba(250, 245, 240, 0.95)' }}
       >
         {headline}
@@ -104,7 +104,7 @@ export default function StoryTile({
       {/* Summary */}
       {summary && (
         <p
-          className="text-[13px] leading-[1.5] mb-3 line-clamp-2"
+          className="text-[13px] leading-[1.5] mb-2 line-clamp-2"
           style={{ color: 'rgba(250, 245, 240, 0.6)' }}
         >
           {summary.split(/[.!?]/).slice(0, 1).join('.')}

@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import ClubFilterBar from '@/components/ClubFilterBar'
 import PLTable from '@/components/PLTable'
 import NextFixtures from '@/components/NextFixtures'
-import TrendingStrip from '@/components/trending/TrendingStrip'
 import FeedList from '@/components/feed/FeedList'
 import SnapshotContainer from '@/components/snapshot/SnapshotContainer'
 
@@ -49,10 +48,7 @@ export default async function HomePage({ searchParams }: PageProps) {
             {/* The Snapshot Container */}
             {!clubSlug && <SnapshotContainer matchday="Matchday 30" club={clubSlug} />}
 
-            {/* Trending — only on unfiltered home */}
-            {!clubSlug && <TrendingStrip />}
-
-            {/* Club Filter Bar — between Trending and Feed */}
+            {/* Club Filter Bar — between Snapshot and Feed */}
             <ClubFilterBar currentClub={clubSlug ?? undefined} />
 
             {/* Feed with fade transition — tight spacing above */}

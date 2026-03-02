@@ -85,7 +85,7 @@ export default function BeyondBigSix({ club = null }: BeyondBigSixProps) {
         </h2>
 
         {/* Story skeletons */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           {[0, 1].map((i) => (
             <div
               key={`skeleton-${i}`}
@@ -130,7 +130,7 @@ export default function BeyondBigSix({ club = null }: BeyondBigSixProps) {
       </h2>
 
       {/* Stories */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {displayStories.map((story) => (
           <StoryTile
             key={story.id}

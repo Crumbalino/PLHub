@@ -61,9 +61,9 @@ export default function AndFinally({ club = null }: AndFinallyProps) {
   // Loading skeleton
   if (isLoading) {
     return (
-      <div className="pt-6 border-t border-dashed" style={{ borderColor: 'rgba(250, 245, 240, 0.06)' }}>
+      <div className="pt-4 border-t border-dashed" style={{ borderColor: 'rgba(250, 245, 240, 0.06)' }}>
         <h2
-          className="text-[11px] font-semibold uppercase tracking-[2px] mb-3"
+          className="text-[11px] font-semibold uppercase tracking-[2px] mb-1"
           style={{ color: 'var(--plh-pink)' }}
         >
           And Finally
@@ -88,10 +88,10 @@ export default function AndFinally({ club = null }: AndFinallyProps) {
   }
 
   return (
-    <div className="pt-6 border-t border-dashed" style={{ borderColor: 'rgba(250, 245, 240, 0.06)' }}>
+    <div className="pt-4 border-t border-dashed" style={{ borderColor: 'rgba(250, 245, 240, 0.06)' }}>
       {/* Module header - PINK instead of teal */}
       <h2
-        className="text-[11px] font-semibold uppercase tracking-[2px] mb-3"
+        className="text-[11px] font-semibold uppercase tracking-[2px] mb-1"
         style={{ color: 'var(--plh-pink)' }}
       >
         And Finally

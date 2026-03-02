@@ -66,9 +66,9 @@ export default function SnapshotContainer({
       </div>
 
       {/* Main content area with padding */}
-      <div className="relative px-4 pt-6 pb-6 sm:px-6 sm:pt-8 sm:pb-8">
+      <div className="relative px-3 pt-4 pb-4 sm:px-5 sm:pt-5 sm:pb-5">
         {/* Header Row */}
-        <div className="mb-8 flex items-baseline justify-between gap-4">
+        <div className="mb-6 flex items-baseline justify-between gap-4">
           {/* Left: Title and subtitle */}
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-3">
@@ -100,7 +100,7 @@ export default function SnapshotContainer({
         {children ? (
           <div>{children}</div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-4">
             {/* Get Caught Up Module (S4) */}
             <GetCaughtUp club={club} />
 
@@ -129,7 +129,7 @@ export default function SnapshotContainer({
             {placeholderModules.map((moduleName) => (
               <div key={moduleName}>
                 <h2
-                  className="text-[11px] font-semibold uppercase tracking-[2px] mb-4"
+                  className="text-[11px] font-semibold uppercase tracking-[2px] mb-2"
                   style={{ color: 'var(--plh-teal)' }}
                 >
                   {moduleName}

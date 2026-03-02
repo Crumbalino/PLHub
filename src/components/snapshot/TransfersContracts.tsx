@@ -77,7 +77,7 @@ export default function TransfersContracts({ club = null }: TransfersContractsPr
         </h2>
 
         {/* Story skeletons */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           {[0, 1, 2].map((i) => (
             <div
               key={`skeleton-${i}`}
@@ -122,7 +122,7 @@ export default function TransfersContracts({ club = null }: TransfersContractsPr
       </h2>
 
       {/* Stories */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {displayStories.map((story) => (
           <StoryTile
             key={story.id}

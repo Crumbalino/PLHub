@@ -3,6 +3,17 @@
 import { useEffect, useState } from 'react'
 import StoryTile from './StoryTile'
 
+/**
+ * Summary Generation Note:
+ * Stories are fetched from the API where summaries may be null. This occurs because:
+ * - Recent posts are ingested with summary: null by RSS pipeline
+ * - Background cron job (/api/cron/backfill-summaries) generates summaries asynchronously
+ * - On Vercel Hobby tier, the cron hits 10-second timeout, limiting to 2-5 posts per run
+ *
+ * This is expected behavior. Summaries will populate as the cron job processes posts.
+ * This component gracefully skips rendering null summaries (see StoryTile line 105).
+ */
+
 interface SnapshotStory {
   id: string
   headline: string
@@ -77,7 +88,7 @@ export default function GetCaughtUp({ club = null }: GetCaughtUpProps) {
         </h2>
 
         {/* Full-height skeleton blocks (2) */}
-        <div className="space-y-3 mb-4">
+        <div className="space-y-2 mb-2">
           {[0, 1].map((i) => (
             <div
               key={`skeleton-full-${i}`}
@@ -102,7 +113,7 @@ export default function GetCaughtUp({ club = null }: GetCaughtUpProps) {
 
         {/* Divider */}
         <div
-          className="h-px my-4"
+          className="h-px my-2"
           style={{ background: 'rgba(250, 245, 240, 0.06)' }}
         />
 
@@ -111,7 +122,7 @@ export default function GetCaughtUp({ club = null }: GetCaughtUpProps) {
           {[0, 1, 2].map((i) => (
             <div
               key={`skeleton-compact-${i}`}
-              className="py-2.5 px-0 animate-pulse"
+              className="py-2 px-0 animate-pulse"
               style={{
                 borderBottom: '1px solid rgba(250, 245, 240, 0.04)',
               }}
@@ -146,7 +157,7 @@ export default function GetCaughtUp({ club = null }: GetCaughtUpProps) {
       </h2>
 
       {/* Stories 1-2: Full tiles */}
-      <div className="space-y-3 mb-4">
+      <div className="space-y-2 mb-2">
         {fullStories.map((story) => (
           <StoryTile
             key={story.id}
@@ -164,7 +175,7 @@ export default function GetCaughtUp({ club = null }: GetCaughtUpProps) {
       {/* Divider - only if there are compact stories */}
       {compactStories.length > 0 && (
         <div
-          className="h-px my-4"
+          className="h-px my-2"
           style={{ background: 'rgba(250, 245, 240, 0.06)' }}
         />
       )}

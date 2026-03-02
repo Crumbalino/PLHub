@@ -71,7 +71,7 @@ export default function TheQuote({ club = null }: TheQuoteProps) {
           The Quote
         </h2>
         <div
-          className="pl-4 py-4 border-l-2 space-y-2 animate-pulse"
+          className="pl-3 py-3 border-l-2 space-y-2 animate-pulse"
           style={{ borderColor: 'var(--plh-teal)' }}
         >
           <div
@@ -104,7 +104,7 @@ export default function TheQuote({ club = null }: TheQuoteProps) {
 
       {/* Quote block with left border accent */}
       <div
-        className="pl-4 py-4 border-l-2"
+        className="pl-3 py-3 border-l-2"
         style={{ borderColor: 'var(--plh-teal)' }}
       >
         {/* Quote text */}
