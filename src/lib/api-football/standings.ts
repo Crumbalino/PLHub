@@ -12,7 +12,7 @@ const LEAGUE_ID = 39
 const SEASON = 2025
 const CACHE_TTL = 21600 // 6 hours
 
-interface TeamStanding {
+export interface TeamStanding {
   rank: number
   team: {
     id: number
@@ -65,7 +65,7 @@ interface TeamStanding {
   }
 }
 
-interface StandingsResponse {
+export interface StandingsResponse {
   league: {
     id: number
     name: string

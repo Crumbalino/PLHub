@@ -11,14 +11,14 @@ import { getCachedOrFetch } from './cache'
 const LEAGUE_ID = 39
 const SEASON = 2025
 
-interface FixtureTeam {
+export interface FixtureTeam {
   id: number
   name: string
   logo: string
   winner: boolean | null
 }
 
-interface Fixture {
+export interface Fixture {
   id: number
   referee: string | null
   timezone: string
