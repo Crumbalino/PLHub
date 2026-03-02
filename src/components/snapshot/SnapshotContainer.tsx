@@ -1,6 +1,8 @@
 'use client'
 
 import GetCaughtUp from './GetCaughtUp'
+import TheTable from './TheTable'
+import FixtureFocus from './FixtureFocus'
 
 interface SnapshotContainerProps {
   matchday?: string
@@ -13,9 +15,7 @@ export default function SnapshotContainer({
   club = null,
   children,
 }: SnapshotContainerProps) {
-  const modules = [
-    'The Table',
-    'Fixture Focus',
+  const placeholderModules = [
     'Transfers & Contracts',
     'The Quote',
     'Beyond the Big Six',
@@ -102,11 +102,17 @@ export default function SnapshotContainer({
           <div>{children}</div>
         ) : (
           <div className="space-y-8">
-            {/* Get Caught Up Module */}
+            {/* Get Caught Up Module (S4) */}
             <GetCaughtUp club={club} />
 
+            {/* The Table Module (S5) */}
+            <TheTable club={club} />
+
+            {/* Fixture Focus Module (S5) */}
+            <FixtureFocus club={club} />
+
             {/* Other module placeholders */}
-            {modules.map((moduleName) => (
+            {placeholderModules.map((moduleName) => (
               <div key={moduleName}>
                 <h2
                   className="text-[11px] font-semibold uppercase tracking-[2px] mb-4"
