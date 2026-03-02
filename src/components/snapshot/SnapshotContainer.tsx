@@ -69,28 +69,26 @@ export default function SnapshotContainer({
       {/* Main content area with padding */}
       <div className="relative px-4 pt-6 pb-6 sm:px-6 sm:pt-8 sm:pb-8">
         {/* Header Row */}
-        <div className="mb-8 flex items-baseline justify-between gap-4">
-          {/* Left: Title and subtitle */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-3">
-              <h1
-                className="text-2xl sm:text-3xl font-bold leading-tight"
-                style={{ color: 'var(--plh-text-100)', fontFamily: 'Sora, sans-serif' }}
-              >
-                The Snapshot
-              </h1>
-              <span
-                className="text-xs sm:text-sm font-mono flex-shrink-0"
-                style={{ color: 'var(--plh-text-40)', opacity: 0.4 }}
-              >
-                P.302
-              </span>
-            </div>
+        <div className="mb-8 flex flex-col items-center gap-4">
+          {/* Title and subtitle */}
+          <div className="flex items-baseline gap-3">
+            <h1
+              className="font-bold leading-tight"
+              style={{ color: 'var(--plh-text-100)', fontFamily: 'Sora, sans-serif', fontSize: '24px', textAlign: 'center' }}
+            >
+              The Snapshot
+            </h1>
+            <span
+              className="text-xs sm:text-sm font-mono flex-shrink-0"
+              style={{ color: 'var(--plh-text-40)', opacity: 0.4 }}
+            >
+              P.302
+            </span>
           </div>
 
-          {/* Right: Matchday indicator */}
+          {/* Matchday indicator */}
           <div
-            className="text-sm sm:text-base font-semibold flex-shrink-0"
+            className="text-sm sm:text-base font-semibold"
             style={{ color: 'var(--plh-text-75)', fontFamily: 'Sora, sans-serif' }}
           >
             {matchday}
