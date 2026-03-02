@@ -1,45 +1,189 @@
 'use client'
 
-import ModuleTile from './ModuleTile'
-import SnapshotStoryItem from './SnapshotStoryItem'
-import type { FeedPost } from '@/lib/types'
+import { useEffect, useState } from 'react'
+import StoryTile from './StoryTile'
 
-interface GetCaughtUpProps {
-  stories: FeedPost[]
+interface SnapshotStory {
+  id: string
+  headline: string
+  summary: string | null
+  source: { name: string; url: string }
+  clubs: Array<{ slug: string; shortName: string; code: string; badgeUrl: string }>
+  plhub_index: number | null
+  published_at: string
+  story_card_id: string
 }
 
-export default function GetCaughtUp({ stories }: GetCaughtUpProps) {
-  if (stories.length === 0) {
+interface GetCaughtUpProps {
+  club?: string | null
+}
+
+export default function GetCaughtUp({ club = null }: GetCaughtUpProps) {
+  const [stories, setStories] = useState<SnapshotStory[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        const url = new URL(
+          '/api/snapshot',
+          typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+        )
+        if (club) {
+          url.searchParams.set('club', club)
+        }
+
+        const response = await fetch(url.toString())
+        if (!response.ok) {
+          throw new Error('Failed to fetch snapshot')
+        }
+
+        const data = await response.json()
+        if (data.success && data.data?.modules?.get_caught_up) {
+          setStories(data.data.modules.get_caught_up)
+          setError(null)
+        } else {
+          throw new Error(data.error || 'Invalid response format')
+        }
+      } catch (err) {
+        console.error('[GetCaughtUp] Error fetching data:', err)
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        setStories([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [club])
+
+  // Don't render if no stories
+  if (!isLoading && stories.length === 0) {
+    return null
+  }
+
+  // Loading skeleton
+  if (isLoading) {
     return (
-      <ModuleTile icon="📰" label="Get Caught Up" defaultOpen={true}>
-        <div
-          className="text-center py-6 text-[13px]"
-          style={{ color: 'rgba(250, 245, 240, 0.5)' }}
+      <div>
+        {/* Module header */}
+        <h2
+          className="text-[11px] font-semibold uppercase tracking-[2px] mb-4"
+          style={{ color: 'var(--plh-teal)' }}
         >
-          No stories yet
+          Get Caught Up
+        </h2>
+
+        {/* Full-height skeleton blocks (2) */}
+        <div className="space-y-3 mb-4">
+          {[0, 1].map((i) => (
+            <div
+              key={`skeleton-full-${i}`}
+              className="p-3 sm:p-4 rounded-lg animate-pulse space-y-2"
+              style={{ backgroundColor: 'rgba(250, 245, 240, 0.04)' }}
+            >
+              <div
+                className="h-4 rounded w-20"
+                style={{ backgroundColor: 'rgba(250, 245, 240, 0.04)' }}
+              />
+              <div
+                className="h-6 rounded w-full"
+                style={{ backgroundColor: 'rgba(250, 245, 240, 0.04)' }}
+              />
+              <div
+                className="h-5 rounded w-full"
+                style={{ backgroundColor: 'rgba(250, 245, 240, 0.04)' }}
+              />
+            </div>
+          ))}
         </div>
-      </ModuleTile>
+
+        {/* Divider */}
+        <div
+          className="h-px my-4"
+          style={{ background: 'rgba(250, 245, 240, 0.06)' }}
+        />
+
+        {/* Single-line skeleton blocks (3) */}
+        <div>
+          {[0, 1, 2].map((i) => (
+            <div
+              key={`skeleton-compact-${i}`}
+              className="py-2.5 px-0 animate-pulse"
+              style={{
+                borderBottom: '1px solid rgba(250, 245, 240, 0.04)',
+              }}
+            >
+              <div
+                className="h-4 rounded w-3/4"
+                style={{ backgroundColor: 'rgba(250, 245, 240, 0.04)' }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     )
   }
 
+  // Error state - don't render
+  if (error) {
+    return null
+  }
+
+  const fullStories = stories.slice(0, 2)
+  const compactStories = stories.slice(2, 5)
+
   return (
-    <ModuleTile icon="📰" label="Get Caught Up" defaultOpen={true}>
-      <div className="space-y-0">
-        {stories.map((story, idx) => (
-          <SnapshotStoryItem
+    <div>
+      {/* Module header */}
+      <h2
+        className="text-[11px] font-semibold uppercase tracking-[2px] mb-4"
+        style={{ color: 'var(--plh-teal)' }}
+      >
+        Get Caught Up
+      </h2>
+
+      {/* Stories 1-2: Full tiles */}
+      <div className="space-y-3 mb-4">
+        {fullStories.map((story) => (
+          <StoryTile
             key={story.id}
-            id={story.id}
-            title={story.title}
+            variant="full"
+            headline={story.headline}
             summary={story.summary}
-            previewBlurb={story.previewBlurb}
-            source={story.sourceInfo.name}
-            clubs={story.clubs}
-            indexScore={story.indexScore}
-            timeDisplay={story.timeDisplay}
-            isLast={idx === stories.length - 1}
+            source={story.source}
+            clubs={story.clubs.map((c) => c.code)}
+            plhubIndex={story.plhub_index}
+            storyId={story.story_card_id}
           />
         ))}
       </div>
-    </ModuleTile>
+
+      {/* Divider - only if there are compact stories */}
+      {compactStories.length > 0 && (
+        <div
+          className="h-px my-4"
+          style={{ background: 'rgba(250, 245, 240, 0.06)' }}
+        />
+      )}
+
+      {/* Stories 3-5: Compact tiles */}
+      {compactStories.length > 0 && (
+        <div>
+          {compactStories.map((story) => (
+            <StoryTile
+              key={story.id}
+              variant="compact"
+              headline={story.headline}
+              source={story.source}
+              clubs={story.clubs.map((c) => c.code)}
+              storyId={story.story_card_id}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }

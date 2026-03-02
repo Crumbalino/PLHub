@@ -1,95 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import GetCaughtUp from './GetCaughtUp'
-import SnapshotTable from './SnapshotTable'
-import SnapshotFixtures from './SnapshotFixtures'
-import TransfersModule from './TransfersModule'
-import TheQuote from './TheQuote'
-import BeyondBigSix from './BeyondBigSix'
-import AndFinally from './AndFinally'
-import type { FeedPost } from '@/lib/types'
-
-interface SnapshotData {
-  success: boolean
-  data?: {
-    metadata: {
-      generatedAt: string
-      matchday: number
-      postsCount: number
-    }
-    modules: {
-      caughtUp: FeedPost[]
-      transfers: FeedPost[]
-      beyondBigSix: FeedPost[]
-      andFinally: FeedPost | null
-      quote: null
-    }
-  }
-  error?: string
-}
+// Legacy snapshot content container
+// Now deprecated in favor of individual modules that handle their own data fetching
+// Kept for backwards compatibility
 
 export default function SnapshotContent() {
-  const [data, setData] = useState<SnapshotData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchSnapshot = async () => {
-      try {
-        setIsLoading(true)
-        const response = await fetch('/api/snapshot')
-        const json = (await response.json()) as SnapshotData
-
-        if (!response.ok || !json.success) {
-          throw new Error(json.error || 'Failed to fetch snapshot')
-        }
-
-        setData(json)
-        setError(null)
-      } catch (err) {
-        console.error('[SnapshotContent] Error fetching snapshot:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load snapshot')
-        setData(null)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchSnapshot()
-  }, [])
-
-  // Show loading state (handled by SnapshotShell placeholder)
-  if (isLoading) {
-    return null
-  }
-
-  // Show error if fetch failed
-  if (error) {
-    return (
-      <div
-        className="text-center py-8 text-[12px]"
-        style={{ color: 'rgba(250, 245, 240, 0.3)' }}
-      >
-        Unable to load snapshot
-      </div>
-    )
-  }
-
-  // Render modules
-  if (data?.data?.modules) {
-    return (
-      <div className="flex flex-col gap-2">
-        <GetCaughtUp stories={data.data.modules.caughtUp} />
-        <SnapshotTable />
-        <SnapshotFixtures />
-        <TransfersModule stories={data.data.modules.transfers} />
-        <TheQuote quote={data.data.modules.quote} />
-        <BeyondBigSix stories={data.data.modules.beyondBigSix} />
-        <AndFinally story={data.data.modules.andFinally} />
-      </div>
-    )
-  }
-
+  // Individual modules now fetch their own data
+  // This component is no longer used
   return null
 }
