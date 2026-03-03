@@ -28,6 +28,7 @@ interface SnapshotData {
     get_caught_up: SnapshotStory[]
     transfers: SnapshotStory[]
     beyond_big_six: SnapshotStory[]
+    fantasy_premier_league: SnapshotStory[]
     by_the_numbers: {
       tiles: Array<{
         number: string
@@ -159,6 +160,7 @@ export default function SnapshotContainer({
   const getCaughtUpStories = snapshotData?.modules.get_caught_up || []
   const transferStory = snapshotData?.modules.transfers?.[0] || null
   const beyondBigSixStory = snapshotData?.modules.beyond_big_six?.[0] || null
+  const fplStory = snapshotData?.modules.fantasy_premier_league?.[0] || null
   const andFinallyData = snapshotData?.modules.and_finally || null
   const quoteData = snapshotData?.modules.the_quote || null
 
@@ -220,6 +222,7 @@ export default function SnapshotContainer({
             <BottomCards
               transferStory={transferStory}
               beyondBigSixStory={beyondBigSixStory}
+              fplStory={fplStory}
               andFinallyData={andFinallyData?.has_content ? andFinallyData : null}
             />
           )}

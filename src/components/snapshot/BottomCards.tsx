@@ -22,6 +22,7 @@ interface AndFinallyData {
 interface BottomCardsProps {
   transferStory?: SnapshotStory | null
   beyondBigSixStory?: SnapshotStory | null
+  fplStory?: SnapshotStory | null
   andFinallyData?: AndFinallyData | null
 }
 
@@ -32,11 +33,14 @@ const FALLBACK_GRADIENT =
 export default function BottomCards({
   transferStory,
   beyondBigSixStory,
+  fplStory,
   andFinallyData,
 }: BottomCardsProps) {
-  const cards = [
+  // Build all possible cards with priority order: transfers, beyond big six, FPL, and finally
+  const allCards = [
     transferStory ? { story: transferStory, label: 'TRANSFERS', color: '#3AAFA9' } : null,
     beyondBigSixStory ? { story: beyondBigSixStory, label: 'BEYOND BIG SIX', color: '#3AAFA9' } : null,
+    fplStory ? { story: fplStory, label: 'FANTASY PREMIER LEAGUE', color: '#3AAFA9' } : null,
     andFinallyData ? { headline: andFinallyData.headline, label: 'AND FINALLY', color: '#E84080', image_url: andFinallyData.image_url } : null,
   ].filter((c) => c !== null) as Array<{
     label: string
@@ -45,6 +49,9 @@ export default function BottomCards({
     headline?: string | null
     image_url?: string | null
   }>
+
+  // Max 3 cards — drops And Finally first since it's last in priority order
+  const cards = allCards.slice(0, 3)
 
   if (cards.length === 0) {
     return null

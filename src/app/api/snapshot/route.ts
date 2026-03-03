@@ -131,6 +131,7 @@ interface SnapshotResponse {
         }>
         matchday: number
       } | null
+      fantasy_premier_league: SnapshotStory[]
       and_finally: {
         has_content: boolean
         headline: string | null
@@ -335,6 +336,33 @@ class StoryTracker {
 }
 
 /**
+ * Detect if a post is about Fantasy Premier League
+ * Matches on headline (case-insensitive):
+ * - "FPL", "Fantasy Premier League", "Fantasy Football"
+ * - "Gameweek" if combined with fantasy context (tips, picks, captain, transfers, etc.)
+ */
+function isFPLStory(headline: string): boolean {
+  const normalizedHeadline = headline.toLowerCase()
+
+  // Direct matches
+  if (normalizedHeadline.includes('fpl') ||
+      normalizedHeadline.includes('fantasy premier league') ||
+      normalizedHeadline.includes('fantasy football')) {
+    return true
+  }
+
+  // Gameweek with fantasy context
+  if (normalizedHeadline.includes('gameweek')) {
+    const fantasyKeywords = ['tips', 'picks', 'captain', 'transfers', 'chip', 'wildcard', 'bench', 'team of the week', 'totw']
+    if (fantasyKeywords.some(kw => normalizedHeadline.includes(kw))) {
+      return true
+    }
+  }
+
+  return false
+}
+
+/**
  * Fetch and calculate stats for By The Numbers module
  * Uses football-data.org standings and scorers endpoints
  */
@@ -483,6 +511,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
               transfers: [],
               the_quote: { has_quote: false, quote: null, attribution: null, club: null, context: null },
               beyond_big_six: [],
+              fantasy_premier_league: [],
               by_the_numbers: null,
               and_finally: { has_content: false, headline: null, colour_line: null },
             },
@@ -564,11 +593,24 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       .map(toSnapshotStory)
     beyondBigSix.forEach((s) => tracker.markUsed(s))
 
-    // 7. By The Numbers: AI-contextualised stat tiles
+    // 7. Fantasy Premier League: FPL-focused stories
+    const fantasyPremierLeague = filtered
+      .filter(
+        (p) =>
+          !tracker.isUsed(p) &&
+          p.clubs.length > 0 && // Must have at least one PL club tag
+          isFPLStory(p.title)
+      )
+      .sort((a, b) => (b.indexScore ?? 0) - (a.indexScore ?? 0))
+      .slice(0, 1) // Just take the top FPL story
+      .map(toSnapshotStory)
+    fantasyPremierLeague.forEach((s) => tracker.markUsed(s))
+
+    // 8. By The Numbers: stat tiles
     const matchday = standings?.matchday ?? 30
     const byTheNumbers = await getByTheNumbersData(matchday)
 
-    // 8. And Finally: last remaining story (must have at least one PL club tag)
+    // 9. And Finally: last remaining story (must have at least one PL club tag)
     const lastStory = filtered.find(
       (p) => !tracker.isUsed(p) && p.clubs.length > 0
     )
@@ -599,6 +641,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
           transfers,
           the_quote: theQuote,
           beyond_big_six: beyondBigSix,
+          fantasy_premier_league: fantasyPremierLeague,
           by_the_numbers: byTheNumbers,
           and_finally: andFinally,
         },
@@ -639,6 +682,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
             transfers: [],
             the_quote: { has_quote: false, quote: null, attribution: null, club: null, context: null },
             beyond_big_six: [],
+            fantasy_premier_league: [],
             by_the_numbers: null,
             and_finally: { has_content: false, headline: null, colour_line: null },
           },
