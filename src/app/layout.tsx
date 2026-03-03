@@ -4,7 +4,6 @@ import { Sora } from 'next/font/google'
 import { themeInitScript } from '@/lib/theme-init'
 import './globals.css'
 import Navbar from '@/components/Navbar'
-import MatchTicker from '@/components/MatchTicker'
 import JsonLd from '@/components/JsonLd'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import BackToTopButton from '@/components/BackToTopButton'
@@ -106,7 +105,6 @@ export default function RootLayout({
         )}
 
         <Navbar />
-        <MatchTicker />
         <main>{children}</main>
         <BackToTopButton />
 
