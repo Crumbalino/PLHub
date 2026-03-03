@@ -89,8 +89,27 @@ export async function GET(request: NextRequest) {
 
     const posts = (rawPosts as unknown as Post[]) || []
 
+    // DEBUG: Log what we got from Supabase
+    console.log('[/api/feed] Raw posts from DB:', {
+      count: posts.length,
+      sources: posts.map(p => p.source),
+      subreddits: posts.map(p => p.subreddit),
+      samples: posts.slice(0, 2).map(p => ({
+        title: p.title.substring(0, 60),
+        source: p.source,
+        subreddit: p.subreddit,
+      })),
+    })
+
     // Content filter pipeline: remove non-PL, gambling, duplicates
     const filtered = deduplicatePosts(filterPLContent(posts))
+
+    // DEBUG: Log after filtering
+    console.log('[/api/feed] After filtering:', {
+      filtered_count: filtered.length,
+      filtered_sources: filtered.map(p => p.source),
+      filtered_subreddits: filtered.map(p => p.subreddit),
+    })
 
     // Sort using shared scoring logic
     const sorted = sortPosts(filtered, sort)

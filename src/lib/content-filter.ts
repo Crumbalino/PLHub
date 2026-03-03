@@ -61,11 +61,13 @@ export const ALWAYS_HIDE = [
  * - Filters out Reddit and YouTube sources
  * - ALWAYS_HIDE keywords block even if a PL club is mentioned
  * - Editorial RSS sources (BBC, Sky, Guardian, etc.) are allowed unless blocked
+ * - For RSS: check the `subreddit` field which contains the feed name
  * - Other sources must mention a PL club or "premier league"
  */
 export function filterPLContent(posts: Post[]): Post[] {
   // Editorial RSS sources that are trusted
-  const editorialSources = ['bbc', 'sky', 'guardian', 'goal', '90min', 'football365', 'independent', 'espn', 'fourfourtwo', 'talkSPORT', 'talksport']
+  // These values must match what's stored in the `subreddit` field for RSS posts
+  const editorialSources = ['BBC', 'Sky', 'Guardian', 'Goal', '90min', 'Football365', 'Independent', 'ESPN', 'FourFourTwo', 'talkSPORT']
 
   return posts.filter(post => {
     // Exclude Reddit and YouTube sources entirely
@@ -77,8 +79,18 @@ export function filterPLContent(posts: Post[]): Post[] {
     // Block anything matching ALWAYS_HIDE — even if from trusted sources
     if (ALWAYS_HIDE.some(kw => text.includes(kw))) return false
 
-    // Trust editorial sources — if it's from BBC, Sky, Guardian, etc., allow it
-    if (editorialSources.some(src => sourceLower.includes(src))) {
+    // Trust RSS feeds from editorial sources
+    // RSS posts have source='rss' and feed name in subreddit field
+    if (post.source === 'rss') {
+      const feedName = post.subreddit || ''
+      // Check if this feed is from a trusted editorial source
+      if (editorialSources.some(src => feedName.includes(src))) {
+        return true
+      }
+    }
+
+    // Trust other editorial sources (if someone adds non-RSS sources with those names)
+    if (editorialSources.some(src => sourceLower.includes(src.toLowerCase()))) {
       return true
     }
 
