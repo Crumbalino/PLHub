@@ -39,13 +39,48 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
 
   return (
     <div
-      className="rounded-[10px] overflow-hidden"
+      className="relative rounded-[10px] overflow-hidden"
       style={{
         background: 'var(--plh-card)',
         border: '1px solid var(--plh-border)',
         boxShadow: 'var(--plh-shadow)',
       }}
     >
+      {/* Top-left bracket */}
+      <div className="absolute top-[8px] left-[8px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          style={{ opacity: 0.15 }}
+        >
+          <path
+            d="M2 14V2H14"
+            stroke="#E84080"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      {/* Bottom-right bracket */}
+      <div className="absolute bottom-[8px] right-[8px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          style={{ opacity: 0.15 }}
+        >
+          <path
+            d="M22 10V22H10"
+            stroke="#E84080"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-2.5"
@@ -53,17 +88,17 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
           borderBottom: '1px solid var(--plh-border)',
         }}
       >
-        <span className="text-sm font-bold" style={{ color: 'var(--plh-gold)' }}>Premier League</span>
-        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)' }}>2024/25</span>
+        <span className="text-sm font-bold" style={{ color: 'var(--plh-gold)', fontFamily: "'Sora', sans-serif" }}>Premier League</span>
+        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>2024/25</span>
       </div>
 
       {/* Column headers */}
       <div className="grid grid-cols-[20px_1fr_22px_22px_28px] gap-1.5 px-3 py-1.5" style={{ borderBottom: '1px solid var(--plh-border)' }}>
-        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)' }}>#</span>
-        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)' }}>Club</span>
-        <span className="text-[10px] text-center" style={{ color: 'var(--plh-text-40)' }}>P</span>
-        <span className="text-[10px] text-center" style={{ color: 'var(--plh-text-40)' }}>GD</span>
-        <span className="text-[10px] text-center" style={{ color: 'var(--plh-text-40)' }}>Pts</span>
+        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>#</span>
+        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>Club</span>
+        <span className="text-[10px] text-center" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>P</span>
+        <span className="text-[10px] text-center" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>GD</span>
+        <span className="text-[10px] text-center" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>Pts</span>
       </div>
 
       {/* Rows */}
@@ -84,14 +119,14 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
             e.currentTarget.style.background = 'color-mix(in srgb, var(--plh-text-100) 0%, transparent)'
           }}
         >
-          <span className="text-xs tabular-nums font-semibold" style={{ color: entry.position <= 3 ? 'var(--plh-teal)' : 'var(--plh-text-100)' }}>{entry.position}</span>
+          <span className="text-xs font-mono font-semibold" style={{ color: entry.position <= 3 ? 'var(--plh-teal)' : 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{entry.position}</span>
           <div className="flex items-center gap-1.5 min-w-0">
             <img src={entry.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
-            <span className="text-xs truncate" style={{ color: 'var(--plh-text-100)' }}>{entry.name}</span>
+            <span className="text-xs truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{entry.name}</span>
           </div>
-          <span className="text-xs tabular-nums text-center" style={{ color: 'var(--plh-text-50)' }}>{entry.played}</span>
-          <span className="text-xs tabular-nums text-center" style={{ color: 'var(--plh-text-50)' }}>{entry.gd > 0 ? `+${entry.gd}` : entry.gd}</span>
-          <span className="text-xs font-bold tabular-nums text-center" style={{ color: 'var(--plh-text-100)' }}>{entry.pts}</span>
+          <span className="font-mono text-xs text-center" style={{ color: 'var(--plh-text-50)' }}>{entry.played}</span>
+          <span className="font-mono text-xs text-center" style={{ color: 'var(--plh-text-50)' }}>{entry.gd > 0 ? `+${entry.gd}` : entry.gd}</span>
+          <span className="font-mono text-xs font-bold text-center" style={{ color: 'var(--plh-text-100)' }}>{entry.pts}</span>
         </Link>
       ))}
 
@@ -102,6 +137,7 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
         style={{
           borderTop: '1px solid var(--plh-border)',
           color: 'var(--plh-gold)',
+          fontFamily: "'Sora', sans-serif",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.opacity = '0.8'
@@ -115,8 +151,8 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
 
       {/* Legend */}
       <div className="flex gap-3 px-3 py-1.5" style={{ borderTop: '1px solid var(--plh-border)' }}>
-        <span className="text-[10px] text-green-400/70">■ UCL</span>
-        <span className="text-[10px] text-red-400/70">■ Relegation</span>
+        <span className="text-[10px] text-green-400/70" style={{ fontFamily: "'Sora', sans-serif" }}>■ UCL</span>
+        <span className="text-[10px] text-red-400/70" style={{ fontFamily: "'Sora', sans-serif" }}>■ Relegation</span>
       </div>
     </div>
   )

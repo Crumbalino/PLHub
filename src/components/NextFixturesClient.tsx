@@ -53,13 +53,48 @@ export default function NextFixturesClient({
 
   return (
     <div
-      className="rounded-[10px] overflow-hidden"
+      className="relative rounded-[10px] overflow-hidden"
       style={{
         background: 'var(--plh-card)',
         border: '1px solid var(--plh-border)',
         boxShadow: 'var(--plh-shadow)',
       }}
     >
+      {/* Top-left bracket */}
+      <div className="absolute top-[8px] left-[8px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          style={{ opacity: 0.15 }}
+        >
+          <path
+            d="M2 14V2H14"
+            stroke="#E84080"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      {/* Bottom-right bracket */}
+      <div className="absolute bottom-[8px] right-[8px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          style={{ opacity: 0.15 }}
+        >
+          <path
+            d="M22 10V22H10"
+            stroke="#E84080"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-2.5"
@@ -67,8 +102,8 @@ export default function NextFixturesClient({
           borderBottom: '1px solid var(--plh-border)',
         }}
       >
-        <span className="text-sm font-bold" style={{ color: 'var(--plh-gold)' }}>Fixtures</span>
-        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)' }}>Next {upcoming.length}</span>
+        <span className="text-sm font-bold" style={{ color: 'var(--plh-gold)', fontFamily: "'Sora', sans-serif" }}>Fixtures</span>
+        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>Upcoming</span>
       </div>
 
       {/* Matches */}
@@ -92,33 +127,33 @@ export default function NextFixturesClient({
             >
               {/* Date/Time */}
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--plh-text-40)' }}>
+                <span className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>
                   {isLive ? (
                     <span className="font-bold animate-pulse" style={{ color: 'var(--plh-pink)' }}>● LIVE</span>
                   ) : (
                     formatMatchTime(match.date)
                   )}
                 </span>
-                <span className="text-[10px]" style={{ color: 'var(--plh-text-40)' }}>{formatKickoff(match.date)}</span>
+                <span className="font-mono text-[10px]" style={{ color: 'var(--plh-text-40)' }}>{formatKickoff(match.date)}</span>
               </div>
 
               {/* Teams */}
               <div className="flex items-center gap-2 justify-between">
                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                   <img src={match.homeCrest} alt="" className="w-4 h-4 object-contain shrink-0" />
-                  <span className="text-xs truncate" style={{ color: 'var(--plh-text-100)' }}>{match.home}</span>
+                  <span className="text-xs truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{match.home}</span>
                 </div>
 
                 {isLive && match.homeScore !== null ? (
-                  <span className="text-sm font-bold tabular-nums shrink-0 mx-1" style={{ color: 'var(--plh-pink)' }}>
+                  <span className="font-mono text-sm font-bold tabular-nums shrink-0 mx-1" style={{ color: 'var(--plh-pink)' }}>
                     {match.homeScore} - {match.awayScore}
                   </span>
                 ) : (
-                  <span className="text-[10px] shrink-0 mx-1" style={{ color: 'var(--plh-text-40)' }}>vs</span>
+                  <span className="text-[10px] shrink-0 mx-1" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>vs</span>
                 )}
 
                 <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0">
-                  <span className="text-xs truncate" style={{ color: 'var(--plh-text-100)' }}>{match.away}</span>
+                  <span className="text-xs truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{match.away}</span>
                   <img src={match.awayCrest} alt="" className="w-4 h-4 object-contain shrink-0" />
                 </div>
               </div>
@@ -135,6 +170,7 @@ export default function NextFixturesClient({
           style={{
             borderTop: '1px solid var(--plh-border)',
             color: 'var(--plh-gold)',
+            fontFamily: "'Sora', sans-serif",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.opacity = '0.8'
@@ -151,7 +187,7 @@ export default function NextFixturesClient({
       {recent.length > 0 && (
         <>
           <div className="px-3 py-2" style={{ borderTop: '1px solid var(--plh-border)' }}>
-            <span className="text-xs font-bold" style={{ color: 'var(--plh-gold)' }}>Results</span>
+            <span className="text-xs font-bold" style={{ color: 'var(--plh-gold)', fontFamily: "'Sora', sans-serif" }}>Results</span>
           </div>
           <div>
             {recent.slice(0, 3).map((result, idx) => (
@@ -164,13 +200,13 @@ export default function NextFixturesClient({
               >
                 <div className="flex items-center gap-1 flex-1 min-w-0">
                   <img src={result.homeCrest} alt="" className="w-3 h-3 object-contain shrink-0" />
-                  <span className="text-[11px] truncate" style={{ color: 'var(--plh-text-100)' }}>{result.home}</span>
+                  <span className="text-[11px] truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{result.home}</span>
                 </div>
-                <span className="text-xs font-bold tabular-nums shrink-0" style={{ color: 'var(--plh-text-100)' }}>
+                <span className="font-mono text-xs font-bold tabular-nums shrink-0" style={{ color: 'var(--plh-text-100)' }}>
                   {result.homeScore} - {result.awayScore}
                 </span>
                 <div className="flex items-center gap-1 flex-1 justify-end min-w-0">
-                  <span className="text-[11px] truncate" style={{ color: 'var(--plh-text-100)' }}>{result.away}</span>
+                  <span className="text-[11px] truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{result.away}</span>
                   <img src={result.awayCrest} alt="" className="w-3 h-3 object-contain shrink-0" />
                 </div>
               </div>
