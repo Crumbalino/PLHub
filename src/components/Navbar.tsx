@@ -21,7 +21,7 @@ export default function Navbar() {
   return (
     <nav
       className="
-        sticky top-0 z-50 h-14 sm:h-16
+        sticky top-0 z-50 h-auto
         border-b border-[var(--plh-border)]
         transition-colors duration-300
       "
@@ -31,7 +31,7 @@ export default function Navbar() {
         WebkitBackdropFilter: 'blur(12px)',
       }}
     >
-      <div className="max-w-[700px] mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
+      <div className="max-w-[700px] mx-auto py-3 px-4 sm:px-6 flex items-center justify-between">
         {/* Left spacer — balances sign-in on the right */}
         <div className="w-20 sm:w-24" />
 
@@ -43,20 +43,20 @@ export default function Navbar() {
         >
           {/* TL bracket */}
           <svg
-            width="24"
-            height="24"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
             style={{
               position: 'relative',
-              top: '-5px',
-              marginRight: '5px',
+              top: '-8px',
+              marginRight: '8px',
             }}
           >
             <path
               d="M2 14V2H14"
-              stroke="#E84080"
+              stroke="var(--plh-pink)"
               strokeWidth="3.5"
               strokeLinecap="round"
             />
@@ -80,20 +80,20 @@ export default function Navbar() {
 
           {/* BR bracket */}
           <svg
-            width="24"
-            height="24"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
             style={{
               position: 'relative',
-              top: '5px',
-              marginLeft: '5px',
+              top: '8px',
+              marginLeft: '8px',
             }}
           >
             <path
               d="M22 10V22H10"
-              stroke="#E84080"
+              stroke="var(--plh-pink)"
               strokeWidth="3.5"
               strokeLinecap="round"
             />
@@ -101,22 +101,20 @@ export default function Navbar() {
         </a>
 
         {/* Right side: theme toggle + sign in */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-2">
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
             className="
-              w-10 h-10 flex items-center justify-center
-              rounded-[8px]
-              text-[var(--plh-teal)]
-              transition-all duration-200
+              flex items-center justify-center
+              text-[var(--plh-text-100)]
+              transition-all duration-200 opacity-85 hover:opacity-100
             "
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                'color-mix(in srgb, var(--plh-teal) 10%, transparent)';
+              (e.currentTarget as HTMLElement).style.opacity = '1';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = 'transparent';
+              (e.currentTarget as HTMLElement).style.opacity = '0.85';
             }}
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
@@ -139,16 +137,21 @@ export default function Navbar() {
             )}
           </button>
 
+          {/* Vertical divider */}
+          <div className="hidden sm:block w-px h-5" style={{ backgroundColor: 'var(--plh-border)' }} />
+
           {/* Sign in — placeholder, no auth yet */}
           <button
             className="
               hidden sm:flex items-center
               text-[13px] font-medium tracking-wide
-              text-[var(--plh-text-85)]
               border border-[var(--plh-border)]
-              rounded-[8px] px-3.5 py-1.5
+              rounded px-3 py-1
               transition-all duration-200
             "
+            style={{
+              color: 'rgba(250, 245, 240, 0.85)',
+            }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLElement;
               el.style.borderColor = 'var(--plh-border-hover)';
