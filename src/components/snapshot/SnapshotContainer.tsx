@@ -113,42 +113,6 @@ export default function SnapshotContainer({
           background: 'var(--plh-card)',
         }}
       >
-        {/* Top-left bracket */}
-        <div className="absolute top-0 left-0 w-6 h-6 pointer-events-none sm:w-8 sm:h-8">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            style={{ opacity: 0.14 }}
-          >
-            <path
-              d="M2 14V2H14"
-              stroke="var(--plh-pink)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-
-        {/* Bottom-right bracket */}
-        <div className="absolute bottom-0 right-0 w-6 h-6 pointer-events-none sm:w-8 sm:h-8">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            style={{ opacity: 0.14 }}
-          >
-            <path
-              d="M22 10V22H10"
-              stroke="var(--plh-pink)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-
         {/* Main content area with padding */}
         <div className="relative px-3 pt-4 pb-4 sm:px-5 sm:pt-5 sm:pb-5">
           {/* Header Row */}
@@ -205,42 +169,6 @@ export default function SnapshotContainer({
         background: 'var(--plh-card)',
       }}
     >
-      {/* Top-left bracket */}
-      <div className="absolute top-0 left-0 w-6 h-6 pointer-events-none sm:w-8 sm:h-8">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          style={{ opacity: 0.14 }}
-        >
-          <path
-            d="M2 14V2H14"
-            stroke="var(--plh-pink)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
-      {/* Bottom-right bracket */}
-      <div className="absolute bottom-0 right-0 w-6 h-6 pointer-events-none sm:w-8 sm:h-8">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          style={{ opacity: 0.14 }}
-        >
-          <path
-            d="M22 10V22H10"
-            stroke="var(--plh-pink)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
       {/* Main content area with padding */}
       <div className="relative px-4 pt-3 pb-3 sm:px-5 sm:pt-4 sm:pb-4">
         {/* Header Row */}

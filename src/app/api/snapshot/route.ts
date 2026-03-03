@@ -12,8 +12,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { transformPost } from '@/lib/transform'
 import { detectAllClubs, toClubBadges } from '@/lib/clubs'
-import { getTopScorers, getFixtures as getFixturesFromApi } from '@/lib/api-football'
-import { BY_THE_NUMBERS_SYSTEM_PROMPT, BY_THE_NUMBERS_API_CONFIG } from '@/lib/prompts/by-the-numbers'
 import type { Post, FeedPost } from '@/lib/types'
 
 const BIG_SIX = ['arsenal', 'chelsea', 'liverpool', 'man-city', 'man-united', 'tottenham']
@@ -337,8 +335,8 @@ class StoryTracker {
 }
 
 /**
- * Fetch and contextualise stats for By The Numbers module
- * Uses AI to generate compelling stat tiles from API-Football data
+ * Fetch and calculate stats for By The Numbers module
+ * Uses football-data.org standings and scorers endpoints
  */
 async function getByTheNumbersData(matchday: number): Promise<{
   tiles: Array<{
@@ -350,133 +348,97 @@ async function getByTheNumbersData(matchday: number): Promise<{
   matchday: number
 } | null> {
   try {
-    // Calculate date range for last 14 days of fixtures
-    const today = new Date()
-    const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000)
-    const fromDate = twoWeeksAgo.toISOString().split('T')[0]
-    const toDate = today.toISOString().split('T')[0]
+    const apiKey = process.env.FOOTBALL_DATA_API_KEY
+    if (!apiKey) return null
 
-    // Fetch raw stats from API-Football
-    const [topScorers, recentFixtures] = await Promise.all([
-      getTopScorers(),
-      getFixturesFromApi(fromDate, toDate),
+    // Fetch standings and scorers in parallel
+    const [standingsRes, scorersRes] = await Promise.all([
+      fetch('https://api.football-data.org/v4/competitions/PL/standings', {
+        headers: { 'X-Auth-Token': apiKey },
+        next: { revalidate: 21600 }, // 6 hours
+      }),
+      fetch('https://api.football-data.org/v4/competitions/PL/scorers?limit=5', {
+        headers: { 'X-Auth-Token': apiKey },
+        next: { revalidate: 21600 }, // 6 hours
+      }),
     ])
 
-    if (!topScorers || !recentFixtures) {
+    if (!standingsRes.ok || !scorersRes.ok) {
       return null
     }
 
-    // Extract raw stats
-    const topScorer = topScorers[0]
-    if (!topScorer) return null
+    const standingsData = await standingsRes.json()
+    const scorersData = await scorersRes.json()
 
-    const scorerName = topScorer.player.name
-    const scorerGoals = topScorer.statistics?.[0]?.goals?.total ?? 0
-    const scorerTeam = topScorer.statistics?.[0]?.team?.name ?? 'Unknown'
+    const table = standingsData.standings?.[0]?.table as StandingsEntry[] | undefined
+    const scorers = scorersData.scorers as any[] | undefined
 
-    // Analyze recent fixtures (from api-football Fixture interface)
-    const finishedMatches = recentFixtures.filter((f) => f.status?.short === 'FT')
-    const matchdayGoals = finishedMatches.reduce((sum, m) => sum + ((m.goals?.home ?? 0) + (m.goals?.away ?? 0)), 0)
-    const cleanSheets = finishedMatches.filter((m) => (m.goals?.home ?? 0) === 0 || (m.goals?.away ?? 0) === 0).length
+    if (!table || !scorers || scorers.length === 0) {
+      return null
+    }
 
-    // Find biggest win
-    let biggestWin = { home: 'N/A', away: 'N/A', score: '0-0' }
-    let maxDiff = 0
-    for (const match of finishedMatches) {
-      const home = match.goals?.home ?? 0
-      const away = match.goals?.away ?? 0
-      const diff = Math.abs(home - away)
-      if (diff > maxDiff) {
-        maxDiff = diff
-        biggestWin = {
-          home: match.teams?.home?.name ?? 'Unknown',
-          away: match.teams?.away?.name ?? 'Unknown',
-          score: `${home}-${away}`,
-        }
+    // Stat 1: Top scorer
+    const topScorer = scorers[0]
+    const topScorerName = topScorer.player?.name ?? 'Unknown'
+    const topScorerGoals = topScorer.goals ?? 0
+
+    // Stat 2: Title race gap (points difference between 1st and 2nd)
+    const titleGap = table.length >= 2 ? table[0].points - table[1].points : 0
+
+    // Stat 3: Best defence (team with fewest goals against)
+    let bestDefence = { team: '', goalsAgainst: Infinity }
+    for (const entry of table) {
+      if (entry.goalsAgainst < bestDefence.goalsAgainst) {
+        bestDefence = { team: entry.team.name, goalsAgainst: entry.goalsAgainst }
       }
     }
 
-    // Prepare raw stats for AI
-    const rawStats = {
-      topScorer: { name: scorerName, goals: scorerGoals, team: scorerTeam },
-      matchdayGoals,
-      cleanSheets,
-      biggestWin,
+    // Stat 4: Relegation battle (count teams within 3 points of 18th place)
+    const place18th = table[17]
+    if (!place18th) {
+      return null
+    }
+    let relegationDanger = 0
+    for (const entry of table) {
+      if (entry.position >= 18 && entry.points >= place18th.points - 3) {
+        relegationDanger++
+      }
     }
 
-    // Try to get AI contextualisation
-    try {
-      const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: BY_THE_NUMBERS_API_CONFIG.model,
-          max_tokens: BY_THE_NUMBERS_API_CONFIG.max_tokens,
-          temperature: BY_THE_NUMBERS_API_CONFIG.temperature,
-          system: BY_THE_NUMBERS_SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: JSON.stringify(rawStats) }],
-        }),
-      })
+    // Determine accent tile (top scorer if 15+ goals, otherwise title gap)
+    const accentIsTopScorer = topScorerGoals >= 15
 
-      if (!anthropicResponse.ok) {
-        throw new Error(`Anthropic API error: ${anthropicResponse.status}`)
-      }
+    // Build tiles array
+    const tiles = [
+      {
+        number: topScorerGoals.toString(),
+        label: `${topScorerName} goals`,
+        context: 'Leading the Golden Boot race',
+        accent: accentIsTopScorer,
+      },
+      {
+        number: titleGap.toString(),
+        label: 'points at the top',
+        context: `${table[0].team.name} lead`,
+        accent: !accentIsTopScorer,
+      },
+      {
+        number: bestDefence.goalsAgainst.toString(),
+        label: 'fewest goals conceded',
+        context: `${bestDefence.team}'s league-best defence`,
+        accent: false,
+      },
+      {
+        number: relegationDanger.toString(),
+        label: 'clubs in drop danger',
+        context: 'Within 3 points of 18th',
+        accent: false,
+      },
+    ]
 
-      const anthropicData = await anthropicResponse.json() as any
-      const responseText = anthropicData.content?.[0]?.text
+    const finalTiles = tiles
 
-      if (!responseText) {
-        throw new Error('No response from Anthropic')
-      }
-
-      // Parse AI response — it returns { tiles: [...], accent_index: number }
-      const parsedResponse = JSON.parse(responseText)
-
-      // Transform accent_index to accent boolean
-      const tiles = parsedResponse.tiles.map((tile: any, i: number) => ({
-        number: tile.number,
-        label: tile.label,
-        context: tile.context,
-        accent: i === parsedResponse.accent_index,
-      }))
-
-      return { tiles, matchday }
-    } catch (aiErr) {
-      console.error('[Snapshot API] Anthropic error, using fallback tiles:', aiErr)
-
-      // Fallback tiles if AI fails
-      const fallbackTiles = [
-        {
-          number: scorerGoals.toString(),
-          label: `${scorerName} goals`,
-          context: `${scorerTeam} striker leading the charge`,
-          accent: true,
-        },
-        {
-          number: matchdayGoals.toString(),
-          label: 'matchday goals',
-          context: 'Total goals across recent fixtures',
-          accent: false,
-        },
-        {
-          number: cleanSheets.toString(),
-          label: 'clean sheets',
-          context: 'Recent matches without conceding',
-          accent: false,
-        },
-        {
-          number: biggestWin.score,
-          label: 'biggest win',
-          context: `${biggestWin.home} vs ${biggestWin.away}`,
-          accent: false,
-        },
-      ]
-
-      return { tiles: fallbackTiles, matchday }
-    }
+    return { tiles: finalTiles, matchday }
   } catch (err) {
     console.error('[Snapshot API] Error fetching By The Numbers data:', err)
     return null

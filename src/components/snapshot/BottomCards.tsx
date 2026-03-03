@@ -52,15 +52,13 @@ export default function BottomCards({
 
   return (
     <div
-      className="grid gap-1.5 w-full"
-      style={{
-        gridTemplateColumns:
-          cards.length === 3
-            ? 'repeat(auto-fit, minmax(300px, 1fr))'
-            : cards.length === 2
-              ? 'repeat(2, 1fr)'
-              : '1fr',
-      }}
+      className={`grid gap-1.5 w-full ${
+        cards.length === 3
+          ? 'grid-cols-1 sm:grid-cols-3'
+          : cards.length === 2
+            ? 'grid-cols-1 sm:grid-cols-2'
+            : 'grid-cols-1'
+      }`}
     >
       {cards.map((card, idx) => (
         <Card
