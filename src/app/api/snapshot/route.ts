@@ -560,8 +560,21 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
     // Filter and transform posts
     const posts = (rawPosts as unknown as Post[]) || []
 
+    // DEBUG: Log raw posts from database
+    console.log('[Snapshot API] Raw posts:', {
+      count: posts.length,
+      sources: posts.map(p => p.source),
+      subreddits: posts.map(p => p.subreddit),
+    })
+
     // Filter out Reddit and YouTube, keep only editorial RSS sources
     const filteredPosts = filterPLContent(posts)
+
+    // DEBUG: Log after filtering
+    console.log('[Snapshot API] After filtering:', {
+      count: filteredPosts.length,
+      sources: filteredPosts.map(p => p.source),
+    })
 
     const transformed: FeedPost[] = []
 
@@ -573,6 +586,10 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
         console.error(`[Snapshot API] Failed to transform post ${post.id}:`, err)
       }
     }
+
+    console.log('[Snapshot API] After transformation:', {
+      count: transformed.length,
+    })
 
     // Filter by club if specified
     let filtered = transformed

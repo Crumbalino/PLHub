@@ -12,7 +12,7 @@ export const maxDuration = 10
 // Verify cron secret
 const CRON_SECRET = process.env.CRON_SECRET
 
-export async function POST(request: NextRequest) {
+async function handleRequest(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -95,4 +95,12 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+export async function GET(request: NextRequest) {
+  return handleRequest(request)
+}
+
+export async function POST(request: NextRequest) {
+  return handleRequest(request)
 }

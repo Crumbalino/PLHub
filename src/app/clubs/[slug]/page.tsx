@@ -25,7 +25,7 @@ export async function generateMetadata({
   if (!club) return {}
 
   const title = `${club.name} News, Transfers & Rumours`
-  const description = `The latest ${club.name} news, transfer rumours, match reports and fan discussion. AI-summarised from BBC Sport, Sky Sports, The Athletic, Reddit and YouTube. Updated constantly.`
+  const description = `The latest ${club.name} news, transfer rumours, match reports and fan discussion. AI-summarised from BBC Sport, Sky Sports, The Guardian, Goal and more. Updated constantly.`
 
   return {
     title,
