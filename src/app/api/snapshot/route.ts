@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { transformPost } from '@/lib/transform'
 import { detectAllClubs, toClubBadges } from '@/lib/clubs'
+import { BY_THE_NUMBERS_SYSTEM_PROMPT, BY_THE_NUMBERS_API_CONFIG, type ByTheNumbersResponse } from '@/lib/prompts/by-the-numbers'
 import type { Post, FeedPost } from '@/lib/types'
 
 const BIG_SIX = ['arsenal', 'chelsea', 'liverpool', 'man-city', 'man-united', 'tottenham']
@@ -363,8 +364,9 @@ function isFPLStory(headline: string): boolean {
 }
 
 /**
- * Fetch and calculate stats for By The Numbers module
- * Uses football-data.org standings and scorers endpoints
+ * Fetch and generate stat tiles for By The Numbers module
+ * Calls Anthropic API with raw stats for contextualisation
+ * Caches result in Supabase with 3-hour TTL
  */
 async function getByTheNumbersData(matchday: number): Promise<{
   tiles: Array<{
@@ -376,128 +378,119 @@ async function getByTheNumbersData(matchday: number): Promise<{
   matchday: number
 } | null> {
   try {
+    const supabase = getSupabase()
     const apiKey = process.env.FOOTBALL_DATA_API_KEY
-    if (!apiKey) return null
+    const anthropicKey = process.env.ANTHROPIC_API_KEY
 
-    // Fetch standings and scorers in parallel
-    const [standingsRes, scorersRes] = await Promise.all([
+    if (!apiKey || !anthropicKey) return null
+
+    // Check cache first (3-hour TTL)
+    const cacheKey = `by_the_numbers:homepage:${matchday}`
+    const { data: cachedTile } = await supabase
+      .from('by_the_numbers_tiles')
+      .select('data, expires_at')
+      .eq('cache_key', cacheKey)
+      .single()
+
+    if (cachedTile && cachedTile.expires_at && new Date(cachedTile.expires_at) > new Date()) {
+      return cachedTile.data as any
+    }
+
+    // Fetch raw stats from football-data.org API
+    const [standingsRes, scorersRes, recentMatchesRes] = await Promise.all([
       fetch('https://api.football-data.org/v4/competitions/PL/standings', {
         headers: { 'X-Auth-Token': apiKey },
-        next: { revalidate: 21600 }, // 6 hours
+        next: { revalidate: 3600 },
       }),
-      fetch('https://api.football-data.org/v4/competitions/PL/scorers?limit=5', {
+      fetch('https://api.football-data.org/v4/competitions/PL/scorers?limit=10', {
         headers: { 'X-Auth-Token': apiKey },
-        next: { revalidate: 21600 }, // 6 hours
+        next: { revalidate: 3600 },
+      }),
+      fetch('https://api.football-data.org/v4/competitions/PL/matches?limit=5&status=FINISHED', {
+        headers: { 'X-Auth-Token': apiKey },
+        next: { revalidate: 3600 },
       }),
     ])
 
-    if (!standingsRes.ok || !scorersRes.ok) {
+    if (!standingsRes.ok || !scorersRes.ok || !recentMatchesRes.ok) {
       return null
     }
 
     const standingsData = await standingsRes.json()
     const scorersData = await scorersRes.json()
+    const recentMatchesData = await recentMatchesRes.json()
 
-    const table = standingsData.standings?.[0]?.table as StandingsEntry[] | undefined
-    const scorers = scorersData.scorers as any[] | undefined
+    // Prepare stats payload for Anthropic
+    const statsPayload = {
+      scorers: scorersData.scorers || [],
+      standings: standingsData.standings?.[0]?.table || [],
+      recentMatches: recentMatchesData.matches || [],
+    }
 
-    if (!table || !scorers || scorers.length === 0) {
+    // Call Anthropic API with By The Numbers prompt
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: BY_THE_NUMBERS_API_CONFIG.model,
+        max_tokens: BY_THE_NUMBERS_API_CONFIG.max_tokens,
+        temperature: BY_THE_NUMBERS_API_CONFIG.temperature,
+        system: BY_THE_NUMBERS_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: 'user',
+            content: JSON.stringify({
+              scope: 'homepage',
+              matchday,
+              stats: statsPayload,
+              standings: standingsData.standings?.[0]?.table || [],
+            }),
+          },
+        ],
+      }),
+    })
+
+    if (!anthropicRes.ok) {
+      console.error('[By The Numbers] Anthropic API error:', anthropicRes.status)
       return null
     }
 
-    // Stat 1: Top scorer with gap to second
-    const topScorer = scorers[0]
-    const secondScorer = scorers[1]
-    const topScorerName = topScorer.player?.name ?? 'Unknown'
-    const topScorerGoals = topScorer.goals ?? 0
-    const secondScorerName = secondScorer?.player?.name ?? 'Unknown'
-    const secondScorerGoals = secondScorer?.goals ?? 0
-    const scorerGap = topScorerGoals - secondScorerGoals
-    const topScorerContext = scorerGap > 0
-      ? `${scorerGap} ahead of ${secondScorerName}`
-      : scorerGap === 0 && secondScorer
-        ? `Level with ${secondScorerName}`
-        : ''
+    const anthropicData = await anthropicRes.json()
+    const responseText = anthropicData.content?.[0]?.text
 
-    // Stat 2: Title race gap (points difference between 1st and 2nd)
-    const titleGap = table.length >= 2 ? table[0].points - table[1].points : 0
-    const firstTeam = table[0].team.name
-    const secondTeam = table.length >= 2 ? table[1].team.name : 'Unknown'
-    const titleContext = `${firstTeam} over ${secondTeam}`
-
-    // Stat 3: Best defence with gap to second-best
-    let bestDefence = { team: '', goalsAgainst: Infinity }
-    let secondBestDefence = { team: '', goalsAgainst: Infinity }
-    for (const entry of table) {
-      if (entry.goalsAgainst < bestDefence.goalsAgainst) {
-        secondBestDefence = { ...bestDefence }
-        bestDefence = { team: entry.team.name, goalsAgainst: entry.goalsAgainst }
-      } else if (entry.goalsAgainst < secondBestDefence.goalsAgainst) {
-        secondBestDefence = { team: entry.team.name, goalsAgainst: entry.goalsAgainst }
-      }
-    }
-    const defenceGap = secondBestDefence.goalsAgainst - bestDefence.goalsAgainst
-    const defenceContext = defenceGap > 0
-      ? `${defenceGap} fewer than ${secondBestDefence.team}`
-      : secondBestDefence.goalsAgainst === bestDefence.goalsAgainst && secondBestDefence.team
-        ? `Level with ${secondBestDefence.team}`
-        : ''
-
-    // Stat 4: Relegation battle (teams within 3 points of 18th)
-    const place18th = table[17]
-    if (!place18th) {
+    if (!responseText) {
+      console.error('[By The Numbers] No response text from Anthropic')
       return null
     }
-    const relegationTeams: string[] = []
-    for (const entry of table) {
-      if (entry.position >= 18 && entry.points >= place18th.points - 3) {
-        relegationTeams.push(entry.team.name)
-      }
-    }
-    const relegationCount = relegationTeams.length
-    let relegationContext = ''
-    if (relegationCount === 1) {
-      relegationContext = relegationTeams[0]
-    } else if (relegationCount === 2) {
-      relegationContext = `${relegationTeams[0]} and ${relegationTeams[1]}`
-    } else if (relegationCount > 2) {
-      relegationContext = `${relegationTeams[0]}, ${relegationTeams[1]} and ${relegationCount - 2} more`
-    }
 
-    // Determine accent tile (top scorer if 15+ goals, otherwise title gap)
-    const accentIsTopScorer = topScorerGoals >= 15
+    // Parse JSON response from Claude
+    const parsedResponse: ByTheNumbersResponse = JSON.parse(responseText)
 
-    // Build tiles array
-    const tiles = [
-      {
-        number: topScorerGoals.toString(),
-        label: `${topScorerName} goals`,
-        context: topScorerContext || 'Leading the race',
-        accent: accentIsTopScorer,
-      },
-      {
-        number: titleGap.toString(),
-        label: 'points at the top',
-        context: titleContext,
-        accent: !accentIsTopScorer,
-      },
-      {
-        number: bestDefence.goalsAgainst.toString(),
-        label: 'fewest goals conceded',
-        context: defenceContext || 'Best in the league',
-        accent: false,
-      },
-      {
-        number: relegationCount.toString(),
-        label: 'clubs in drop danger',
-        context: relegationContext || 'Within 3 points of 18th',
-        accent: false,
-      },
-    ]
+    // Transform response to match component interface
+    const tiles = parsedResponse.tiles.map((tile, idx) => ({
+      number: tile.number,
+      label: tile.label,
+      context: tile.context,
+      accent: idx === parsedResponse.accent_index,
+    }))
 
-    const finalTiles = tiles
+    const result = { tiles, matchday }
 
-    return { tiles: finalTiles, matchday }
+    // Cache result in Supabase with 3-hour TTL
+    const expiresAt = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
+
+    await supabase.from('by_the_numbers_tiles').upsert({
+      cache_key: cacheKey,
+      data: result,
+      created_at: new Date().toISOString(),
+      expires_at: expiresAt,
+    })
+
+    return result
   } catch (err) {
     console.error('[Snapshot API] Error fetching By The Numbers data:', err)
     return null

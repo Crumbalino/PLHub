@@ -22,6 +22,8 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
   const [data, setData] = useState<ByTheNumbersData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [heroIndex, setHeroIndex] = useState(0)
+  const [swapping, setSwapping] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,48 +126,135 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
     return null
   }
 
+  const handleTileClick = (index: number) => {
+    if (index !== heroIndex) {
+      setSwapping(true)
+      setTimeout(() => {
+        setHeroIndex(index)
+        setSwapping(false)
+      }, 300) // Match animation duration
+    }
+  }
+
+  const heroTile = data.tiles[heroIndex]
+  const supportingTiles = data.tiles.filter((_, idx) => idx !== heroIndex)
+
   return (
-    <div style={{ borderRadius: '8px', border: '1px solid rgba(250,245,240,0.06)', overflow: 'hidden', background: `radial-gradient(ellipse at top right, rgba(58,175,169,0.08), transparent 70%)` }}>
+    <div style={{ borderRadius: '10px', border: '1px solid rgba(250,245,240,0.06)', overflow: 'hidden', background: `radial-gradient(ellipse at top right, rgba(58,175,169,0.08), transparent 70%)` }}>
       {/* Header bar */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '12px 20px',
+          padding: '16px 16px',
           borderBottom: '1px solid rgba(250,245,240,0.06)',
         }}
       >
-        <h2 style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: '#3AAFA9', margin: 0 }}>
+        <h2 style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: '#3AAFA9', margin: 0, fontFamily: "'Sora', sans-serif" }}>
           By The Numbers
         </h2>
-        <span style={{ fontSize: '11px', opacity: 0.5, margin: 0 }}>Matchday {data.matchday}</span>
+        <span style={{ fontSize: '10px', opacity: 0.4, margin: 0, fontFamily: "'Sora', sans-serif" }}>Matchday {data.matchday}</span>
       </div>
 
-      {/* Tile grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '1px',
-          backgroundColor: 'rgba(250,245,240,0.06)',
-        }}
-      >
-        {data.tiles.map((tile, index) => (
+      {/* Hero tile and supporting grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', backgroundColor: 'rgba(250,245,240,0.06)' }}>
+        {/* Hero tile (left, spans 2 rows) */}
+        <div
+          style={{
+            gridRow: '1 / 3',
+            position: 'relative',
+            cursor: 'pointer',
+            padding: '20px',
+            backgroundColor: 'rgba(58,175,169,0.08)',
+            borderRadius: '8px',
+            margin: '1px',
+            transition: swapping ? 'all 300ms ease-out' : 'opacity 300ms ease-out',
+            opacity: swapping ? 0 : 1,
+            transform: swapping ? 'translateY(10px)' : 'translateY(0)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            boxShadow: '0 0 0 1px rgba(232,64,128,0)',
+            animation: 'heroPulse 3s ease-in-out infinite',
+          }}
+          onClick={() => {}} // Hero tile is always visible
+        >
+          {/* Number */}
           <div
-            key={index}
             style={{
-              padding: '20px',
-              backgroundColor: tile.accent ? 'rgba(58,175,169,0.08)' : 'transparent',
+              fontSize: '40px',
+              fontWeight: 700,
+              fontFamily: "'Sora', sans-serif",
+              color: '#3AAFA9',
+              lineHeight: 1,
+              marginBottom: '8px',
+              textAlign: 'center',
             }}
           >
-            {/* Number (hero element) */}
+            {heroTile.number}
+          </div>
+
+          {/* Label */}
+          <div
+            style={{
+              fontSize: '12px',
+              fontWeight: 500,
+              color: 'rgba(250,245,240,0.7)',
+              marginBottom: '6px',
+              textAlign: 'center',
+              fontFamily: "'Sora', sans-serif",
+            }}
+          >
+            {heroTile.label}
+          </div>
+
+          {/* Context */}
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: 400,
+              color: 'rgba(250,245,240,0.5)',
+              textAlign: 'center',
+              fontFamily: "'Sora', sans-serif",
+            }}
+          >
+            {heroTile.context}
+          </div>
+        </div>
+
+        {/* Supporting tiles (right, 2 rows) */}
+        {supportingTiles.map((tile, idx) => (
+          <div
+            key={idx}
+            onClick={() => handleTileClick(data.tiles.indexOf(tile))}
+            style={{
+              padding: '16px',
+              cursor: 'pointer',
+              backgroundColor: 'transparent',
+              transition: swapping ? 'all 300ms ease-out' : 'opacity 150ms ease-out',
+              opacity: swapping ? 0.5 : 1,
+              transform: swapping ? 'translateY(-8px)' : 'translateY(0)',
+              borderRadius: '6px',
+              margin: '1px',
+            }}
+            onMouseEnter={(e) => {
+              if (!swapping) {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(250,245,240,0.03)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
+            }}
+          >
+            {/* Number */}
             <div
               style={{
-                fontSize: '32px',
+                fontSize: '24px',
                 fontWeight: 700,
-                fontFamily: 'Sora, sans-serif',
-                color: tile.accent ? '#3AAFA9' : '#FAF5F0',
+                fontFamily: "'Sora', sans-serif",
+                color: '#FAF5F0',
                 lineHeight: 1,
                 marginBottom: '4px',
                 textAlign: 'center',
@@ -177,11 +266,12 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
             {/* Label */}
             <div
               style={{
-                fontSize: '13px',
+                fontSize: '11px',
                 fontWeight: 400,
-                color: 'rgba(250,245,240,0.7)',
-                marginBottom: '8px',
+                color: 'rgba(250,245,240,0.6)',
+                marginBottom: '4px',
                 textAlign: 'center',
+                fontFamily: "'Sora', sans-serif",
               }}
             >
               {tile.label}
@@ -190,10 +280,11 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
             {/* Context */}
             <div
               style={{
-                fontSize: '11px',
+                fontSize: '10px',
                 fontWeight: 400,
-                color: 'rgba(250,245,240,0.5)',
+                color: 'rgba(250,245,240,0.4)',
                 textAlign: 'center',
+                fontFamily: "'Sora', sans-serif",
               }}
             >
               {tile.context}
@@ -202,10 +293,19 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
         ))}
       </div>
 
-      {/* Responsive media query using style tag */}
+      {/* Animations */}
       <style>{`
+        @keyframes heroPulse {
+          0%, 100% {
+            box-shadow: 0 0 0 1px rgba(232,64,128,0.15);
+          }
+          50% {
+            box-shadow: 0 0 0 2px rgba(232,64,128,0.3);
+          }
+        }
+
         @media (max-width: 640px) {
-          .by-the-numbers-grid {
+          .by-the-numbers-container {
             grid-template-columns: 1fr;
           }
         }
