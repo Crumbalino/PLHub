@@ -108,7 +108,7 @@ export default function HeroGrid({
   return (
     <div className="w-full">
       {/* Desktop: 2-column grid layout */}
-      <div className="hidden sm:grid sm:grid-cols-2 sm:gap-1.5 mb-1.5">
+      <div className="hidden sm:grid sm:grid-cols-2 sm:gap-3 mb-1.5">
         {/* Story 0: Hero tile (left column, spans 2 rows) */}
         {displayStories[0] && (
           <HeroTile
@@ -337,22 +337,23 @@ function SidekickTile({ story, isMobile = false, onClick }: SidekickTileProps) {
         background: backgroundColor,
       }}
     >
-      {/* Background image with overlay */}
+      {/* Background image with desaturation filter */}
       <div
         className="absolute inset-0 transition-transform duration-300 hover:scale-x-[1.03]"
         style={{
           backgroundImage,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          filter: 'saturate(0.3)',
         }}
       />
 
-      {/* Dark gradient overlay */}
+      {/* Dark gradient overlay (stronger for sidekicks) */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(transparent 20%, rgba(13,27,42,0.4) 45%, rgba(13,27,42,0.92) 100%)',
+            'linear-gradient(transparent 10%, rgba(13,27,42,0.5) 40%, rgba(13,27,42,0.95) 100%)',
         }}
       />
 

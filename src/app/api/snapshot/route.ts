@@ -405,32 +405,63 @@ async function getByTheNumbersData(matchday: number): Promise<{
       return null
     }
 
-    // Stat 1: Top scorer
+    // Stat 1: Top scorer with gap to second
     const topScorer = scorers[0]
+    const secondScorer = scorers[1]
     const topScorerName = topScorer.player?.name ?? 'Unknown'
     const topScorerGoals = topScorer.goals ?? 0
+    const secondScorerName = secondScorer?.player?.name ?? 'Unknown'
+    const secondScorerGoals = secondScorer?.goals ?? 0
+    const scorerGap = topScorerGoals - secondScorerGoals
+    const topScorerContext = scorerGap > 0
+      ? `${scorerGap} ahead of ${secondScorerName}`
+      : scorerGap === 0 && secondScorer
+        ? `Level with ${secondScorerName}`
+        : ''
 
     // Stat 2: Title race gap (points difference between 1st and 2nd)
     const titleGap = table.length >= 2 ? table[0].points - table[1].points : 0
+    const firstTeam = table[0].team.name
+    const secondTeam = table.length >= 2 ? table[1].team.name : 'Unknown'
+    const titleContext = `${firstTeam} over ${secondTeam}`
 
-    // Stat 3: Best defence (team with fewest goals against)
+    // Stat 3: Best defence with gap to second-best
     let bestDefence = { team: '', goalsAgainst: Infinity }
+    let secondBestDefence = { team: '', goalsAgainst: Infinity }
     for (const entry of table) {
       if (entry.goalsAgainst < bestDefence.goalsAgainst) {
+        secondBestDefence = { ...bestDefence }
         bestDefence = { team: entry.team.name, goalsAgainst: entry.goalsAgainst }
+      } else if (entry.goalsAgainst < secondBestDefence.goalsAgainst) {
+        secondBestDefence = { team: entry.team.name, goalsAgainst: entry.goalsAgainst }
       }
     }
+    const defenceGap = secondBestDefence.goalsAgainst - bestDefence.goalsAgainst
+    const defenceContext = defenceGap > 0
+      ? `${defenceGap} fewer than ${secondBestDefence.team}`
+      : secondBestDefence.goalsAgainst === bestDefence.goalsAgainst && secondBestDefence.team
+        ? `Level with ${secondBestDefence.team}`
+        : ''
 
-    // Stat 4: Relegation battle (count teams within 3 points of 18th place)
+    // Stat 4: Relegation battle (teams within 3 points of 18th)
     const place18th = table[17]
     if (!place18th) {
       return null
     }
-    let relegationDanger = 0
+    const relegationTeams: string[] = []
     for (const entry of table) {
       if (entry.position >= 18 && entry.points >= place18th.points - 3) {
-        relegationDanger++
+        relegationTeams.push(entry.team.name)
       }
+    }
+    const relegationCount = relegationTeams.length
+    let relegationContext = ''
+    if (relegationCount === 1) {
+      relegationContext = relegationTeams[0]
+    } else if (relegationCount === 2) {
+      relegationContext = `${relegationTeams[0]} and ${relegationTeams[1]}`
+    } else if (relegationCount > 2) {
+      relegationContext = `${relegationTeams[0]}, ${relegationTeams[1]} and ${relegationCount - 2} more`
     }
 
     // Determine accent tile (top scorer if 15+ goals, otherwise title gap)
@@ -441,25 +472,25 @@ async function getByTheNumbersData(matchday: number): Promise<{
       {
         number: topScorerGoals.toString(),
         label: `${topScorerName} goals`,
-        context: 'Leading the Golden Boot race',
+        context: topScorerContext || 'Leading the race',
         accent: accentIsTopScorer,
       },
       {
         number: titleGap.toString(),
         label: 'points at the top',
-        context: `${table[0].team.name} lead`,
+        context: titleContext,
         accent: !accentIsTopScorer,
       },
       {
         number: bestDefence.goalsAgainst.toString(),
         label: 'fewest goals conceded',
-        context: `${bestDefence.team}'s league-best defence`,
+        context: defenceContext || 'Best in the league',
         accent: false,
       },
       {
-        number: relegationDanger.toString(),
+        number: relegationCount.toString(),
         label: 'clubs in drop danger',
-        context: 'Within 3 points of 18th',
+        context: relegationContext || 'Within 3 points of 18th',
         accent: false,
       },
     ]

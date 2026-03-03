@@ -168,6 +168,7 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
                 color: tile.accent ? '#3AAFA9' : '#FAF5F0',
                 lineHeight: 1,
                 marginBottom: '4px',
+                textAlign: 'center',
               }}
             >
               {tile.number}
@@ -180,6 +181,7 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
                 fontWeight: 400,
                 color: 'rgba(250,245,240,0.7)',
                 marginBottom: '8px',
+                textAlign: 'center',
               }}
             >
               {tile.label}
@@ -191,6 +193,7 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
                 fontSize: '11px',
                 fontWeight: 400,
                 color: 'rgba(250,245,240,0.5)',
+                textAlign: 'center',
               }}
             >
               {tile.context}
