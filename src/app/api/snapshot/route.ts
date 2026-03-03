@@ -474,7 +474,19 @@ async function getByTheNumbersData(matchday: number): Promise<{
     }
 
     // Parse JSON response from Claude
-    const parsedResponse: ByTheNumbersResponse = JSON.parse(responseText)
+    let parsedResponse: ByTheNumbersResponse
+    try {
+      parsedResponse = JSON.parse(responseText)
+    } catch (parseErr) {
+      console.error('[By The Numbers] JSON parse error:', (parseErr as any)?.message, 'Response was:', responseText.substring(0, 200))
+      return null  // Return null instead of crashing
+    }
+
+    // Validate response structure
+    if (!parsedResponse.tiles || !Array.isArray(parsedResponse.tiles) || parsedResponse.tiles.length === 0) {
+      console.error('[By The Numbers] Invalid response structure')
+      return null
+    }
 
     // Transform response to match component interface
     const tiles = parsedResponse.tiles.map((tile, idx) => ({

@@ -64,9 +64,18 @@ export async function GET(req: NextRequest) {
     // Process each post sequentially
     for (const post of posts) {
       try {
-        const { summary } = await generateSummary(post.title, post.content)
+        let summary: string | null = null
+        try {
+          const result = await generateSummary(post.title, post.content)
+          summary = result.summary
+        } catch (summarizeErr) {
+          console.error(`[backfill-summaries] Anthropic API error for post ${post.id}:`, summarizeErr instanceof Error ? summarizeErr.message : String(summarizeErr))
+          failed++
+          continue
+        }
 
         if (!summary) {
+          console.debug(`[backfill-summaries] No summary generated for post ${post.id}`)
           failed++
           continue
         }
@@ -77,37 +86,50 @@ export async function GET(req: NextRequest) {
           .eq('id', post.id)
 
         if (updateError) {
-          console.error(`Failed to update post ${post.id}:`, updateError)
+          console.error(`[backfill-summaries] Failed to update post ${post.id}:`, updateError)
           failed++
         } else {
           updated++
+          console.debug(`[backfill-summaries] Updated post ${post.id} with summary`)
         }
       } catch (err) {
-        console.error(`Error processing post ${post.id}:`, err)
+        console.error(`[backfill-summaries] Unexpected error processing post ${post.id}:`, err)
         failed++
       }
     }
 
-    // Count remaining posts without summaries
-    const { count: remaining } = await supabase
-      .from('posts')
-      .select('*', { count: 'exact', head: true })
-      .is('summary', null)
+    // Count remaining posts without summaries (don't let this fail the whole endpoint)
+    let remaining = 0
+    try {
+      const { count } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .is('summary', null)
+      remaining = count ?? 0
+    } catch (countErr) {
+      console.error('[backfill-summaries] Failed to count remaining posts:', countErr)
+      // Don't fail the endpoint if we can't get the count
+    }
 
     const executionTime = Date.now() - startTime
-    await logCronJob({
-      jobName: 'backfill_summaries',
-      status: 'success',
-      storiesProcessed: updated,
-      executionTimeMs: executionTime,
-    })
+    try {
+      await logCronJob({
+        jobName: 'backfill_summaries',
+        status: 'success',
+        storiesProcessed: updated,
+        executionTimeMs: executionTime,
+      })
+    } catch (logErr) {
+      console.error('[backfill-summaries] Failed to log cron job:', logErr)
+      // Don't fail the endpoint if logging fails
+    }
 
     return NextResponse.json({
       success: true,
       processed: posts.length,
       updated,
       failed,
-      remaining: remaining ?? 0,
+      remaining,
     })
   } catch (err) {
     const executionTime = Date.now() - startTime
