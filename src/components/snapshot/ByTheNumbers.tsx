@@ -186,7 +186,7 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
             style={{
               fontSize: '40px',
               fontWeight: 700,
-              fontFamily: "'Sora', sans-serif",
+              fontFamily: "'Consolas', 'Courier New', monospace",
               color: '#3AAFA9',
               lineHeight: 1,
               marginBottom: '8px',
@@ -253,7 +253,7 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
               style={{
                 fontSize: '24px',
                 fontWeight: 700,
-                fontFamily: "'Sora', sans-serif",
+                fontFamily: "'Consolas', 'Courier New', monospace",
                 color: '#FAF5F0',
                 lineHeight: 1,
                 marginBottom: '4px',

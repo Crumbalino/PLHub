@@ -61,13 +61,13 @@ export default function NextFixturesClient({
       }}
     >
       {/* Top-left bracket */}
-      <div className="absolute top-[8px] left-[8px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
+      <div className="absolute top-[16px] left-[16px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
         <svg
           width="24"
           height="24"
           viewBox="0 0 24 24"
           fill="none"
-          style={{ opacity: 0.15 }}
+          style={{ opacity: 1 }}
         >
           <path
             d="M2 14V2H14"
@@ -79,13 +79,13 @@ export default function NextFixturesClient({
       </div>
 
       {/* Bottom-right bracket */}
-      <div className="absolute bottom-[8px] right-[8px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
+      <div className="absolute bottom-[16px] right-[16px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
         <svg
           width="24"
           height="24"
           viewBox="0 0 24 24"
           fill="none"
-          style={{ opacity: 0.15 }}
+          style={{ opacity: 1 }}
         >
           <path
             d="M22 10V22H10"
@@ -134,7 +134,7 @@ export default function NextFixturesClient({
                     formatMatchTime(match.date)
                   )}
                 </span>
-                <span className="font-mono text-[10px]" style={{ color: 'var(--plh-text-40)' }}>{formatKickoff(match.date)}</span>
+                <span className="text-[10px]" style={{ color: 'var(--plh-text-40)', fontFamily: "'Consolas', 'Courier New', monospace" }}>{formatKickoff(match.date)}</span>
               </div>
 
               {/* Teams */}
@@ -145,7 +145,7 @@ export default function NextFixturesClient({
                 </div>
 
                 {isLive && match.homeScore !== null ? (
-                  <span className="font-mono text-sm font-bold tabular-nums shrink-0 mx-1" style={{ color: 'var(--plh-pink)' }}>
+                  <span className="text-sm font-bold tabular-nums shrink-0 mx-1" style={{ color: 'var(--plh-pink)', fontFamily: "'Consolas', 'Courier New', monospace" }}>
                     {match.homeScore} - {match.awayScore}
                   </span>
                 ) : (
@@ -202,7 +202,7 @@ export default function NextFixturesClient({
                   <img src={result.homeCrest} alt="" className="w-3 h-3 object-contain shrink-0" />
                   <span className="text-[11px] truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{result.home}</span>
                 </div>
-                <span className="font-mono text-xs font-bold tabular-nums shrink-0" style={{ color: 'var(--plh-text-100)' }}>
+                <span className="text-xs font-bold tabular-nums shrink-0" style={{ color: 'var(--plh-text-100)', fontFamily: "'Consolas', 'Courier New', monospace" }}>
                   {result.homeScore} - {result.awayScore}
                 </span>
                 <div className="flex items-center gap-1 flex-1 justify-end min-w-0">

@@ -47,13 +47,13 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
       }}
     >
       {/* Top-left bracket */}
-      <div className="absolute top-[8px] left-[8px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
+      <div className="absolute top-[16px] left-[16px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
         <svg
           width="24"
           height="24"
           viewBox="0 0 24 24"
           fill="none"
-          style={{ opacity: 0.15 }}
+          style={{ opacity: 1 }}
         >
           <path
             d="M2 14V2H14"
@@ -65,13 +65,13 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
       </div>
 
       {/* Bottom-right bracket */}
-      <div className="absolute bottom-[8px] right-[8px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
+      <div className="absolute bottom-[16px] right-[16px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
         <svg
           width="24"
           height="24"
           viewBox="0 0 24 24"
           fill="none"
-          style={{ opacity: 0.15 }}
+          style={{ opacity: 1 }}
         >
           <path
             d="M22 10V22H10"
@@ -119,14 +119,14 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
             e.currentTarget.style.background = 'color-mix(in srgb, var(--plh-text-100) 0%, transparent)'
           }}
         >
-          <span className="text-xs font-mono font-semibold" style={{ color: entry.position <= 3 ? 'var(--plh-teal)' : 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{entry.position}</span>
+          <span className="text-xs font-mono font-semibold" style={{ color: entry.position <= 3 ? 'var(--plh-teal)' : 'var(--plh-text-100)', fontFamily: "'Consolas', 'Courier New', monospace" }}>{entry.position}</span>
           <div className="flex items-center gap-1.5 min-w-0">
             <img src={entry.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
             <span className="text-xs truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{entry.name}</span>
           </div>
-          <span className="font-mono text-xs text-center" style={{ color: 'var(--plh-text-50)' }}>{entry.played}</span>
-          <span className="font-mono text-xs text-center" style={{ color: 'var(--plh-text-50)' }}>{entry.gd > 0 ? `+${entry.gd}` : entry.gd}</span>
-          <span className="font-mono text-xs font-bold text-center" style={{ color: 'var(--plh-text-100)' }}>{entry.pts}</span>
+          <span className="text-xs text-center" style={{ color: 'var(--plh-text-50)', fontFamily: "'Consolas', 'Courier New', monospace" }}>{entry.played}</span>
+          <span className="text-xs text-center" style={{ color: 'var(--plh-text-50)', fontFamily: "'Consolas', 'Courier New', monospace" }}>{entry.gd > 0 ? `+${entry.gd}` : entry.gd}</span>
+          <span className="text-xs font-bold text-center" style={{ color: 'var(--plh-text-100)', fontFamily: "'Consolas', 'Courier New', monospace" }}>{entry.pts}</span>
         </Link>
       ))}
 

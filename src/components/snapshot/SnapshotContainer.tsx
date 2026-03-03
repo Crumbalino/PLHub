@@ -141,7 +141,10 @@ export default function SnapshotContainer({
               className="text-sm sm:text-base font-semibold flex-shrink-0"
               style={{ color: 'var(--plh-text-75)', fontFamily: 'Sora, sans-serif' }}
             >
-              {matchdayProp}
+              Matchday{' '}
+              <span style={{ fontFamily: "'Consolas', 'Courier New', monospace" }}>
+                {matchdayProp.split(' ')[1] || matchdayProp}
+              </span>
             </div>
           </div>
 
@@ -198,7 +201,10 @@ export default function SnapshotContainer({
             className="text-sm sm:text-base font-semibold flex-shrink-0"
             style={{ color: 'var(--plh-text-75)', fontFamily: 'Sora, sans-serif' }}
           >
-            {matchday}
+            Matchday{' '}
+            <span style={{ fontFamily: "'Consolas', 'Courier New', monospace" }}>
+              {matchday.split(' ')[1] || matchday}
+            </span>
           </div>
         </div>
 
