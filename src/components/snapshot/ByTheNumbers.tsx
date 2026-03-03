@@ -61,255 +61,222 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
     fetchData()
   }, [club])
 
-  // Don't render if no data
-  if (!isLoading && !data) {
-    return null
-  }
-
-  // Loading skeleton
   if (isLoading) {
     return (
-      <div style={{ borderRadius: '8px', border: '1px solid rgba(250,245,240,0.06)', overflow: 'hidden' }}>
-        {/* Header bar */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 20px',
-            borderBottom: '1px solid rgba(250,245,240,0.06)',
-          }}
-        >
-          <h2 style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: '#3AAFA9', margin: 0 }}>
-            By The Numbers
-          </h2>
-          <span style={{ fontSize: '11px', opacity: 0.5, margin: 0 }}>Matchday —</span>
+      <div style={{ borderRadius: '12px', border: '1px solid rgba(250,245,240,0.06)', overflow: 'hidden', background: '#0D1B2A' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(250,245,240,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: 'rgba(250,245,240,0.5)', fontFamily: "'Sora', sans-serif" }}>By The Numbers</div>
+          <div style={{ fontSize: '10px', color: 'rgba(250,245,240,0.25)', fontFamily: "'Consolas', 'Courier New', monospace" }}>—</div>
         </div>
-
-        {/* Grid skeleton */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '1px',
-            backgroundColor: 'rgba(250,245,240,0.06)',
-          }}
-        >
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={`skeleton-${i}`}
-              style={{
-                padding: '20px',
-                backgroundColor: 'rgba(250,245,240,0.02)',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              }}
-            >
-              <div style={{ height: '32px', backgroundColor: 'rgba(250,245,240,0.04)', borderRadius: '4px', marginBottom: '8px' }} />
-              <div style={{ height: '13px', backgroundColor: 'rgba(250,245,240,0.04)', borderRadius: '4px', marginBottom: '8px', width: '70%' }} />
-              <div style={{ height: '11px', backgroundColor: 'rgba(250,245,240,0.04)', borderRadius: '4px', width: '90%' }} />
-            </div>
-          ))}
+        <div style={{ padding: '20px', animation: 'pulse 2s infinite' }}>
+          <div style={{ height: '60px', background: 'rgba(250,245,240,0.04)', borderRadius: '8px', marginBottom: '12px' }} />
+          <div style={{ height: '20px', background: 'rgba(250,245,240,0.04)', borderRadius: '6px', marginBottom: '8px', width: '60%' }} />
         </div>
-
-        <style>{`
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-          }
-        `}</style>
       </div>
     )
   }
 
-  // Error state - don't render
-  if (error || !data || !data.tiles || data.tiles.length === 0) {
+  if (!data || !data.tiles || data.tiles.length === 0) {
     return null
-  }
-
-  const handleTileClick = (index: number) => {
-    if (index !== heroIndex) {
-      setSwapping(true)
-      setTimeout(() => {
-        setHeroIndex(index)
-        setSwapping(false)
-      }, 300) // Match animation duration
-    }
   }
 
   const heroTile = data.tiles[heroIndex]
   const supportingTiles = data.tiles.filter((_, idx) => idx !== heroIndex)
 
+  const handleTileClick = (index: number) => {
+    if (index !== heroIndex && !swapping) {
+      setSwapping(true)
+      setTimeout(() => {
+        setHeroIndex(index)
+        setSwapping(false)
+      }, 500)
+    }
+  }
+
   return (
-    <div style={{ borderRadius: '10px', border: '1px solid rgba(250,245,240,0.06)', overflow: 'hidden', background: `radial-gradient(ellipse at top right, rgba(58,175,169,0.08), transparent 70%)` }}>
-      {/* Header bar */}
+    <div style={{ borderRadius: '12px', border: '1px solid rgba(250,245,240,0.06)', overflow: 'hidden', background: '#0D1B2A' }}>
+      <style>{`
+        @keyframes borderPulse {
+          0%, 100% {
+            border-left-color: #E84080;
+            box-shadow: -2px 0 0 transparent;
+          }
+          50% {
+            border-left-color: #E84080;
+            box-shadow: -2px 0 12px rgba(232,64,128,0.25);
+          }
+        }
+
+        @keyframes pinkFlash {
+          0% { background-color: rgba(232,64,128,0.12); }
+          100% { background-color: #112238; }
+        }
+
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+          from { transform: translateY(0); opacity: 1; }
+          to { transform: translateY(-20px); opacity: 0; }
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 480px) {
+          .hero-number { font-size: 56px !important; }
+          .support-grid { grid-template-columns: 1fr !important; }
+          .support-tile {
+            display: flex !important;
+            align-items: center !important;
+            gap: 14px !important;
+            text-align: left !important;
+            padding: 14px 18px !important;
+          }
+          .support-number { margin-bottom: 0 !important; font-size: 24px !important; }
+        }
+      `}</style>
+
+      {/* Module header */}
       <div
         style={{
+          padding: '16px 20px',
+          borderBottom: '1px solid rgba(250,245,240,0.06)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '16px 16px',
-          borderBottom: '1px solid rgba(250,245,240,0.06)',
         }}
       >
-        <h2 style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: '#3AAFA9', margin: 0, fontFamily: "'Sora', sans-serif" }}>
-          By The Numbers
-        </h2>
-        <span style={{ fontSize: '10px', opacity: 0.4, margin: 0, fontFamily: "'Sora', sans-serif" }}>Matchday {data.matchday}</span>
+        <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: 'rgba(250,245,240,0.5)', fontFamily: "'Sora', sans-serif" }}>
+          <span style={{ color: '#3AAFA9', marginRight: '8px' }}>📈</span>By The Numbers
+        </div>
+        <div style={{ fontSize: '10px', color: 'rgba(250,245,240,0.25)', letterSpacing: '1px', fontFamily: "'Consolas', 'Courier New', monospace" }}>
+          MATCHDAY {data.matchday}
+        </div>
       </div>
 
-      {/* Hero tile and supporting grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', backgroundColor: 'rgba(250,245,240,0.06)' }}>
-        {/* Hero tile (left, spans 2 rows) */}
+      {/* Hero tile — FULL WIDTH */}
+      <div
+        style={{
+          padding: '32px 28px',
+          background: '#112238',
+          border: '1px solid rgba(250,245,240,0.06)',
+          borderLeft: '3px solid #E84080',
+          borderRadius: '0',
+          margin: '10px',
+          textAlign: 'center',
+          animation: swapping ? 'slideOut 0.25s ease-out forwards' : 'slideUp 0.3s ease-out, borderPulse 3s ease-in-out infinite 0.5s',
+        }}
+      >
+        <div
+          className="hero-number"
+          style={{
+            fontSize: '72px',
+            fontWeight: 800,
+            lineHeight: 1,
+            fontFamily: "'Consolas', 'Courier New', monospace",
+            letterSpacing: '2px',
+            color: heroTile.accent ? '#E84080' : '#FAF5F0',
+            marginBottom: '10px',
+          }}
+        >
+          {heroTile.number}
+        </div>
         <div
           style={{
-            gridRow: '1 / 3',
-            position: 'relative',
-            cursor: 'pointer',
-            padding: '20px',
-            backgroundColor: 'rgba(58,175,169,0.08)',
-            borderRadius: '8px',
-            margin: '1px',
-            transition: swapping ? 'all 300ms ease-out' : 'opacity 300ms ease-out',
-            opacity: swapping ? 0 : 1,
-            transform: swapping ? 'translateY(10px)' : 'translateY(0)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            boxShadow: '0 0 0 1px rgba(232,64,128,0)',
-            animation: 'heroPulse 3s ease-in-out infinite',
+            fontSize: '15px',
+            fontWeight: 500,
+            color: 'rgba(250,245,240,0.65)',
+            marginBottom: '8px',
+            fontFamily: "'Sora', sans-serif",
           }}
-          onClick={() => {}} // Hero tile is always visible
         >
-          {/* Number */}
-          <div
-            style={{
-              fontSize: '40px',
-              fontWeight: 700,
-              fontFamily: "'Consolas', 'Courier New', monospace",
-              color: '#3AAFA9',
-              lineHeight: 1,
-              marginBottom: '8px',
-              textAlign: 'center',
-            }}
-          >
-            {heroTile.number}
-          </div>
-
-          {/* Label */}
-          <div
-            style={{
-              fontSize: '12px',
-              fontWeight: 500,
-              color: 'rgba(250,245,240,0.7)',
-              marginBottom: '6px',
-              textAlign: 'center',
-              fontFamily: "'Sora', sans-serif",
-            }}
-          >
-            {heroTile.label}
-          </div>
-
-          {/* Context */}
-          <div
-            style={{
-              fontSize: '11px',
-              fontWeight: 400,
-              color: 'rgba(250,245,240,0.5)',
-              textAlign: 'center',
-              fontFamily: "'Sora', sans-serif",
-            }}
-          >
-            {heroTile.context}
-          </div>
+          {heroTile.label}
         </div>
-
-        {/* Supporting tiles (right, 2 rows) */}
-        {supportingTiles.map((tile, idx) => (
-          <div
-            key={idx}
-            onClick={() => handleTileClick(data.tiles.indexOf(tile))}
-            style={{
-              padding: '16px',
-              cursor: 'pointer',
-              backgroundColor: 'transparent',
-              transition: swapping ? 'all 300ms ease-out' : 'opacity 150ms ease-out',
-              opacity: swapping ? 0.5 : 1,
-              transform: swapping ? 'translateY(-8px)' : 'translateY(0)',
-              borderRadius: '6px',
-              margin: '1px',
-            }}
-            onMouseEnter={(e) => {
-              if (!swapping) {
-                (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(250,245,240,0.03)'
-              }
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
-            }}
-          >
-            {/* Number */}
-            <div
-              style={{
-                fontSize: '24px',
-                fontWeight: 700,
-                fontFamily: "'Consolas', 'Courier New', monospace",
-                color: '#FAF5F0',
-                lineHeight: 1,
-                marginBottom: '4px',
-                textAlign: 'center',
-              }}
-            >
-              {tile.number}
-            </div>
-
-            {/* Label */}
-            <div
-              style={{
-                fontSize: '11px',
-                fontWeight: 400,
-                color: 'rgba(250,245,240,0.6)',
-                marginBottom: '4px',
-                textAlign: 'center',
-                fontFamily: "'Sora', sans-serif",
-              }}
-            >
-              {tile.label}
-            </div>
-
-            {/* Context */}
-            <div
-              style={{
-                fontSize: '10px',
-                fontWeight: 400,
-                color: 'rgba(250,245,240,0.4)',
-                textAlign: 'center',
-                fontFamily: "'Sora', sans-serif",
-              }}
-            >
-              {tile.context}
-            </div>
-          </div>
-        ))}
+        <div
+          style={{
+            fontSize: '12px',
+            color: 'rgba(250,245,240,0.35)',
+            lineHeight: 1.5,
+            maxWidth: '400px',
+            margin: '0 auto',
+            fontFamily: "'Sora', sans-serif",
+          }}
+        >
+          {heroTile.context}
+        </div>
       </div>
 
-      {/* Animations */}
-      <style>{`
-        @keyframes heroPulse {
-          0%, 100% {
-            box-shadow: 0 0 0 1px rgba(232,64,128,0.15);
-          }
-          50% {
-            box-shadow: 0 0 0 2px rgba(232,64,128,0.3);
-          }
-        }
-
-        @media (max-width: 640px) {
-          .by-the-numbers-container {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
+      {/* Supporting tiles — 3 COLUMNS */}
+      <div
+        className="support-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: '10px',
+          padding: '10px',
+        }}
+      >
+        {supportingTiles.map((tile, idx) => {
+          const actualIndex = data.tiles.indexOf(tile)
+          return (
+            <div
+              key={actualIndex}
+              className="support-tile"
+              onClick={() => handleTileClick(actualIndex)}
+              style={{
+                background: '#112238',
+                border: '1px solid rgba(250,245,240,0.06)',
+                borderRadius: '10px',
+                padding: '20px 14px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'border-color 0.3s, background 0.3s, transform 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                if (!swapping) {
+                  (e.currentTarget as HTMLElement).style.background = '#162D45'
+                  ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(250,245,240,0.12)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = '#112238'
+                ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(250,245,240,0.06)'
+              }}
+            >
+              <div
+                className="support-number"
+                style={{
+                  fontSize: '28px',
+                  fontWeight: 800,
+                  lineHeight: 1,
+                  fontFamily: "'Consolas', 'Courier New', monospace",
+                  letterSpacing: '1px',
+                  color: '#FAF5F0',
+                  marginBottom: '6px',
+                }}
+              >
+                {tile.number}
+              </div>
+              <div
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 500,
+                  color: 'rgba(250,245,240,0.45)',
+                  lineHeight: 1.3,
+                  fontFamily: "'Sora', sans-serif",
+                }}
+              >
+                {tile.label}
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

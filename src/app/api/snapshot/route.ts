@@ -384,16 +384,21 @@ async function getByTheNumbersData(matchday: number): Promise<{
 
     if (!apiKey || !anthropicKey) return null
 
-    // Check cache first (3-hour TTL)
+    // Check cache first (3-hour TTL) — failures don't block fresh data fetch
     const cacheKey = `by_the_numbers:homepage:${matchday}`
-    const { data: cachedTile } = await supabase
-      .from('by_the_numbers_tiles')
-      .select('data, expires_at')
-      .eq('cache_key', cacheKey)
-      .single()
+    try {
+      const { data: cachedTile } = await supabase
+        .from('by_the_numbers_tiles')
+        .select('data, expires_at')
+        .eq('cache_key', cacheKey)
+        .single()
 
-    if (cachedTile && cachedTile.expires_at && new Date(cachedTile.expires_at) > new Date()) {
-      return cachedTile.data as any
+      if (cachedTile && cachedTile.expires_at && new Date(cachedTile.expires_at) > new Date()) {
+        return cachedTile.data as any
+      }
+    } catch (cacheErr) {
+      // Cache miss or table doesn't exist — proceed to fetch fresh data
+      console.debug('[By The Numbers] Cache miss or error, proceeding with fresh fetch:', (cacheErr as any)?.message)
     }
 
     // Fetch raw stats from football-data.org API
@@ -480,15 +485,19 @@ async function getByTheNumbersData(matchday: number): Promise<{
 
     const result = { tiles, matchday }
 
-    // Cache result in Supabase with 3-hour TTL
-    const expiresAt = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
-
-    await supabase.from('by_the_numbers_tiles').upsert({
-      cache_key: cacheKey,
-      data: result,
-      created_at: new Date().toISOString(),
-      expires_at: expiresAt,
-    })
+    // Try to cache result in Supabase with 3-hour TTL (failure doesn't block result)
+    try {
+      const expiresAt = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
+      await supabase.from('by_the_numbers_tiles').upsert({
+        cache_key: cacheKey,
+        data: result,
+        created_at: new Date().toISOString(),
+        expires_at: expiresAt,
+      })
+    } catch (cacheWriteErr) {
+      // Cache write failed — still return the fresh data
+      console.debug('[By The Numbers] Cache write failed, returning fresh data:', (cacheWriteErr as any)?.message)
+    }
 
     return result
   } catch (err) {
