@@ -57,26 +57,38 @@ export const ALWAYS_HIDE = [
 ]
 
 /**
- * Strict PL-only content filter.
- * - YouTube always passes (curated from PL-specific channels)
+ * PL-only content filter.
+ * - Filters out Reddit and YouTube sources
  * - ALWAYS_HIDE keywords block even if a PL club is mentioned
- * - Posts must mention a PL club to pass (strict PL-only mode)
+ * - Editorial RSS sources (BBC, Sky, Guardian, etc.) are allowed unless blocked
+ * - Other sources must mention a PL club or "premier league"
  */
 export function filterPLContent(posts: Post[]): Post[] {
+  // Editorial RSS sources that are trusted
+  const editorialSources = ['bbc', 'sky', 'guardian', 'goal', '90min', 'football365', 'independent', 'espn', 'fourfourtwo', 'talkSPORT', 'talksport']
+
   return posts.filter(post => {
-    // Always show YouTube content (it's curated from PL-specific channels)
-    if (post.source === 'youtube') return true
+    // Exclude Reddit and YouTube sources entirely
+    if (post.source === 'reddit' || post.source === 'youtube') return false
 
     const text = ((post.title || '') + ' ' + (post.summary || '') + ' ' + (post.content || '')).toLowerCase()
+    const sourceLower = (post.source || '').toLowerCase()
 
-    // Block anything matching ALWAYS_HIDE — even if a PL club is mentioned
+    // Block anything matching ALWAYS_HIDE — even if from trusted sources
     if (ALWAYS_HIDE.some(kw => text.includes(kw))) return false
 
-    // If a PL club is mentioned, keep it (we've already filtered the bad stuff above)
+    // Trust editorial sources — if it's from BBC, Sky, Guardian, etc., allow it
+    if (editorialSources.some(src => sourceLower.includes(src))) {
+      return true
+    }
+
+    // For other sources, require a PL club mention or "premier league"
     const hasPLClub = PL_CLUBS.some(club => text.includes(club))
     if (hasPLClub) return true
 
-    // No PL club mentioned — reject by default (strict PL-only mode)
+    if (text.includes('premier league')) return true
+
+    // No PL indicator and not from a trusted source — reject
     return false
   })
 }

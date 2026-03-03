@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { decodeHtmlEntities } from '@/lib/formatting'
+import { logCronJob } from '@/lib/cron-logging'
 
 export const maxDuration = 10
 
@@ -32,6 +33,7 @@ async function fetchYouTubeVideos(channelId: string, apiKey: string) {
 }
 
 export async function GET(req: NextRequest) {
+  const startTime = Date.now()
   const authHeader = req.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
   const youtubeApiKey = process.env.YOUTUBE_API_KEY
@@ -96,6 +98,14 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    const executionTime = Date.now() - startTime
+    await logCronJob({
+      jobName: 'youtube_fetch',
+      status: 'success',
+      storiesProcessed: inserted,
+      executionTimeMs: executionTime,
+    })
+
     return NextResponse.json({
       success: true,
       channel: channel.name,
@@ -105,7 +115,17 @@ export async function GET(req: NextRequest) {
       errors,
     })
   } catch (err) {
+    const executionTime = Date.now() - startTime
+    const errorMessage = err instanceof Error ? err.message : String(err)
     console.error('YouTube cron error:', err)
+
+    await logCronJob({
+      jobName: 'youtube_fetch',
+      status: 'error',
+      errorMessage,
+      executionTimeMs: executionTime,
+    })
+
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

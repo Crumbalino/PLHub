@@ -5,6 +5,7 @@ import HeroGrid from './HeroGrid'
 import BottomCards from './BottomCards'
 import ByTheNumbers from './ByTheNumbers'
 import QuoteStrip from './QuoteStrip'
+import StaleDataBanner from './StaleDataBanner'
 
 interface SnapshotStory {
   id: string
@@ -207,6 +208,9 @@ export default function SnapshotContainer({
             </span>
           </div>
         </div>
+
+        {/* Stale Data Banner */}
+        <StaleDataBanner />
 
         {/* Magazine-style 4-row layout */}
         <div className="space-y-2">

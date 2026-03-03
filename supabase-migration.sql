@@ -72,3 +72,35 @@ CREATE POLICY IF NOT EXISTS "Service role all posts" ON posts
 CREATE POLICY IF NOT EXISTS "Service role all clubs" ON clubs
   FOR ALL
   USING (auth.role() = 'service_role');
+
+-- cron_logs table (logs for monitoring cron job health)
+CREATE TABLE IF NOT EXISTS cron_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  job_name VARCHAR NOT NULL,
+  status VARCHAR NOT NULL CHECK (status IN ('success', 'error')),
+  stories_processed INTEGER,
+  error_message TEXT,
+  execution_time_ms INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS cron_logs_job_name_idx ON cron_logs(job_name);
+CREATE INDEX IF NOT EXISTS cron_logs_created_at_idx ON cron_logs(created_at DESC);
+
+-- Auto-delete logs older than 7 days
+-- Note: This requires pg_cron extension. Run this separately if needed:
+-- SELECT cron.schedule('delete-old-cron-logs', '0 0 * * *',
+--   'DELETE FROM cron_logs WHERE created_at < NOW() - INTERVAL ''7 days''');
+
+-- Enable RLS and allow service role to write logs
+ALTER TABLE cron_logs ENABLE ROW LEVEL SECURITY;
+
+-- Service role can read and write cron logs
+CREATE POLICY IF NOT EXISTS "Service role all cron_logs" ON cron_logs
+  FOR ALL
+  USING (auth.role() = 'service_role');
+
+-- Public can read cron logs (for monitoring dashboard)
+CREATE POLICY IF NOT EXISTS "Public read cron_logs" ON cron_logs
+  FOR SELECT
+  USING (true);

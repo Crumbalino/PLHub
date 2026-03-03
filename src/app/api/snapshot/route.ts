@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 import { transformPost } from '@/lib/transform'
 import { detectAllClubs, toClubBadges } from '@/lib/clubs'
+import { filterPLContent } from '@/lib/content-filter'
 import { BY_THE_NUMBERS_SYSTEM_PROMPT, BY_THE_NUMBERS_API_CONFIG, type ByTheNumbersResponse } from '@/lib/prompts/by-the-numbers'
 import type { Post, FeedPost } from '@/lib/types'
 
@@ -556,11 +557,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
       )
     }
 
-    // Transform posts
+    // Filter and transform posts
     const posts = (rawPosts as unknown as Post[]) || []
+
+    // Filter out Reddit and YouTube, keep only editorial RSS sources
+    const filteredPosts = filterPLContent(posts)
+
     const transformed: FeedPost[] = []
 
-    for (const post of posts) {
+    for (const post of filteredPosts) {
       try {
         const feedPost = await transformPost(post)
         transformed.push(feedPost)

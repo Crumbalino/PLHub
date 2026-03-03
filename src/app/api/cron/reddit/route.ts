@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fetchAllRedditPosts } from '@/lib/reddit'
 import { generateSummary, delay } from '@/lib/claude'
 import { createServerClient } from '@/lib/supabase'
+import { logCronJob } from '@/lib/cron-logging'
 
 export const maxDuration = 10
 
 export async function GET(req: NextRequest) {
+  const startTime = Date.now()
   const authHeader = req.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
 
@@ -89,6 +91,14 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    const executionTime = Date.now() - startTime
+    await logCronJob({
+      jobName: 'reddit_fetch',
+      status: 'success',
+      storiesProcessed: inserted,
+      executionTimeMs: executionTime,
+    })
+
     return NextResponse.json({
       success: true,
       total: posts.length,
@@ -97,7 +107,17 @@ export async function GET(req: NextRequest) {
       errors,
     })
   } catch (err) {
+    const executionTime = Date.now() - startTime
+    const errorMessage = err instanceof Error ? err.message : String(err)
     console.error('Reddit cron error:', err)
+
+    await logCronJob({
+      jobName: 'reddit_fetch',
+      status: 'error',
+      errorMessage,
+      executionTimeMs: executionTime,
+    })
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

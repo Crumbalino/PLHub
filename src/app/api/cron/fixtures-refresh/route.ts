@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
+import { logCronJob } from '@/lib/cron-logging'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,6 +41,7 @@ async function getCurrentMatchday(): Promise<number | null> {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const startTime = Date.now()
   // Validate cron secret
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
@@ -53,9 +55,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const matchday = await getCurrentMatchday()
 
     if (matchday === null) {
+      const executionTime = Date.now() - startTime
+      const errorMessage = 'Failed to fetch current matchday'
+      console.error('[fixtures-refresh]', errorMessage)
+
+      await logCronJob({
+        jobName: 'fixtures_refresh',
+        status: 'error',
+        errorMessage,
+        executionTimeMs: executionTime,
+      })
+
       return NextResponse.json(
         {
-          error: 'Failed to fetch current matchday',
+          error: errorMessage,
           matchday: null,
         },
         { status: 500 }
@@ -74,6 +87,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       source: 'football-data-org',
     })
 
+    const executionTime = Date.now() - startTime
+    await logCronJob({
+      jobName: 'fixtures_refresh',
+      status: 'success',
+      executionTimeMs: executionTime,
+    })
+
     return NextResponse.json(
       {
         success: true,
@@ -83,10 +103,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       { status: 200 }
     )
   } catch (err) {
+    const executionTime = Date.now() - startTime
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
     console.error('[fixtures-refresh] Error:', err)
+
+    await logCronJob({
+      jobName: 'fixtures_refresh',
+      status: 'error',
+      errorMessage,
+      executionTimeMs: executionTime,
+    })
+
     return NextResponse.json(
       {
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: errorMessage,
         matchday: null,
       },
       { status: 500 }
