@@ -151,7 +151,7 @@ function Card({ label, color, story, headline, imageUrl }: CardProps) {
           {story?.plhub_index !== null && story?.plhub_index !== undefined && (
             <span
               className="text-[9px] font-semibold"
-              style={{ color: '#3AAFA9' }}
+              style={{ color: '#3AAFA9', fontFamily: "'Consolas', 'Courier New', monospace" }}
             >
               {story.plhub_index}
             </span>

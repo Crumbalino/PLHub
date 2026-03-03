@@ -305,6 +305,7 @@ function HeroTile({ story, isHero = false, isMobile = false, onClick }: HeroTile
               style={{
                 color: '#3AAFA9',
                 fontWeight: 600,
+                fontFamily: "'Consolas', 'Courier New', monospace",
               }}
             >
               {story.plhub_index}
@@ -407,6 +408,7 @@ function SidekickTile({ story, isMobile = false, onClick }: SidekickTileProps) {
               style={{
                 color: '#3AAFA9',
                 fontWeight: 600,
+                fontFamily: "'Consolas', 'Courier New', monospace",
               }}
             >
               {story.plhub_index}
