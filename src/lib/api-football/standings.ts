@@ -8,7 +8,7 @@
 import { fetchFromApiFootball } from './client'
 import { getCachedOrFetch } from './cache'
 
-const LEAGUE_ID = 39
+const LEAGUE_ID = 2021  // Premier League (not 39, which is Championship)
 const SEASON = 2025
 const CACHE_TTL = 21600 // 6 hours
 

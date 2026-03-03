@@ -75,7 +75,7 @@ export {
  */
 export const API_FOOTBALL_CONFIG = {
   BASE_URL: 'https://v3.football.api-sports.io',
-  LEAGUE_ID: 39, // Premier League
+  LEAGUE_ID: 2021, // Premier League (39 is Championship)
   SEASON: 2025,
   MAX_REQUESTS_PER_DAY: 100,
 } as const

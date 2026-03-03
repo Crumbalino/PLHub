@@ -589,6 +589,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
 
     console.log('[Snapshot API] After transformation:', {
       count: transformed.length,
+      postsWithClubs: transformed.filter(p => p.clubs.length > 0).length,
+      samples: transformed.slice(0, 2).map(p => ({
+        title: p.title.substring(0, 60),
+        clubsDetected: p.clubs.length,
+        clubs: p.clubs.map(c => c.slug),
+      })),
     })
 
     // Filter by club if specified
@@ -600,8 +606,13 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
     const tracker = new StoryTracker()
 
     // 1. Get Caught Up: top 5 by PLHub Index (must have at least one PL club tag)
-    const getCaughtUp = filtered
-      .filter((p) => p.clubs.length > 0) // Must have at least one PL club tag
+    const postsWithClubs = filtered.filter((p) => p.clubs.length > 0)
+    console.log('[Snapshot API] Posts with clubs for module selection:', {
+      count: postsWithClubs.length,
+      total: filtered.length,
+    })
+
+    const getCaughtUp = postsWithClubs
       .sort((a, b) => (b.indexScore ?? 0) - (a.indexScore ?? 0))
       .slice(0, 5)
       .map(toSnapshotStory)
