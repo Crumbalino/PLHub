@@ -50,8 +50,8 @@ export default function Navbar() {
             aria-hidden="true"
             style={{
               position: 'relative',
-              top: '-8px',
-              marginRight: '8px',
+              top: '-14px',
+              marginRight: '20px',
             }}
           >
             <path
@@ -72,7 +72,7 @@ export default function Navbar() {
             </span>
             <span
               className="font-light leading-none tracking-[3px]"
-              style={{ color: 'var(--plh-text-100)', fontSize: '32px' }}
+              style={{ color: 'var(--plh-text-100)', fontSize: '32px', marginRight: '-5px' }}
             >
               HUB
             </span>
@@ -87,8 +87,8 @@ export default function Navbar() {
             aria-hidden="true"
             style={{
               position: 'relative',
-              top: '8px',
-              marginLeft: '8px',
+              top: '14px',
+              marginLeft: '20px',
             }}
           >
             <path
