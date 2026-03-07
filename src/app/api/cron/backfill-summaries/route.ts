@@ -29,13 +29,13 @@ export async function GET(req: NextRequest) {
     const supabase = createServerClient()
 
     // Fetch only 3 posts per run (strict limit for Hobby plan)
-    // Order by created_at DESC so newest posts get summaries first
+    // Order by fetched_at DESC so newest posts get summaries first
     const { data: posts, error: fetchError } = await supabase
       .from('posts')
-      .select('id, title, content, created_at')
+      .select('id, title, content, fetched_at')
       .is('summary', null)
       .gte('published_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false })
+      .order('fetched_at', { ascending: false })
       .limit(3)
 
     if (fetchError) {
@@ -66,9 +66,13 @@ export async function GET(req: NextRequest) {
     for (const post of posts) {
       try {
         let summary: string | null = null
+        let hook: string | null = null
+        let significance: number | null = null
         try {
           const result = await generateSummary(post.title, post.content)
           summary = result.summary
+          hook = result.hook
+          significance = result.significance
         } catch (summarizeErr) {
           console.error(`[backfill-summaries] Anthropic API error for post ${post.id}:`, summarizeErr instanceof Error ? summarizeErr.message : String(summarizeErr))
           failed++
@@ -80,9 +84,18 @@ export async function GET(req: NextRequest) {
           continue
         }
 
+        // Build update object with all available fields
+        const updateData: Record<string, string | number | null> = { summary }
+        if (hook) {
+          updateData.summary_hook = hook
+        }
+        if (significance !== null && significance !== undefined) {
+          updateData.score_significance = significance
+        }
+
         const { error: updateError } = await supabase
           .from('posts')
-          .update({ summary })
+          .update(updateData)
           .eq('id', post.id)
 
         if (updateError) {

@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
       }
 
       // Generate AI summary for new posts
-      const summary = await generateSummary(post.title, post.content)
+      const { summary, hook, significance } = await generateSummary(post.title, post.content)
       await delay(200) // Rate limiting between Claude calls
 
       const { error } = await supabase.from('posts').insert({
@@ -74,6 +74,8 @@ export async function GET(req: NextRequest) {
         url: post.url,
         content: post.content,
         summary,
+        summary_hook: hook,
+        score_significance: significance,
         source: post.source,
         club_slug: post.club_slug,
         author: post.author,
