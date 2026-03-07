@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { getSourceColor } from '@/lib/theme'
 
 interface SnapshotStory {
@@ -19,7 +19,7 @@ interface HeroGridProps {
   isLoading?: boolean
 }
 
-function ScoreBadge({ score }: { score: number }) {
+function ScoreBadge({ score, hovered }: { score: number; hovered?: boolean }) {
   return (
     <span style={{
       position: 'absolute',
@@ -34,6 +34,8 @@ function ScoreBadge({ score }: { score: number }) {
       fontFamily: "'Consolas','Courier New',monospace",
       lineHeight: 1,
       zIndex: 10,
+      filter: hovered ? 'drop-shadow(0 0 8px rgba(212, 168, 67, 0.7))' : 'none',
+      transition: 'filter 300ms ease',
     }}>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
         <path d="M2 14V2H14" stroke="var(--plh-gold)" strokeWidth="3.5" strokeLinecap="round"/>
@@ -104,6 +106,7 @@ function ClubTag({ slug }: { slug?: string }) {
 
 function HeroTile({ story }: { story: SnapshotStory }) {
   const sourceColor = getSourceColor(story.source.name)
+  const [hovered, setHovered] = useState(false)
   return (
     <a
       href={story.url}
@@ -115,14 +118,38 @@ function HeroTile({ story }: { story: SnapshotStory }) {
       <div
         className="relative rounded-lg overflow-hidden cursor-pointer h-full"
         style={{
-          background: story.image_url
-            ? `linear-gradient(to top, rgba(10,20,32,0.97) 0%, rgba(10,20,32,0.55) 45%, transparent 100%), url(${story.image_url}) center/cover no-repeat`
-            : 'linear-gradient(135deg, #1c2c3a 0%, #0f1820 100%)',
+          background: 'linear-gradient(135deg, #1c2c3a 0%, #0f1820 100%)',
           minHeight: '360px',
           border: '1px solid var(--plh-border)',
         }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
-        {story.plhub_index != null && <ScoreBadge score={story.plhub_index} />}
+        {/* Background image */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: story.image_url ? `url(${story.image_url})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            overflow: 'hidden',
+            borderRadius: 'inherit',
+            transform: hovered ? 'scale(1.04)' : 'scale(1)',
+            transition: 'transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          }}
+        />
+
+        {/* Gradient overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to top, rgba(10,20,32,0.97) 0%, rgba(10,20,32,0.55) 45%, transparent 100%)',
+          }}
+        />
+
+        {story.plhub_index != null && <ScoreBadge score={story.plhub_index} hovered={hovered} />}
         <div
           className="absolute bottom-0 left-0 right-0"
           style={{ padding: '20px' }}
@@ -160,6 +187,7 @@ function HeroTile({ story }: { story: SnapshotStory }) {
 
 function SidekickTile({ story }: { story: SnapshotStory }) {
   const sourceColor = getSourceColor(story.source.name)
+  const [hovered, setHovered] = useState(false)
   return (
     <a
       href={story.url}
@@ -171,14 +199,38 @@ function SidekickTile({ story }: { story: SnapshotStory }) {
       <div
         className="relative rounded-lg overflow-hidden cursor-pointer h-full"
         style={{
-          background: story.image_url
-            ? `linear-gradient(to top, rgba(10,20,32,0.97) 0%, rgba(10,20,32,0.45) 50%, transparent 100%), url(${story.image_url}) center/cover no-repeat`
-            : 'linear-gradient(135deg, #1c2c3a 0%, #0f1820 100%)',
+          background: 'linear-gradient(135deg, #1c2c3a 0%, #0f1820 100%)',
           minHeight: '160px',
           border: '1px solid var(--plh-border)',
         }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
-        {story.plhub_index != null && <ScoreBadge score={story.plhub_index} />}
+        {/* Background image */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: story.image_url ? `url(${story.image_url})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            overflow: 'hidden',
+            borderRadius: 'inherit',
+            transform: hovered ? 'scale(1.04)' : 'scale(1)',
+            transition: 'transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          }}
+        />
+
+        {/* Gradient overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to top, rgba(10,20,32,0.97) 0%, rgba(10,20,32,0.45) 50%, transparent 100%)',
+          }}
+        />
+
+        {story.plhub_index != null && <ScoreBadge score={story.plhub_index} hovered={hovered} />}
         <div
           className="absolute bottom-0 left-0 right-0"
           style={{ padding: '14px' }}

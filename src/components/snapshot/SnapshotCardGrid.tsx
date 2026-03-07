@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { getSourceColor } from '@/lib/theme'
 
 interface SnapshotStory {
@@ -42,13 +43,12 @@ function GridCard({
   sourceColor,
   plhubIndex,
 }: CardGridData & { sourceColor: string }) {
+  const [hovered, setHovered] = useState(false)
   const displayHeadline = story?.headline || headline
-  const backgroundImage = (story?.image_url || imageUrl)
-    ? `url(${story?.image_url || imageUrl})`
-    : 'none'
+  const imageUrl_final = story?.image_url || imageUrl
   const fallbackColor =
     label === 'THE REST' ? FALLBACK_GRADIENTS.pink : FALLBACK_GRADIENTS.teal
-  const backgroundColor = (story?.image_url || imageUrl) ? 'transparent' : fallbackColor
+  const backgroundColor = imageUrl_final ? 'transparent' : fallbackColor
   const metricIndex = story?.plhub_index ?? plhubIndex
 
   const handleClick = () => {
@@ -62,21 +62,28 @@ function GridCard({
 
   return (
     <div
-      className="relative overflow-hidden cursor-pointer transition-transform duration-300 rounded-lg hover:scale-y-[1.003]"
+      className="relative overflow-hidden cursor-pointer rounded-lg"
       onClick={handleClick}
       style={{
         aspectRatio: '4/3',
         background: backgroundColor,
         borderLeft: `3px solid ${sourceColor}`,
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {/* Background image */}
       <div
-        className="absolute inset-0 transition-transform duration-300 hover:scale-x-[1.03]"
         style={{
-          backgroundImage,
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: imageUrl_final ? `url(${imageUrl_final})` : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          overflow: 'hidden',
+          borderRadius: 'inherit',
+          transform: hovered ? 'scale(1.04)' : 'scale(1)',
+          transition: 'transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         }}
       />
 
@@ -92,7 +99,7 @@ function GridCard({
       <div className="relative h-full flex flex-col p-3 group">
         {/* Metric overlay in top-right corner */}
         {metricIndex !== null && metricIndex !== undefined && (
-          <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px', filter: hovered ? 'drop-shadow(0 0 8px rgba(212, 168, 67, 0.7))' : 'none', transition: 'filter 300ms ease' }}>
             <svg
               width="14"
               height="14"

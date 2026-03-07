@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
+import React from 'react'
 import PageLayout from '@/components/PageLayout'
 
 export const metadata: Metadata = {
   title: 'How PLHub Works — Sources, Index, AI Summaries',
   description:
-    'How PLHub aggregates Premier League news, scores it by what matters, '
-    + 'and surfaces it without the noise.',
+    'How PLHub aggregates Premier League news, scores it by what matters, ' +
+    'and surfaces it without the noise.',
 }
 
 export default function HowItWorksPage() {
@@ -19,7 +20,7 @@ export default function HowItWorksPage() {
           We aggregate from a curated list of editorial sources: BBC Sport,
           The Guardian, Sky Sports, talkSPORT, Goal.com, and more. No
           clickbait sites. No accounts that exist to manufacture outrage.
-          If it's not worth your time, it's not in the feed.
+          If it&apos;s not worth your time, it&apos;s not in the feed.
         </P>
       </Section>
 
@@ -33,7 +34,7 @@ export default function HowItWorksPage() {
         <P>
           The top score wins the top slot. A match report from a
           correspondent who was actually there scores higher than a
-          tabloid rumour with a question mark in the headline. That's
+          tabloid rumour with a question mark in the headline. That&apos;s
           the idea.
         </P>
       </Section>
@@ -47,13 +48,12 @@ export default function HowItWorksPage() {
         </P>
         <P>
           Sentence one: what happened. Sentence two: why it matters.
-          Sentence three: the thing your mate would say about it at the
-          pub.
+          Sentence three: the thing your mate would say about it at the pub.
         </P>
         <P>
           The AI writes the words. The judgement about what matters,
-          what the voice sounds like, and what we will and won't say
-          — that's human. The original article is always one tap away.
+          what the voice sounds like, and what we will and won&apos;t say
+          — that&apos;s human. The original article is always one tap away.
         </P>
       </Section>
 
@@ -76,15 +76,36 @@ export default function HowItWorksPage() {
   )
 }
 
-// ── Local components ─────────────────────────────────────
+// ── Local components ──────────────────────────────────────────────────
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px',
-      paddingBottom: '24px', borderBottom: '1px solid var(--plh-border)' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: 700,
-        color: 'var(--plh-teal)', margin: 0,
-        fontFamily: "'Sora', sans-serif" }}>{title}</h2>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        paddingBottom: '24px',
+        borderBottom: '1px solid var(--plh-border)',
+      }}
+    >
+      <h2
+        style={{
+          fontSize: '20px',
+          fontWeight: 700,
+          color: 'var(--plh-teal)',
+          margin: 0,
+          fontFamily: "'Sora', sans-serif",
+        }}
+      >
+        {title}
+      </h2>
       {children}
     </div>
   )
@@ -92,9 +113,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function P({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontSize: '17px', lineHeight: 1.75, margin: 0,
-      color: 'rgba(250,245,240,0.8)', fontWeight: 300,
-      fontFamily: "'Sora', sans-serif" }}>
+    <p
+      style={{
+        fontSize: '17px',
+        lineHeight: 1.75,
+        margin: 0,
+        color: 'rgba(250,245,240,0.8)',
+        fontWeight: 300,
+        fontFamily: "'Sora', sans-serif",
+      }}
+    >
       {children}
     </p>
   )
@@ -104,20 +132,38 @@ function IndexFactors() {
   const factors = [
     { label: 'Credibility', desc: "Who's reporting it and how reliable they are" },
     { label: 'Recency', desc: 'How fresh the story is' },
-    { label: 'Significance', desc: "Does it actually matter to the PL picture" },
-    { label: 'Corroboration', desc: "Is anyone else reporting the same thing" },
+    { label: 'Significance', desc: 'Does it actually matter to the PL picture' },
+    { label: 'Corroboration', desc: 'Is anyone else reporting the same thing' },
   ]
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {factors.map((f) => (
-        <div key={f.label} style={{ display: 'flex', gap: '12px',
-          alignItems: 'flex-start' }}>
-          <span style={{ color: 'var(--plh-pink)', fontWeight: 700,
-            fontSize: '16px', flexShrink: 0, paddingTop: '2px' }}>—</span>
-          <span style={{ fontSize: '16px', color: 'rgba(250,245,240,0.8)',
-            fontFamily: "'Sora', sans-serif", lineHeight: 1.6 }}>
-            <strong style={{ color: 'var(--plh-text-100)',
-              fontWeight: 600 }}>{f.label}</strong>
+        <div
+          key={f.label}
+          style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}
+        >
+          <span
+            style={{
+              color: 'var(--plh-pink)',
+              fontWeight: 700,
+              fontSize: '16px',
+              flexShrink: 0,
+              paddingTop: '2px',
+            }}
+          >
+            —
+          </span>
+          <span
+            style={{
+              fontSize: '16px',
+              color: 'rgba(250,245,240,0.8)',
+              fontFamily: "'Sora', sans-serif",
+              lineHeight: 1.6,
+            }}
+          >
+            <strong style={{ color: 'var(--plh-text-100)', fontWeight: 600 }}>
+              {f.label}
+            </strong>
             {` — ${f.desc}`}
           </span>
         </div>
@@ -132,18 +178,34 @@ function DoNots() {
     "No paywalls. The feed is free. It's staying free.",
     'No popups. No cookie consent walls that take forty seconds to dismiss.',
     'No reaction content. No one screaming at a camera.',
-    'No manufactured outrage. No making a living out of your misery.',
+    "No manufactured outrage. No making a living out of your misery.",
     'No opinion columns dressed up as news.',
   ]
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {items.map((item, i) => (
-        <div key={i} style={{ display: 'flex', gap: '12px',
-          alignItems: 'flex-start' }}>
-          <span style={{ color: 'var(--plh-teal)', fontWeight: 700,
-            fontSize: '16px', flexShrink: 0 }}>✓</span>
-          <span style={{ fontSize: '16px', color: 'rgba(250,245,240,0.8)',
-            fontFamily: "'Sora', sans-serif", lineHeight: 1.6 }}>
+        <div
+          key={i}
+          style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}
+        >
+          <span
+            style={{
+              color: 'var(--plh-teal)',
+              fontWeight: 700,
+              fontSize: '16px',
+              flexShrink: 0,
+            }}
+          >
+            ✓
+          </span>
+          <span
+            style={{
+              fontSize: '16px',
+              color: 'rgba(250,245,240,0.8)',
+              fontFamily: "'Sora', sans-serif",
+              lineHeight: 1.6,
+            }}
+          >
             {item}
           </span>
         </div>
@@ -154,10 +216,19 @@ function DoNots() {
 
 function BackLink() {
   return (
-    <a href="/" style={{ display: 'inline-flex', alignItems: 'center',
-      gap: '6px', fontSize: '14px', color: 'var(--plh-teal)',
-      textDecoration: 'none', fontFamily: "'Sora', sans-serif",
-      marginTop: '8px' }}>
+    <a
+      href="/"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        fontSize: '14px',
+        color: 'var(--plh-teal)',
+        textDecoration: 'none',
+        fontFamily: "'Sora', sans-serif",
+        marginTop: '8px',
+      }}
+    >
       ← Back to PLHub
     </a>
   )

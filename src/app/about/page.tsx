@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
+import React from 'react'
 import PageLayout from '@/components/PageLayout'
 
 export const metadata: Metadata = {
   title: 'About PLHub — The Premier League Without the Noise',
   description:
-    'PLHub is a Premier League news aggregator built by a Spurs fan. '
-    + 'No popups, no paywalls, no gambling ads, no nonsense.',
+    'PLHub is a Premier League news aggregator built by a Spurs fan. ' +
+    'No popups, no paywalls, no gambling ads, no nonsense.',
 }
 
 export default function AboutPage() {
@@ -14,12 +15,11 @@ export default function AboutPage() {
       headline="The Premier League. Without the noise."
       subheading="PLHub is a Premier League news aggregator. No popups. No paywalls. No gambling ads. No one screaming into a camera. Just the football, right now."
     >
-
       <Section>
         <P>
-          I'm Gautam. I'm a Spurs fan. Last season we won the Europa League
+          I&apos;m Gautam. I&apos;m a Spurs fan. Last season we won the Europa League
           and finished seventeenth. In the same season. With, I want to be
-          clear, the worst squad I'd seen in decades.
+          clear, the worst squad I&apos;d seen in decades.
         </P>
         <P strong>Only us.</P>
       </Section>
@@ -48,8 +48,8 @@ export default function AboutPage() {
           account needed. No subscription required. No nonsense.
         </P>
         <P>
-          The voice you're reading was designed by me. The AI follows rules
-          I set. The judgement about what matters is mine. I just don't have
+          The voice you&apos;re reading was designed by me. The AI follows rules
+          I set. The judgement about what matters is mine. I just don&apos;t have
           to type every word from scratch, which is good because there is,
           as mentioned, one of me.
         </P>
@@ -63,7 +63,7 @@ export default function AboutPage() {
         </P>
         <P>
           Unearned confidence. Bar comes up. We fall through. Hair
-          dishevelled. Drink up Trig, we're going.
+          dishevelled. Drink up Trig, we&apos;re going.
         </P>
         <P strong>Welcome to PLHub.</P>
       </Section>
@@ -73,7 +73,7 @@ export default function AboutPage() {
   )
 }
 
-// ── Local components ─────────────────────────────────────
+// ── Local components ──────────────────────────────────────────────────
 
 function Section({ children }: { children: React.ReactNode }) {
   return (
@@ -91,7 +91,13 @@ function Section({ children }: { children: React.ReactNode }) {
   )
 }
 
-function P({ children, strong }: { children: React.ReactNode; strong?: boolean }) {
+function P({
+  children,
+  strong,
+}: {
+  children: React.ReactNode
+  strong?: boolean
+}) {
   return (
     <p
       style={{
