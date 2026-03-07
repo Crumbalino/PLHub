@@ -1,6 +1,47 @@
 'use client'
-
 import { useState } from 'react'
+
+const SHORT_NAMES: Record<string, string> = {
+  'Arsenal': 'Arsenal',
+  'Aston Villa': 'Aston Villa',
+  'Bournemouth': 'Bournemouth',
+  'AFC Bournemouth': 'Bournemouth',
+  'Brentford': 'Brentford',
+  'Brighton Hove': 'Brighton',
+  'Brighton & Hove Albion': 'Brighton',
+  'Brighton': 'Brighton',
+  'Chelsea': 'Chelsea',
+  'Crystal Palace': 'Palace',
+  'Everton': 'Everton',
+  'Fulham': 'Fulham',
+  'Ipswich': 'Ipswich',
+  'Ipswich Town': 'Ipswich',
+  'Leicester': 'Leicester',
+  'Leicester City': 'Leicester',
+  'Liverpool': 'Liverpool',
+  'Man City': 'Man City',
+  'Manchester City': 'Man City',
+  'Man United': 'Man Utd',
+  'Manchester United': 'Man Utd',
+  'Newcastle': 'Newcastle',
+  'Newcastle United': 'Newcastle',
+  'Nottingham': 'Forest',
+  'Nottingham Forest': 'Forest',
+  "Nott'm Forest": 'Forest',
+  'Southampton': 'Saints',
+  'Spurs': 'Spurs',
+  'Tottenham': 'Spurs',
+  'Tottenham Hotspur': 'Spurs',
+  'West Ham': 'West Ham',
+  'West Ham United': 'West Ham',
+  'Wolves': 'Wolves',
+  'Wolverhampton': 'Wolves',
+  'Wolverhampton Wanderers': 'Wolves',
+  'Sunderland': 'Sunderland',
+  'Burnley': 'Burnley',
+}
+
+const shortName = (name: string): string => SHORT_NAMES[name] ?? name
 
 interface FixtureEntry {
   id: number
@@ -28,11 +69,10 @@ const formatMatchTime = (utcDate: string): string => {
   const date = new Date(utcDate)
   const now = new Date()
   const diffHours = (date.getTime() - now.getTime()) / (1000 * 60 * 60)
-
   if (diffHours < 0 && diffHours > -2) return 'Now'
   if (diffHours < 24 && diffHours > 0) return 'Today'
   if (diffHours < 48) return 'Tomorrow'
-  return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+  return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()
 }
 
 const formatKickoff = (utcDate: string): string => {
@@ -48,166 +88,181 @@ export default function NextFixturesClient({
   recent: ResultEntry[]
 }) {
   const [expanded, setExpanded] = useState(false)
-
   const visibleFixtures = expanded ? upcoming : upcoming.slice(0, 3)
+
+  // Group fixtures by date label
+  const groupedFixtures = visibleFixtures.reduce((groups, match) => {
+    const isLive = ['LIVE', 'IN_PLAY', 'PAUSED'].includes(match.status)
+    const key = isLive ? '__LIVE__' : formatMatchTime(match.date)
+    if (!groups[key]) groups[key] = []
+    groups[key].push(match)
+    return groups
+  }, {} as Record<string, FixtureEntry[]>)
 
   return (
     <div
-      className="relative rounded-[10px] overflow-hidden"
+      className="rounded-[10px]"
       style={{
         background: 'var(--plh-card)',
         border: '1px solid var(--plh-border)',
         boxShadow: 'var(--plh-shadow)',
       }}
     >
-      {/* Top-left bracket */}
-      <div className="absolute top-[16px] left-[16px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          style={{ opacity: 1 }}
-        >
-          <path
-            d="M2 14V2H14"
-            stroke="#E84080"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
-      {/* Bottom-right bracket */}
-      <div className="absolute bottom-[16px] right-[16px] w-6 h-6 pointer-events-none" style={{ zIndex: 10 }}>
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          style={{ opacity: 1 }}
-        >
-          <path
-            d="M22 10V22H10"
-            stroke="#E84080"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-2.5"
-        style={{
-          borderBottom: '1px solid var(--plh-border)',
-        }}
+        style={{ borderBottom: '1px solid var(--plh-border)' }}
       >
-        <span className="text-sm font-bold" style={{ color: 'var(--plh-gold)', fontFamily: "'Sora', sans-serif" }}>Fixtures</span>
-        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>Upcoming</span>
+        <span className="text-sm font-bold" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>
+          Fixtures
+        </span>
+        <span className="text-[10px] font-medium" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>
+          Coming up
+        </span>
       </div>
 
-      {/* Matches */}
-      <div style={{ borderTop: 'none' }}>
-        {visibleFixtures.map((match, idx) => {
-          const isLive = ['LIVE', 'IN_PLAY', 'PAUSED'].includes(match.status)
-          return (
-            <div
-              key={match.id}
-              className="px-3 py-2.5 transition-colors"
-              style={{
-                borderBottom: '1px solid color-mix(in srgb, var(--plh-text-100) 4%, transparent)',
-                background: 'color-mix(in srgb, var(--plh-text-100) 0%, transparent)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'color-mix(in srgb, var(--plh-text-100) 4%, transparent)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'color-mix(in srgb, var(--plh-text-100) 0%, transparent)'
-              }}
-            >
-              {/* Date/Time */}
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>
-                  {isLive ? (
-                    <span className="font-bold animate-pulse" style={{ color: 'var(--plh-pink)' }}>● LIVE</span>
-                  ) : (
-                    formatMatchTime(match.date)
-                  )}
-                </span>
-                <span className="text-[10px]" style={{ color: 'var(--plh-text-40)', fontFamily: "'Consolas', 'Courier New', monospace" }}>{formatKickoff(match.date)}</span>
-              </div>
-
-              {/* Teams */}
-              <div className="flex items-center gap-2 justify-between">
-                <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                  <img src={match.homeCrest} alt="" className="w-4 h-4 object-contain shrink-0" />
-                  <span className="text-xs truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{match.home}</span>
-                </div>
-
-                {isLive && match.homeScore !== null ? (
-                  <span className="text-sm font-bold tabular-nums shrink-0 mx-1" style={{ color: 'var(--plh-pink)', fontFamily: "'Consolas', 'Courier New', monospace" }}>
-                    {match.homeScore} - {match.awayScore}
-                  </span>
-                ) : (
-                  <span className="text-[10px] shrink-0 mx-1" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>vs</span>
-                )}
-
-                <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0">
-                  <span className="text-xs truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{match.away}</span>
-                  <img src={match.awayCrest} alt="" className="w-4 h-4 object-contain shrink-0" />
-                </div>
-              </div>
+      {/* Grouped fixtures */}
+      <div>
+        {Object.entries(groupedFixtures).map(([dateKey, matches]) => (
+          <div key={dateKey}>
+            {/* Date group header */}
+            <div className="px-3 pt-2 pb-0.5">
+              <span
+                className="text-[10px] font-medium uppercase tracking-[1.5px]"
+                style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}
+              >
+                {dateKey === '__LIVE__' ? (
+                  <span className="font-bold animate-pulse" style={{ color: 'var(--plh-pink)' }}>● LIVE</span>
+                ) : dateKey}
+              </span>
             </div>
-          )
-        })}
+
+            {/* Matches in this group */}
+            {matches.map((match) => {
+              const isLive = ['LIVE', 'IN_PLAY', 'PAUSED'].includes(match.status)
+              return (
+                <div
+                  key={match.id}
+                  className="px-3 py-2 transition-colors"
+                  style={{
+                    borderBottom: '1px solid color-mix(in srgb, var(--plh-text-100) 4%, transparent)',
+                    background: 'transparent',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--plh-text-100) 4%, transparent)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    {/* Home */}
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <img
+                        src={match.homeCrest}
+                        alt=""
+                        style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                        className="shrink-0"
+                      />
+                      <span className="text-[11px] overflow-hidden whitespace-nowrap" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif", maxWidth: '80px' }}>
+                        {shortName(match.home)}
+                      </span>
+                    </div>
+
+                    {/* Score or kickoff */}
+                    {isLive && match.homeScore !== null ? (
+                      <span
+                        className="text-sm font-bold tabular-nums shrink-0"
+                        style={{ color: 'var(--plh-pink)', fontFamily: "'Consolas','Courier New',monospace" }}
+                      >
+                        {match.homeScore}–{match.awayScore}
+                      </span>
+                    ) : (
+                      <span
+                        className="text-[11px] tabular-nums shrink-0 font-medium"
+                        style={{ color: 'var(--plh-text-40)', fontFamily: "'Consolas','Courier New',monospace" }}
+                      >
+                        {formatKickoff(match.date)}
+                      </span>
+                    )}
+
+                    {/* Away */}
+                    <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0">
+                      <span className="text-[11px] overflow-hidden whitespace-nowrap" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif", maxWidth: '80px' }}>
+                        {shortName(match.away)}
+                      </span>
+                      <img
+                        src={match.awayCrest}
+                        alt=""
+                        style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                        className="shrink-0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ))}
       </div>
 
-      {/* Expand */}
+      {/* See all */}
       {upcoming.length > 3 && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full py-2 text-center text-xs transition-colors"
+          className="w-full py-2 text-center text-[11px] transition-colors"
           style={{
             borderTop: '1px solid var(--plh-border)',
-            color: 'var(--plh-gold)',
+            color: 'var(--plh-text-40)',
             fontFamily: "'Sora', sans-serif",
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = '0.8'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = '1'
-          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-text-100)' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-text-40)' }}
         >
-          {expanded ? 'Show less' : `All fixtures ↓`}
+          {expanded ? 'Show less ↑' : 'See all ↓'}
         </button>
       )}
 
-      {/* Recent Results */}
+      {/* Results */}
       {recent.length > 0 && (
         <>
-          <div className="px-3 py-2" style={{ borderTop: '1px solid var(--plh-border)' }}>
-            <span className="text-xs font-bold" style={{ color: 'var(--plh-gold)', fontFamily: "'Sora', sans-serif" }}>Results</span>
+          <div className="px-4 py-2.5" style={{ borderTop: '1px solid var(--plh-border)' }}>
+            <span className="text-sm font-bold" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>
+              Results
+            </span>
           </div>
           <div>
             {recent.slice(0, 3).map((result, idx) => (
               <div
                 key={result.id}
-                className="flex items-center gap-2 px-3 py-1.5 justify-between"
+                className="flex items-center gap-2 px-3 py-2 justify-between"
                 style={{
                   borderBottom: idx < 2 ? '1px solid color-mix(in srgb, var(--plh-text-100) 3%, transparent)' : 'none',
                 }}
               >
-                <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <img src={result.homeCrest} alt="" className="w-3 h-3 object-contain shrink-0" />
-                  <span className="text-[11px] truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{result.home}</span>
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <img
+                    src={result.homeCrest}
+                    alt=""
+                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                    className="shrink-0"
+                  />
+                  <span className="text-[11px] overflow-hidden whitespace-nowrap" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif", maxWidth: '80px' }}>
+                    {shortName(result.home)}
+                  </span>
                 </div>
-                <span className="text-xs font-bold tabular-nums shrink-0" style={{ color: 'var(--plh-text-100)', fontFamily: "'Consolas', 'Courier New', monospace" }}>
-                  {result.homeScore} - {result.awayScore}
+                <span
+                  className="text-xs font-bold tabular-nums shrink-0"
+                  style={{ color: 'var(--plh-text-100)', fontFamily: "'Consolas','Courier New',monospace" }}
+                >
+                  {result.homeScore}–{result.awayScore}
                 </span>
-                <div className="flex items-center gap-1 flex-1 justify-end min-w-0">
-                  <span className="text-[11px] truncate" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>{result.away}</span>
-                  <img src={result.awayCrest} alt="" className="w-3 h-3 object-contain shrink-0" />
+                <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0">
+                  <span className="text-[11px] overflow-hidden whitespace-nowrap" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif", maxWidth: '80px' }}>
+                    {shortName(result.away)}
+                  </span>
+                  <img
+                    src={result.awayCrest}
+                    alt=""
+                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                    className="shrink-0"
+                  />
                 </div>
               </div>
             ))}

@@ -3,8 +3,52 @@ import { fetchSingleFeed, FEEDS } from "@/lib/rss"
 import { createServerClient } from '@/lib/supabase'
 import { upgradeImageUrl } from '@/lib/formatting'
 import { logCronJob } from '@/lib/cron-logging'
+import Anthropic from '@anthropic-ai/sdk'
 
 export const maxDuration = 10
+
+async function isRelevantToPL(title: string): Promise<boolean> {
+  try {
+    const client = new Anthropic()
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 20,
+      messages: [{
+        role: 'user',
+        content: `You are an editorial filter for a Premier League football news site.
+Respond with only KEEP or REMOVE.
+
+KEEP if the headline is about:
+- Premier League clubs, players, managers, or matches
+- Transfers involving Premier League clubs
+- FA Cup, League Cup, Champions League, or Europa League involving PL clubs
+- Premier League governance, finance, or rules
+- England national team involving Premier League players
+
+REMOVE if the headline is about:
+- Any sport other than football
+- Football outside the Premier League with no PL club involved
+- Betting tips or gambling promotions
+- General football news without PL connection
+- Championship or lower English leagues
+- Scottish football
+- European football without PL clubs
+
+Headline: "${title}"`,
+      }],
+    })
+
+    const content = response.content[0]
+    if (content.type === 'text') {
+      return content.text.toUpperCase().includes('KEEP')
+    }
+    return false
+  } catch (err) {
+    console.error('[isRelevantToPL] AI filter error:', err)
+    // On error, allow the post (be permissive)
+    return true
+  }
+}
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now()

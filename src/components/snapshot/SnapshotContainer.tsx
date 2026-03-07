@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import HeroGrid from './HeroGrid'
 import BottomCards from './BottomCards'
+import SnapshotCardGrid from './SnapshotCardGrid'
 import ByTheNumbers from './ByTheNumbers'
 import QuoteStrip from './QuoteStrip'
 import StaleDataBanner from './StaleDataBanner'
@@ -39,6 +40,22 @@ interface SnapshotData {
       }>
       matchday: number
     } | null
+    the_table: {
+      standings: Array<{
+        position: number
+        club: string
+        points: number
+      }>
+      highlighted_club: string | null
+    } | null
+    fixture_focus: Array<{
+      home: { name: string; slug: string }
+      away: { name: string; slug: string }
+      kickoff: string
+      status: string
+      score: { home: number; away: number } | null
+      stakes_line: string | null
+    }> | null
     the_quote: {
       has_quote: boolean
       quote: string | null
@@ -51,6 +68,7 @@ interface SnapshotData {
       headline: string | null
       colour_line: string | null
       image_url?: string | null
+      plhub_index: number | null
     }
   }
 }
@@ -124,7 +142,7 @@ export default function SnapshotContainer({
               <div className="flex items-baseline gap-3">
                 <h1
                   className="font-bold leading-tight"
-                  style={{ color: 'var(--plh-text-100)', fontFamily: 'Sora, sans-serif', fontSize: '24px' }}
+                  style={{ color: 'var(--plh-text-100)', fontFamily: 'var(--font-sora)', fontSize: '24px' }}
                 >
                   The Snapshot
                 </h1>
@@ -140,10 +158,10 @@ export default function SnapshotContainer({
             {/* Right: Matchday indicator */}
             <div
               className="text-sm sm:text-base font-semibold flex-shrink-0"
-              style={{ color: 'var(--plh-text-75)', fontFamily: 'Sora, sans-serif' }}
+              style={{ color: 'var(--plh-text-75)', fontFamily: 'var(--font-sora)' }}
             >
               Matchday{' '}
-              <span style={{ fontFamily: "'Consolas', 'Courier New', monospace" }}>
+              <span style={{ fontFamily: 'var(--font-mono)' }}>
                 {matchdayProp.split(' ')[1] || matchdayProp}
               </span>
             </div>
@@ -165,7 +183,7 @@ export default function SnapshotContainer({
   const transferStory = snapshotData?.modules.transfers?.[0] || null
   const beyondBigSixStory = snapshotData?.modules.beyond_big_six?.[0] || null
   const fplStory = snapshotData?.modules.fantasy_premier_league?.[0] || null
-  const andFinallyData = snapshotData?.modules.and_finally || null
+  const theRestData = snapshotData?.modules.and_finally || null
   const quoteData = snapshotData?.modules.the_quote || null
 
   return (
@@ -184,7 +202,7 @@ export default function SnapshotContainer({
             <div className="flex items-baseline gap-3">
               <h1
                 className="font-bold leading-tight"
-                style={{ color: 'var(--plh-text-100)', fontFamily: 'Sora, sans-serif', fontSize: '24px' }}
+                style={{ color: 'var(--plh-text-100)', fontFamily: 'var(--font-sora)', fontSize: '24px' }}
               >
                 The Snapshot
               </h1>
@@ -200,10 +218,10 @@ export default function SnapshotContainer({
           {/* Right: Matchday indicator */}
           <div
             className="text-sm sm:text-base font-semibold flex-shrink-0"
-            style={{ color: 'var(--plh-text-75)', fontFamily: 'Sora, sans-serif' }}
+            style={{ color: 'var(--plh-text-75)', fontFamily: 'var(--font-sora)' }}
           >
             Matchday{' '}
-            <span style={{ fontFamily: "'Consolas', 'Courier New', monospace" }}>
+            <span style={{ fontFamily: 'var(--font-mono)' }}>
               {matchday.split(' ')[1] || matchday}
             </span>
           </div>
@@ -212,9 +230,9 @@ export default function SnapshotContainer({
         {/* Stale Data Banner */}
         <StaleDataBanner />
 
-        {/* Magazine-style 4-row layout */}
+        {/* Magazine-style layout with reordered modules */}
         <div className="space-y-2">
-          {/* Row 1: Hero Grid (top 5 stories) */}
+          {/* Row 1: Hero Grid (Get Caught Up) */}
           {!isLoading && (
             <HeroGrid
               stories={getCaughtUpStories}
@@ -224,20 +242,29 @@ export default function SnapshotContainer({
           )}
           {isLoading && <HeroGridSkeleton />}
 
-          {/* Row 2: By The Numbers (2×2 stat grid) */}
-          <ByTheNumbers club={club} />
-
-          {/* Row 3: Bottom Cards (3 landscape cards) */}
-          {!isLoading && snapshotData && (
-            <BottomCards
-              transferStory={transferStory}
-              beyondBigSixStory={beyondBigSixStory}
-              fplStory={fplStory}
-              andFinallyData={andFinallyData?.has_content ? andFinallyData : null}
+          {/* Rows 2-4: Transfers, Beyond Big Six, The Rest — 3-column grid */}
+          {!isLoading && (
+            <SnapshotCardGrid
+              cards={[
+                transferStory
+                  ? { label: 'TRANSFERS', story: transferStory, source: transferStory.source }
+                  : null,
+                beyondBigSixStory
+                  ? { label: 'BEYOND BIG SIX', story: beyondBigSixStory, source: beyondBigSixStory.source }
+                  : null,
+                theRestData?.has_content
+                  ? { label: 'THE REST', headline: theRestData.headline, imageUrl: theRestData.image_url, plhubIndex: theRestData.plhub_index }
+                  : null,
+              ].filter((c) => c !== null) as Array<any>}
             />
           )}
 
-          {/* Row 4: Quote Strip (conditional) */}
+          {/* Row 4: By The Numbers */}
+          {!isLoading && snapshotData && (
+            <ByTheNumbersModule snapshotData={snapshotData} />
+          )}
+
+          {/* Quote Strip (conditional) */}
           {!isLoading && quoteData?.has_quote && quoteData.quote && quoteData.attribution && (
             <QuoteStrip
               quote={quoteData.quote}
@@ -252,11 +279,246 @@ export default function SnapshotContainer({
         <div
           className="h-0.5 rounded-full mt-3"
           style={{
-            background: 'linear-gradient(to right, #E84080, transparent)',
+            background: 'linear-gradient(to right, var(--plh-pink), transparent)',
           }}
         />
       </div>
     </div>
+  )
+}
+
+interface SnapshotTableEntry {
+  position: number
+  club: string
+  points: number
+}
+
+interface SnapshotFixture {
+  home: { name: string }
+  away: { name: string }
+  kickoff: string
+}
+
+interface ByTheNumbersData {
+  tiles: Array<{
+    number: string
+    label: string
+    context: string
+    accent: boolean
+  }>
+  matchday: number
+}
+
+interface ByTheNumbersModuleProps {
+  snapshotData: SnapshotData
+}
+
+/**
+ * Build evergreen fallback tiles from snapshot data
+ */
+function buildEvergreens(snapshotData: SnapshotData): Array<{
+  number: string
+  label: string
+  isEvergreen: boolean
+}> {
+  const evergreens: Array<{ number: string; label: string; isEvergreen: boolean }> = []
+
+  // Pull from the_table
+  const standings = snapshotData.modules.the_table?.standings || []
+  const topTeam = standings[0]
+  const eighteenthPlace = standings[17]
+
+  if (topTeam) {
+    evergreens.push({
+      number: topTeam.points.toString(),
+      label: `${topTeam.club} top of the table`,
+      isEvergreen: true,
+    })
+  }
+
+  // Pull from fixture_focus (next fixture)
+  const nextFixture = snapshotData.modules.fixture_focus?.[0]
+  if (nextFixture && nextFixture.kickoff) {
+    try {
+      const kickoffDate = new Date(nextFixture.kickoff)
+      const kickoffHour = String(kickoffDate.getHours()).padStart(2, '0')
+      const kickoffMin = String(kickoffDate.getMinutes()).padStart(2, '0')
+      evergreens.push({
+        number: `${kickoffHour}:${kickoffMin}`,
+        label: `${nextFixture.home.name} vs ${nextFixture.away.name}`,
+        isEvergreen: true,
+      })
+    } catch (err) {
+      console.warn('[ByTheNumbers] Error parsing fixture kickoff:', err)
+    }
+  }
+
+  // Relegation gap: points difference between 18th and 17th
+  if (standings.length >= 18) {
+    const seventeenthPlace = standings[16]
+    if (eighteenthPlace && seventeenthPlace) {
+      const gap = seventeenthPlace.points - eighteenthPlace.points
+      evergreens.push({
+        number: gap.toString(),
+        label: `points above relegation for ${eighteenthPlace.club}`,
+        isEvergreen: true,
+      })
+    }
+  }
+
+  return evergreens.filter((e) => e.number) // Remove any with null numbers
+}
+
+/**
+ * Build hero tile from evergreen data when AI data is unavailable
+ */
+function buildEvergreensHero(snapshotData: SnapshotData): {
+  number: string
+  label: string
+  context: string
+  usePink: boolean
+  isEvergreen: boolean
+} | null {
+  // Candidate 1: Total goals scored across all matches this matchday
+  const fixtures = snapshotData.modules.fixture_focus || []
+  const finishedMatches = fixtures.filter((f) => f.status === 'finished' && f.score)
+
+  if (finishedMatches.length > 0) {
+    const totalGoals = finishedMatches.reduce((sum, m) => {
+      if (m.score) {
+        return sum + m.score.home + m.score.away
+      }
+      return sum
+    }, 0)
+
+    if (totalGoals > 0) {
+      // Find the highest-scoring match
+      const highestScoringMatch = finishedMatches.reduce((max, m) => {
+        const matchTotal = (m.score ? m.score.home + m.score.away : 0)
+        const maxTotal = (max.score ? max.score.home + max.score.away : 0)
+        return matchTotal > maxTotal ? m : max
+      })
+
+      const scoreStr = highestScoringMatch.score
+        ? `${highestScoringMatch.score.home}–${highestScoringMatch.score.away}`
+        : ''
+
+      return {
+        number: totalGoals.toString(),
+        label: 'goals across the matchday',
+        context: scoreStr ? `A busy one — ${scoreStr} the standout scoreline.` : `A busy one across the matchday.`,
+        usePink: false,
+        isEvergreen: true,
+      }
+    }
+  }
+
+  // Candidate 2: League leader's points
+  const standings = snapshotData.modules.the_table?.standings || []
+  const topTeam = standings[0]
+  const secondTeam = standings[1]
+
+  if (topTeam && secondTeam) {
+    const pointsGap = topTeam.points - secondTeam.points
+    const gapText = pointsGap > 0 ? `${pointsGap} point${pointsGap !== 1 ? 's' : ''}` : 'tied on points'
+    return {
+      number: topTeam.points.toString(),
+      label: `${topTeam.club} lead the league`,
+      context: `${gapText} clear of ${secondTeam.club}. Title race is on.`,
+      usePink: false,
+      isEvergreen: true,
+    }
+  }
+
+  // Candidate 3: Relegation gap
+  if (standings.length >= 18) {
+    const eighteenthPlace = standings[17]
+    const seventeenthPlace = standings[16]
+
+    if (eighteenthPlace && seventeenthPlace) {
+      const gap = seventeenthPlace.points - eighteenthPlace.points
+      if (gap > 0) {
+        return {
+          number: gap.toString(),
+          label: 'points between safety and the drop',
+          context: `${eighteenthPlace.club} are in the red zone. Fight's on.`,
+          usePink: false,
+          isEvergreen: true,
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * ByTheNumbers module wrapper — handles data extraction and fallback logic
+ */
+function ByTheNumbersModule({ snapshotData }: ByTheNumbersModuleProps) {
+  const byTheNumbersData = snapshotData.modules.by_the_numbers as ByTheNumbersData | null
+  const evergreens = buildEvergreens(snapshotData)
+
+  // Extract hero (the accent tile) and supporting tiles
+  let heroTile = null
+  let supportingTiles: Array<{
+    number: string
+    label: string
+    context?: string
+    usePink?: boolean
+    isEvergreen?: boolean
+  }> = []
+
+  if (byTheNumbersData?.tiles && byTheNumbersData.tiles.length > 0) {
+    // Find the accent tile (hero)
+    const accentIdx = byTheNumbersData.tiles.findIndex((t) => t.accent)
+    const heroIdx = accentIdx >= 0 ? accentIdx : 0
+
+    const heroData = byTheNumbersData.tiles[heroIdx]
+    heroTile = {
+      number: heroData.number,
+      label: heroData.label,
+      context: heroData.context,
+      usePink: true, // Always use pink for AI-generated hero
+    }
+
+    // Collect supporting tiles (non-hero)
+    supportingTiles = byTheNumbersData.tiles
+      .map((tile, idx) => ({
+        number: tile.number,
+        label: tile.label,
+        context: tile.context,
+        usePink: false,
+        isEvergreen: false,
+      }))
+      .filter((_, idx) => idx !== heroIdx)
+  } else {
+    // Fallback: build hero from evergreen data
+    heroTile = buildEvergreensHero(snapshotData)
+  }
+
+  // Backfill supporting tiles with evergreens to reach 3 total
+  while (supportingTiles.length < 3 && evergreens.length > 0) {
+    const evergreen = evergreens.shift()
+    if (evergreen) {
+      supportingTiles.push({
+        ...evergreen,
+        usePink: false,
+      })
+    }
+  }
+
+  // If no hero at all, don't render the module
+  if (!heroTile) {
+    return null
+  }
+
+  return (
+    <ByTheNumbers
+      heroTile={heroTile}
+      supportingTiles={supportingTiles}
+      matchday={snapshotData.metadata.matchday}
+    />
   )
 }
 

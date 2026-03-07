@@ -65,14 +65,14 @@ export default function FixturesWidget() {
                   alt=""
                   className="w-4 h-4 object-contain"
                 />
-                <span className="text-sm text-[var(--plh-text-100)] truncate">{fixture.home}</span>
+                <span className="text-[15px] text-[var(--plh-text-100)] truncate">{fixture.home}</span>
               </Link>
               <span className="text-xs text-[var(--plh-text-40)] shrink-0 mx-1">vs</span>
               <Link
                 href={`/?club=${teamNameToSlug[fixture.away] || ''}`}
                 className="flex items-center gap-2 flex-1 justify-end hover:text-[var(--plh-teal)] transition-colors"
               >
-                <span className="text-sm text-[var(--plh-text-100)] truncate">{fixture.away}</span>
+                <span className="text-[15px] text-[var(--plh-text-100)] truncate">{fixture.away}</span>
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/${fixture.awayBadge}.png`}
                   alt=""
@@ -98,7 +98,7 @@ export default function FixturesWidget() {
                   alt=""
                   className="w-3 h-3 object-contain"
                 />
-                <span className="text-xs text-[var(--plh-text-100)] truncate">{result.home}</span>
+                <span className="text-[14px] text-[var(--plh-text-100)] truncate">{result.home}</span>
               </Link>
               <span className="text-sm font-semibold text-[var(--plh-text-100)] tabular-nums">{result.homeScore}</span>
               <span className="text-[var(--plh-text-40)]">-</span>
@@ -107,7 +107,7 @@ export default function FixturesWidget() {
                 href={`/?club=${teamNameToSlug[result.away] || ''}`}
                 className="flex items-center gap-1 flex-1 justify-end hover:text-[var(--plh-teal)] transition-colors"
               >
-                <span className="text-xs text-[var(--plh-text-100)] truncate">{result.away}</span>
+                <span className="text-[14px] text-[var(--plh-text-100)] truncate">{result.away}</span>
                 <img
                   src={`https://resources.premierleague.com/premierleague/badges/${result.awayBadge}.png`}
                   alt=""

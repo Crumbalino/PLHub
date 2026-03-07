@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 
 export default function Navbar() {
@@ -20,11 +19,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className="
-        sticky top-0 z-50 h-auto
-        border-b border-[var(--plh-border)]
-        transition-colors duration-300
-      "
+      className="sticky top-0 z-50 h-auto border-b border-[var(--plh-border)] transition-colors duration-300"
       style={{
         backgroundColor: 'color-mix(in srgb, var(--plh-bg) 95%, transparent)',
         backdropFilter: 'blur(12px)',
@@ -32,47 +27,47 @@ export default function Navbar() {
       }}
     >
       <div className="max-w-[700px] mx-auto py-3 px-4 sm:px-6 flex items-center justify-between">
-        {/* Left spacer — balances sign-in on the right */}
-        <div className="w-20 sm:w-24" />
 
-        {/* Logo — inline variant, centred, Brand v3.1 Tier 2 Inline */}
-        <a
-          href="/"
-          className="inline-flex items-center select-none group"
-          aria-label="PLHub home"
-        >
+        {/* Left — PLHub Index link */}
+        <div className="w-20 sm:w-24 flex items-center">
+          <a
+            href="/how-it-works"
+            className="flex items-center gap-1.5 transition-colors duration-200"
+            style={{ color: 'rgba(250,245,240,0.45)', textDecoration: 'none' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-gold)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(250,245,240,0.45)' }}
+            aria-label="How the PLHub Index works"
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M22 10V22H10" stroke="var(--plh-gold)" strokeWidth="3.5" strokeLinecap="round" />
+            </svg>
+            <span
+              className="text-[12px] font-semibold uppercase tracking-[1px] hidden sm:inline"
+              style={{ fontFamily: "'Sora', sans-serif" }}
+            >
+              Index
+            </span>
+          </a>
+        </div>
+
+        {/* Logo — centred, Brand v3.1 Tier 2 Inline */}
+        <a href="/" className="inline-flex items-center select-none group" aria-label="PLHub home">
           {/* TL bracket */}
           <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-            style={{
-              position: 'relative',
-              top: '-14px',
-              marginRight: '20px',
-            }}
+            width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+            style={{ position: 'relative', top: '-8px', marginRight: '8px' }}
           >
-            <path
-              d="M2 14V2H14"
-              stroke="var(--plh-pink)"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
+            <path d="M2 14V2H14" stroke="var(--plh-pink)" strokeWidth="3.5" strokeLinecap="round" />
           </svg>
 
-          {/* Wordmark: PL + HUB */}
+          {/* Wordmark */}
           <div className="inline-flex items-center gap-1">
-            <span
-              className="font-bold leading-none"
-              style={{ color: 'var(--plh-text-100)', fontSize: '32px' }}
-            >
+            <span className="font-bold leading-none" style={{ color: 'var(--plh-text-100)', fontSize: '36px' }}>
               PL
             </span>
             <span
               className="font-light leading-none tracking-[3px]"
-              style={{ color: 'var(--plh-text-100)', fontSize: '32px', marginRight: '-5px' }}
+              style={{ color: 'var(--plh-text-100)', fontSize: '36px', marginRight: '-3px' }}
             >
               HUB
             </span>
@@ -80,42 +75,20 @@ export default function Navbar() {
 
           {/* BR bracket */}
           <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-            style={{
-              position: 'relative',
-              top: '14px',
-              marginLeft: '20px',
-            }}
+            width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+            style={{ position: 'relative', top: '8px', marginLeft: '8px' }}
           >
-            <path
-              d="M22 10V22H10"
-              stroke="var(--plh-pink)"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
+            <path d="M22 10V22H10" stroke="var(--plh-pink)" strokeWidth="3.5" strokeLinecap="round" />
           </svg>
         </a>
 
-        {/* Right side: theme toggle + sign in */}
+        {/* Right — theme toggle + sign in */}
         <div className="flex items-center gap-2">
-          {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            className="
-              flex items-center justify-center
-              text-[var(--plh-text-100)]
-              transition-all duration-200 opacity-85 hover:opacity-100
-            "
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = '1';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = '0.85';
-            }}
+            className="flex items-center justify-center text-[var(--plh-text-100)] transition-all duration-200 opacity-85 hover:opacity-100"
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
             {theme === 'dark' ? (
@@ -136,22 +109,10 @@ export default function Navbar() {
               </svg>
             )}
           </button>
-
-          {/* Vertical divider */}
           <div className="hidden sm:block w-px h-5" style={{ backgroundColor: 'var(--plh-border)' }} />
-
-          {/* Sign in — placeholder, no auth yet */}
           <button
-            className="
-              hidden sm:flex items-center
-              text-[13px] font-medium tracking-wide
-              border border-[var(--plh-border)]
-              rounded px-3 py-1
-              transition-all duration-200
-            "
-            style={{
-              color: 'rgba(250, 245, 240, 0.85)',
-            }}
+            className="hidden sm:flex items-center text-[13px] font-medium tracking-wide border border-[var(--plh-border)] rounded px-3 py-1 transition-all duration-200"
+            style={{ color: 'rgba(250, 245, 240, 0.85)' }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLElement;
               el.style.borderColor = 'var(--plh-border-hover)';

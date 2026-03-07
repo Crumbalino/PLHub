@@ -17,7 +17,7 @@ import type { Post, HeatLabel } from './types'
 /**
  * Source credibility mapping (0-25 points)
  */
-function getSourceCredibility(source: string, subreddit: string | null, upvoteRatio?: number): number {
+function getSourceCredibility(source: string, subreddit: string | null, upvoteRatio?: number, url?: string): number {
   if (source === 'rss') {
     const sourceMap: Record<string, number> = {
       'bbc': 25,
@@ -26,15 +26,21 @@ function getSourceCredibility(source: string, subreddit: string | null, upvoteRa
       'sky': 22,
       'espn': 18,
       'talksport': 14,
+      'telegraph': 16,
+      'mirror': 12,
+      'thesun': 10,
+      'goal': 14,
+      '90min': 13,
     }
 
-    const lowerSource = subreddit?.toLowerCase() ?? ''
+    // subreddit is null for RSS posts — fall back to URL domain
+    const lowerSource = (subreddit ?? url ?? '').toLowerCase()
     for (const [key, score] of Object.entries(sourceMap)) {
       if (lowerSource.includes(key)) {
         return score
       }
     }
-    return 10 // Unknown/other sources
+    return 10
   }
 
   // Reddit: base 8, plus bonus for upvote ratio (0-6 bonus, max 14)
@@ -92,7 +98,7 @@ function getEngagementScore(post: Post): number {
  * Credibility + live recency + engagement + significance + multiSource bonus
  */
 export function calculatePLHubIndex(post: Post): number {
-  const credibility = getSourceCredibility(post.source, post.subreddit, (post as any).upvote_ratio)
+  const credibility = getSourceCredibility(post.source, post.subreddit, (post as any).upvote_ratio, post.url)
   const recency = calculateRecencyScore(post.published_at)
   const engagement = getEngagementScore(post)
   const significance = (post as any).score_significance ?? 12
@@ -116,7 +122,7 @@ export interface IndexComponents {
 }
 
 export function getIndexComponents(post: Post): IndexComponents {
-  const credibility = getSourceCredibility(post.source, post.subreddit, (post as any).upvote_ratio)
+  const credibility = getSourceCredibility(post.source, post.subreddit, (post as any).upvote_ratio, post.url)
   const recency = calculateRecencyScore(post.published_at)
   const engagement = getEngagementScore(post)
   const significance = (post as any).score_significance ?? 12

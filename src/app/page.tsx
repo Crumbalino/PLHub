@@ -27,7 +27,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-transparent relative z-1">
-        <div className="max-w-[1400px] mx-auto px-4 pt-4">
+        <div className="max-w-[1400px] mx-auto px-4 pt-8">
 
         {/* ============================================================
             THREE COLUMN LAYOUT (desktop) / SINGLE COLUMN (mobile)
@@ -35,7 +35,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-6">
           {/* LEFT SIDEBAR — PL Table (desktop only) */}
           <aside className="hidden lg:block">
-            <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide">
+            <div className="space-y-6">
               <PLTable />
               <div className="rounded-[10px] p-4 text-center text-xs h-[250px] flex items-center justify-center" style={{ background: 'var(--plh-card)', border: '1px solid var(--plh-border)', color: 'var(--plh-text-40)' }}>
                 Ad
@@ -45,14 +45,32 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           {/* CENTRE — Feed */}
           <main className="min-w-0">
+            {/* Left-aligned logo above Snapshot */}
+            {!clubSlug && (
+              <div className="flex items-center mb-3" style={{ paddingLeft: '0' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+                  style={{ position: 'relative', top: '-6px', marginRight: '6px' }}>
+                  <path d="M2 14V2H14" stroke="var(--plh-pink)" strokeWidth="3.5" strokeLinecap="round" />
+                </svg>
+                <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif", lineHeight: 1 }}>PL</span>
+                <span style={{ fontSize: '24px', fontWeight: 300, color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif", lineHeight: 1, letterSpacing: '3px', marginRight: '-3px' }}>HUB</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+                  style={{ position: 'relative', top: '6px', marginLeft: '6px' }}>
+                  <path d="M22 10V22H10" stroke="var(--plh-pink)" strokeWidth="3.5" strokeLinecap="round" />
+                </svg>
+              </div>
+            )}
+
             {/* The Snapshot Container */}
             {!clubSlug && <SnapshotContainer matchday="Matchday 30" club={clubSlug} />}
 
             {/* Club Filter Bar — between Snapshot and Feed */}
-            <ClubFilterBar currentClub={clubSlug ?? undefined} />
+            <div className="mt-8">
+              <ClubFilterBar currentClub={clubSlug ?? undefined} />
+            </div>
 
             {/* Feed with fade transition — tight spacing above */}
-            <div className="mt-4 transition-opacity duration-300" key={clubSlug || 'all'}>
+            <div className="mt-8 transition-opacity duration-300" key={clubSlug || 'all'}>
               <FeedList club={clubSlug} />
             </div>
 
@@ -82,7 +100,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           {/* RIGHT SIDEBAR — Fixtures (desktop only) */}
           <aside className="hidden lg:block">
-            <div className="sticky top-20 space-y-6 max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide">
+            <div className="space-y-6">
               <NextFixtures />
               <div className="rounded-[10px] p-4 text-center text-xs h-[600px] flex items-center justify-center" style={{ background: 'var(--plh-card)', border: '1px solid var(--plh-border)', color: 'var(--plh-text-40)' }}>
                 Ad

@@ -28,14 +28,15 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createServerClient()
 
-    // Fetch only 2 posts per run (strict limit for Hobby plan)
+    // Fetch only 3 posts per run (strict limit for Hobby plan)
     // Order by created_at DESC so newest posts get summaries first
     const { data: posts, error: fetchError } = await supabase
       .from('posts')
       .select('id, title, content, created_at')
       .is('summary', null)
+      .gte('published_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: false })
-      .limit(2)
+      .limit(3)
 
     if (fetchError) {
       const executionTime = Date.now() - startTime

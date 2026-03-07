@@ -26,6 +26,23 @@ const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 50
 const OVERFETCH_MULTIPLIER = 3 // fetch extra rows to compensate for filtering
 
+// ─────────────────────────────────────────────────────
+// Score rescaling: spread 30–95 instead of clustering 55–75
+// ─────────────────────────────────────────────────────
+function rescaleScores(posts: any[]): any[] {
+  const scores = posts.map(p => p.indexScore ?? 0).filter(s => s > 0)
+  if (scores.length < 2) return posts
+  const min = Math.min(...scores)
+  const max = Math.max(...scores)
+  if (max === min) return posts
+  return posts.map(p => {
+    if (!p.indexScore) return p
+    // Rescale to 30–95 range
+    const rescaled = Math.round(30 + ((p.indexScore - min) / (max - min)) * 65)
+    return { ...p, indexScore: rescaled }
+  })
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -120,8 +137,11 @@ export async function GET(request: NextRequest) {
     // Transform raw DB posts into enriched FeedPost objects
     const feedPosts = transformPosts(paged)
 
+    // Rescale scores to spread 30–95 range
+    const rescaledPosts = rescaleScores(feedPosts)
+
     const response: FeedResponse = {
-      posts: feedPosts,
+      posts: rescaledPosts,
       total: count || 0,
       page,
       hasMore: filtered.length > limit,

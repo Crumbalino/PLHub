@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
-import { Sora } from 'next/font/google'
+import { Sora, JetBrains_Mono } from 'next/font/google'
 import { themeInitScript } from '@/lib/theme-init'
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import BackToTopButton from '@/components/BackToTopButton'
@@ -13,6 +14,13 @@ const sora = Sora({
   variable: '--font-sora',
   display: 'swap',
   weight: ['200', '300', '400', '500', '600', '700', '800'],
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+  weight: ['400', '600', '700'],
 })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
@@ -99,7 +107,7 @@ export default function RootLayout({
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
       </head>
-      <body className={`${sora.variable} font-sora antialiased`}>
+      <body className={`${sora.variable} ${jetbrainsMono.variable} font-sora antialiased`}>
         {gaMeasurementId && (
           <GoogleAnalytics measurementId={gaMeasurementId} />
         )}
@@ -107,16 +115,7 @@ export default function RootLayout({
         <Navbar />
         <main>{children}</main>
         <BackToTopButton />
-
-        {/* Footer — uses brand variables, works in both modes */}
-        <footer className="mt-16 border-t border-[var(--plh-border)] px-4 py-10 text-center">
-          <p className="text-sm text-[var(--plh-text-40)]">
-            PLHub — Premier League news from BBC Sport, Sky Sports, The Guardian and more.
-          </p>
-          <p className="text-xs text-[var(--plh-text-40)] mt-2" style={{ opacity: 0.6 }}>
-            Not affiliated with the Premier League or its clubs.
-          </p>
-        </footer>
+        <Footer />
 
         {/* Google Analytics GA4 */}
         <Script

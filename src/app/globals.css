@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,15 +15,14 @@
 :root,
 .dark {
   --plh-bg: #0D1B2A;
-  --plh-card: #112238;
+  --plh-card: #172E48;
   --plh-elevated: #162D45;
 
   --plh-text-base: 250, 245, 240;
   --plh-text-100: #FAF5F0;
   --plh-text-75: rgba(250, 245, 240, 0.75);
-  --plh-text-70: rgba(250, 245, 240, 0.70);
-  --plh-text-50: rgba(250, 245, 240, 0.50);
-  --plh-text-40: rgba(250, 245, 240, 0.40);
+  --plh-text-50: rgba(250, 245, 240, 0.5);
+  --plh-text-40: rgba(250, 245, 240, 0.4);
 
   --plh-pink: #E84080;
   --plh-pink-hover: #D03670;
@@ -31,8 +33,8 @@
   --plh-violet: #C084FC;
   --plh-orange: #F97316;
 
-  --plh-border: rgba(250, 245, 240, 0.05);
-  --plh-border-hover: rgba(250, 245, 240, 0.1);
+  --plh-border: rgba(250, 245, 240, 0.09);
+  --plh-border-hover: rgba(250, 245, 240, 0.16);
   --plh-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
 
   /* v2.2 — Inline logo (monochrome on-site) */
@@ -57,9 +59,8 @@
   --plh-text-base: 13, 27, 42;
   --plh-text-100: #1A1D23;
   --plh-text-75: rgba(13, 27, 42, 0.75);
-  --plh-text-70: rgba(13, 27, 42, 0.70);
-  --plh-text-50: rgba(13, 27, 42, 0.50);
-  --plh-text-40: rgba(13, 27, 42, 0.40);
+  --plh-text-50: rgba(13, 27, 42, 0.5);
+  --plh-text-40: rgba(13, 27, 42, 0.4);
 
   --plh-pink: #E84080;
   --plh-pink-hover: #D03670;
@@ -99,7 +100,7 @@ html {
 }
 
 body {
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sora), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--plh-text-100);
@@ -153,11 +154,11 @@ article[id^="post-"] {
    ================================ */
 
 .font-sora {
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sora), sans-serif;
 }
 
 .summary-text {
-  font-family: 'Sora', sans-serif;
+  font-family: var(--font-sora), sans-serif;
   font-weight: 300;
 }
 
@@ -419,6 +420,11 @@ article[id^="post-"] {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+/* Secondary text — 85% opacity for metadata and timestamps */
+.text-secondary {
+  color: rgba(250, 245, 240, 0.85);
 }
 
 /* Subtle divider line between sections */

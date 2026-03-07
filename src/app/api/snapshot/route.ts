@@ -18,7 +18,7 @@ import type { Post, FeedPost } from '@/lib/types'
 
 const BIG_SIX = ['arsenal', 'chelsea', 'liverpool', 'man-city', 'man-united', 'tottenham']
 
-// Team name mappings from football-data.org to club slugs
+// Team name mappings from football-data.org to club slugs (2025/26 PL season)
 const FOOTBALL_DATA_TO_SLUG: Record<string, string> = {
   'Arsenal': 'arsenal',
   'Aston Villa': 'aston-villa',
@@ -30,13 +30,13 @@ const FOOTBALL_DATA_TO_SLUG: Record<string, string> = {
   'Everton': 'everton',
   'Fulham': 'fulham',
   'Ipswich Town': 'ipswich',
-  'Leicester City': 'leicester',
   'Liverpool': 'liverpool',
   'Manchester City': 'man-city',
   'Manchester United': 'man-united',
   'Newcastle United': 'newcastle',
   'Nottingham Forest': 'nottingham-forest',
   'Southampton': 'southampton',
+  'Sunderland': 'sunderland',
   'Tottenham Hotspur': 'tottenham',
   'West Ham United': 'west-ham',
   'Wolverhampton Wanderers': 'wolves',
@@ -138,6 +138,7 @@ interface SnapshotResponse {
         has_content: boolean
         headline: string | null
         colour_line: string | null
+        plhub_index: number | null
       }
     }
   }
@@ -474,12 +475,25 @@ async function getByTheNumbersData(matchday: number): Promise<{
     }
 
     // Parse JSON response from Claude
+    // Handle markdown-wrapped JSON (e.g., ```json {...} ```)
+    let jsonText = responseText.trim()
+    if (jsonText.startsWith('```')) {
+      // Remove markdown code fence
+      jsonText = jsonText.replace(/^```(?:json)?\n/, '').replace(/\n```$/, '')
+    }
+
     let parsedResponse: ByTheNumbersResponse
     try {
-      parsedResponse = JSON.parse(responseText)
+      // Strip markdown fences if Claude wraps response in ```json ... ```
+      const cleaned = jsonText
+        .replace(/^```json\s*/i, '')
+        .replace(/^```\s*/i, '')
+        .replace(/```\s*$/i, '')
+        .trim()
+      parsedResponse = JSON.parse(cleaned)
     } catch (parseErr) {
-      console.error('[By The Numbers] JSON parse error:', (parseErr as any)?.message, 'Response was:', responseText.substring(0, 200))
-      return null  // Return null instead of crashing
+      console.error('[By The Numbers] JSON parse error:', (parseErr as any)?.message, 'Response was:', jsonText.substring(0, 200))
+      return null
     }
 
     // Validate response structure
@@ -498,9 +512,14 @@ async function getByTheNumbersData(matchday: number): Promise<{
 
     const result = { tiles, matchday }
 
-    // Try to cache result in Supabase with 3-hour TTL (failure doesn't block result)
+    // Try to cache result in Supabase with matchday-window TTL (failure doesn't block result)
     try {
-      const expiresAt = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
+      // Cache until end of current matchday window (Mon midnight after weekend games)
+      const now = new Date()
+      const dayOfWeek = now.getDay() // 0=Sun, 1=Mon ... 6=Sat
+      const hoursUntilTuesday = dayOfWeek === 0 ? 48 : dayOfWeek === 1 ? 24 : (9 - dayOfWeek) * 24
+      const ttlMs = Math.min(hoursUntilTuesday, 48) * 60 * 60 * 1000
+      const expiresAt = new Date(Date.now() + ttlMs).toISOString()
       await supabase.from('by_the_numbers_tiles').upsert({
         cache_key: cacheKey,
         data: result,
@@ -559,7 +578,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
               beyond_big_six: [],
               fantasy_premier_league: [],
               by_the_numbers: null,
-              and_finally: { has_content: false, headline: null, colour_line: null },
+              and_finally: { has_content: false, headline: null, colour_line: null, plhub_index: null },
             },
           },
         },
@@ -697,11 +716,13 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
           has_content: true,
           headline: truncateToWords(lastStory.title, 25),
           colour_line: lastStory.summary ? truncateToWords(lastStory.summary, 20) : null,
+          plhub_index: lastStory.indexScore || null,
         }
       : {
           has_content: false,
           headline: null,
           colour_line: null,
+          plhub_index: null,
         }
 
     const response: SnapshotResponse = {
@@ -725,6 +746,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
         },
       },
     }
+
+    // Debug: log what by_the_numbers contains
+    console.log('[Snapshot API] by_the_numbers module:', JSON.stringify(byTheNumbers))
 
     return NextResponse.json(response, {
       headers: {
@@ -762,7 +786,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<SnapshotRe
             beyond_big_six: [],
             fantasy_premier_league: [],
             by_the_numbers: null,
-            and_finally: { has_content: false, headline: null, colour_line: null },
+            and_finally: { has_content: false, headline: null, colour_line: null, plhub_index: null },
           },
         },
       },

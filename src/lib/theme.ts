@@ -177,6 +177,7 @@ const sourceColors: Record<string, { dark: string; light: string }> = {
  * Falls back to teal for unknown sources.
  */
 export function getSourceColor(name: string, mode: 'dark' | 'light' = 'dark'): string {
+  if (!name || typeof name !== 'string') return mode === 'dark' ? colors.teal : colors.tealLight;
   const entry = sourceColors[name];
   if (entry) return entry[mode];
 

@@ -1,48 +1,122 @@
 'use client';
-
 import { useState } from 'react';
 import Image from 'next/image';
 import { getSourceColor } from '@/lib/theme';
 import type { FeedPost } from '@/lib/types';
 
-// ──────────────────────────────────────────
-// COMPONENT
-// ──────────────────────────────────────────
+// ── Inline summary component ──────────────────────────────────
+function InlineSummary({
+  summary,
+  hook,
+  url,
+}: {
+  summary: string | null;
+  hook: string | null;
+  url: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
 
-export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?: number }) {
-  const [punditOpen, setPunditOpen] = useState(false);
+  const sentences = summary
+    ? (summary.match(/[^.!?]+[.!?]+/g) ?? [summary])
+    : null;
+
+  const first = sentences?.[0]?.trim() ?? hook ?? null;
+  const rest =
+    sentences && sentences.length > 1
+      ? sentences.slice(1).join(' ').trim()
+      : null;
+
+  if (!first) return null;
+
+  return (
+    <div className="mt-2.5">
+      <p
+        className="text-[15px] font-light leading-[1.65]"
+        style={{ color: 'rgba(250,245,240,0.85)' }}
+      >
+        {first}
+        {!expanded && rest && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(true);
+            }}
+            className="ml-1.5 text-[13px] font-semibold cursor-pointer transition-opacity duration-150"
+            style={{ color: 'var(--plh-gold)' }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.opacity = '0.7';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.opacity = '1';
+            }}
+          >
+            more...
+          </button>
+        )}
+        {expanded && rest && (
+          <span style={{ color: 'rgba(250,245,240,0.75)' }}> {rest}</span>
+        )}
+      </p>
+      {expanded && (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="inline-block mt-2 text-[12px] font-medium transition-colors duration-200"
+          style={{ color: 'var(--plh-teal)', textDecoration: 'none' }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.color = 'var(--plh-pink)';
+            el.style.textDecoration = 'underline';
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.color = 'var(--plh-teal)';
+            el.style.textDecoration = 'none';
+          }}
+        >
+          Read original →
+        </a>
+      )}
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────
+export default function StoryCard({
+  post,
+  index = 0,
+}: {
+  post: FeedPost;
+  index?: number;
+}) {
   const [copied, setCopied] = useState(false);
   const sourceColor = getSourceColor(post.sourceInfo.name);
   const primaryClub = post.clubs[0];
 
-  // v2.2: Priority detection — pink border for LIVE / BREAKING
-  const isLive = post.title.toLowerCase().includes('live') ||
+  const isLive =
+    post.title.toLowerCase().includes('live') ||
     post.sourceInfo.name.toLowerCase().includes('live');
   const isBreaking = post.title.toUpperCase().includes('BREAKING');
   const isPriority = isLive || isBreaking;
   const borderColor = isPriority ? 'var(--plh-pink)' : 'var(--plh-teal)';
 
-  // v2.2: Share always points to PLHub, never to the original source
-  // TODO: Update to plhub.co.uk/story/[slug] when story pages are built
   async function onShare(e: React.MouseEvent) {
     e.stopPropagation();
-
-    const plhubUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}`
-      : 'https://plhub.co.uk';
-
+    const plhubUrl =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}`
+        : 'https://plhub.co.uk';
     const shareData = {
       title: post.title,
       text: post.previewBlurb || undefined,
       url: plhubUrl,
     };
-
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch {
-        // cancelled
-      }
+      } catch {}
     } else {
       await navigator.clipboard.writeText(plhubUrl);
       setCopied(true);
@@ -53,16 +127,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
   return (
     <article
       id={`post-${post.id}`}
-      className="
-        bg-[var(--plh-card)]
-        rounded-[10px]
-        border border-[var(--plh-border)]
-        border-l-2
-        p-4
-        transition-all duration-200 ease-out
-        cursor-pointer
-        animate-card-enter
-      "
+      className="bg-[var(--plh-card)] rounded-[10px] border border-[var(--plh-border)] border-l-2 p-4 transition-all duration-200 ease-out animate-card-enter"
       style={{
         borderLeftColor: borderColor,
         boxShadow: 'var(--plh-shadow)',
@@ -78,26 +143,16 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
         el.style.borderColor = 'var(--plh-border)';
         el.style.borderLeftColor = borderColor;
       }}
-      // v2.2: Card tap opens Pundit's Take — does NOT navigate to source
-      onClick={() => {
-        if (post.summary) {
-          setPunditOpen(!punditOpen);
-        }
-      }}
     >
       {/* ── META ROW ── */}
       <div className="flex items-center justify-between mb-2 gap-3">
         <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-          {/* Source logo */}
-          {post.sourceInfo.logo && (
-            <Image
-              src={post.sourceInfo.logo}
-              alt={post.sourceInfo.name}
-              width={18}
-              height={18}
-              className="w-[18px] h-[18px] rounded-sm flex-shrink-0"
-            />
-          )}
+
+          {/* Source colour dot */}
+          <span
+            className="w-[7px] h-[7px] rounded-full flex-shrink-0"
+            style={{ background: sourceColor, marginTop: '1px' }}
+          />
 
           {/* Source name */}
           <span
@@ -107,7 +162,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
             {post.sourceInfo.name}
           </span>
 
-          {/* v2.2: LIVE / BREAKING badges */}
+          {/* LIVE / BREAKING */}
           {isLive && (
             <>
               <span className="text-[var(--plh-text-40)] text-[10px]">·</span>
@@ -131,6 +186,7 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
             </>
           )}
 
+          {/* Primary club */}
           {primaryClub && (
             <>
               <span className="text-[var(--plh-text-40)] text-[10px]">·</span>
@@ -150,21 +206,23 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
           )}
 
           <span className="text-[var(--plh-text-40)] text-[10px]">·</span>
-
           <span className="text-[13px] text-[rgba(250,245,240,0.7)] whitespace-nowrap">
             {post.timeDisplay}
           </span>
         </div>
 
-        {/* Pulse score */}
+        {/* Score badge — BR chevron */}
         <span
-          className="text-[13px] font-bold tabular-nums flex-shrink-0 px-2 py-0.5 rounded-[6px]"
+          className="flex items-center gap-0.5 flex-shrink-0 px-2 py-0.5 rounded-[6px] font-bold tabular-nums text-[13px]"
           style={{
             color: 'var(--plh-gold)',
             background: 'color-mix(in srgb, var(--plh-gold) 12%, transparent)',
           }}
         >
-          ⚡ {post.indexScore}
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+            <path d="M22 10V22H10" stroke="var(--plh-gold)" strokeWidth="3.5" strokeLinecap="round" />
+          </svg>
+          {post.indexScore}
         </span>
       </div>
 
@@ -173,16 +231,13 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
         {post.title}
       </h3>
 
-      {/* ── BLURB — 85% opacity ── */}
-      {post.previewBlurb && (
-        <p className="text-[16px] font-light text-[rgba(250,245,240,0.85)] leading-[1.6] mt-2">
-          {post.previewBlurb}
-        </p>
+      {/* ── INLINE SUMMARY ── */}
+      {(post.summary || post.summaryHook) && (
+        <InlineSummary summary={post.summary} hook={post.summaryHook} url={post.url} />
       )}
 
-      {/* ── FOOTER ROW: club tags + share ── */}
+      {/* ── FOOTER ROW ── */}
       <div className="flex items-center justify-between mt-3">
-        {/* Club tags (multi-club stories) */}
         <div className="flex items-center gap-1.5">
           {post.clubs.length > 1 &&
             post.clubs.map((club) => (
@@ -196,16 +251,9 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
             ))}
         </div>
 
-        {/* Share button */}
         <button
           onClick={onShare}
-          className="
-            flex items-center gap-1.5 px-2 py-1
-            text-[13px] font-medium
-            text-[rgba(250,245,240,0.7)]
-            rounded-[6px]
-            transition-all duration-200
-          "
+          className="flex items-center gap-1.5 px-2 py-1 text-[13px] font-medium text-[rgba(250,245,240,0.7)] rounded-[6px] transition-all duration-200"
           onMouseEnter={(e) => {
             const el = e.currentTarget;
             el.style.color = 'var(--plh-teal)';
@@ -239,88 +287,6 @@ export default function StoryCard({ post, index = 0 }: { post: FeedPost; index?:
           )}
         </button>
       </div>
-
-      {/* ── PUNDIT'S TAKE ── */}
-      {post.summary && (
-        <div className="mt-3 pt-3 border-t border-[var(--plh-border)]">
-          <button
-            className="
-              w-full flex items-center gap-2.5
-              rounded-[8px] py-2 px-2
-              transition-all duration-200 ease-out
-              text-left
-            "
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                'color-mix(in srgb, var(--plh-teal) 4%, transparent)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = 'transparent';
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setPunditOpen(!punditOpen);
-            }}
-            aria-expanded={punditOpen}
-          >
-            <div
-              className="
-                flex-shrink-0 w-[28px] h-[28px]
-                rounded-[6px]
-                text-[var(--plh-teal)]
-                text-[10px] font-semibold
-                flex items-center justify-center
-              "
-              style={{ background: 'color-mix(in srgb, var(--plh-teal) 15%, transparent)' }}
-            >
-              SP
-            </div>
-
-            <span className="text-[14px] font-semibold text-[var(--plh-text-75)] flex-1">
-              The Pundit&apos;s Take
-            </span>
-
-            <span
-              className="text-[13px] text-[rgba(250,245,240,0.7)] transition-transform duration-200"
-              style={{ transform: punditOpen ? 'rotate(90deg)' : 'none' }}
-            >
-              ▸
-            </span>
-          </button>
-
-          {punditOpen && (
-            <div className="px-2 pt-2.5 pb-1 animate-summary-reveal">
-              <p className="text-[15px] font-light text-[rgba(250,245,240,0.85)] leading-[1.7]">
-                {post.summary}
-              </p>
-              {/* Read original — deliberate extra step, opens source in new tab */}
-              <a
-                href={post.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="
-                  inline-block mt-3 text-[12px] font-medium
-                  text-[var(--plh-teal)]
-                  transition-colors duration-200
-                "
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget;
-                  el.style.color = 'var(--plh-pink)';
-                  el.style.textDecoration = 'underline';
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget;
-                  el.style.color = 'var(--plh-teal)';
-                  el.style.textDecoration = 'none';
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                Read original →
-              </a>
-            </div>
-          )}
-        </div>
-      )}
     </article>
   );
 }

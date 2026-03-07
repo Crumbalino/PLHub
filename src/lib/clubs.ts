@@ -203,6 +203,16 @@ export const CLUBS: Club[] = [
     badgeEmoji: '🐺',
     badgeUrl: `${PL_CDN}/t39.png`,
   },
+  {
+    slug: 'sunderland',
+    name: 'Sunderland',
+    shortName: 'Sunderland',
+    subreddit: 'safc',
+    primaryColor: '#EB6E1F',
+    secondaryColor: '#FFFFFF',
+    badgeEmoji: '⚫',
+    badgeUrl: `${PL_CDN}/t58.png`,
+  },
 ]
 
 export const CLUBS_BY_SLUG: Record<string, Club> = Object.fromEntries(
@@ -226,13 +236,13 @@ export const CLUB_CODES: Record<string, string> = {
   everton: 'EVE',
   fulham: 'FUL',
   ipswich: 'IPS',
-  leicester: 'LEI',
   liverpool: 'LIV',
   'man-city': 'MCI',
   'man-united': 'MUN',
   newcastle: 'NEW',
   'nottingham-forest': 'NFO',
   southampton: 'SOU',
+  sunderland: 'SUN',
   tottenham: 'TOT',
   'west-ham': 'WHU',
   wolves: 'WOL',
@@ -240,6 +250,39 @@ export const CLUB_CODES: Record<string, string> = {
 
 export function getClubCode(slug: string): string {
   return CLUB_CODES[slug] || slug
+}
+
+// --- Club Nicknames (for narrative content) ---
+// Primary nickname that fans use (no "The" prefix). For 2025/26 PL season.
+
+export const CLUB_NICKNAMES: Record<string, string> = {
+  arsenal: 'Gunners',
+  'aston-villa': 'Villa',
+  bournemouth: 'Bournemouth',
+  brentford: 'Brentford',
+  brighton: 'Brighton',
+  chelsea: 'Chelsea',
+  'crystal-palace': 'Palace',
+  everton: 'Everton',
+  fulham: 'Fulham',
+  ipswich: 'Ipswich',
+  liverpool: 'Liverpool',
+  'man-city': 'City',
+  'man-united': 'United',
+  newcastle: 'Newcastle',
+  'nottingham-forest': 'Forest',
+  southampton: 'Southampton',
+  sunderland: 'Sunderland',
+  tottenham: 'Spurs',
+  'west-ham': 'West Ham',
+  wolves: 'Wolves',
+}
+
+export function getClubNickname(slug: string): string {
+  const club = CLUBS_BY_SLUG[slug]
+  const nickname = CLUB_NICKNAMES[slug]
+  // Return nickname if available, otherwise fallback to short name, then full name
+  return nickname || club?.shortName || slug
 }
 
 // --- Multi-Club Detection ---
@@ -255,13 +298,13 @@ const CLUB_PATTERNS: [RegExp, string][] = [
   [/\beverton\b/i, 'everton'],
   [/\bfulham\b/i, 'fulham'],
   [/\bipswich\b/i, 'ipswich'],
-  [/\bleicester\b/i, 'leicester'],
   [/\bliverpool\b/i, 'liverpool'],
   [/\bman(?:chester)?\s*city\b/i, 'man-city'],
   [/\bman(?:chester)?\s*(?:utd|united)\b/i, 'man-united'],
   [/\bnewcastle\b/i, 'newcastle'],
   [/\bnott(?:ingham)?\s*forest\b/i, 'nottingham-forest'],
   [/\bsouthampton\b/i, 'southampton'],
+  [/\bsunderland\b/i, 'sunderland'],
   [/\b(?:spurs|tottenham)\b/i, 'tottenham'],
   [/\bwest ham\b/i, 'west-ham'],
   [/\bwolv(?:es|erhampton)\b/i, 'wolves'],

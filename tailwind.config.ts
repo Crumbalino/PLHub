@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sora: ['var(--font-sora)', 'sans-serif'],
+        mono: ['JetBrains Mono', 'var(--font-mono)', 'monospace'],
+      },
       colors: {
         // v2.2 — Navy system (replaces old green-teal)
         background: '#0D1B2A',

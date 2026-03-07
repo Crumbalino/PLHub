@@ -54,53 +54,63 @@ export const ALWAYS_HIDE = [
   'cameron trilogy', 'red bull chief', 'sprinkler pitch',
   'eric ramsay',
   'american football', 'champions league cash', 'world cup', 'carabao cup',
+  // Horse racing
+  'horse racing', 'racing tips', 'grand national', 'cheltenham',
+  'horse race', 'jockey', 'flat racing', 'jump racing',
+  // Snooker
+  'snooker', 'world snooker', 'crucible',
+  // F1
+  'formula 1', 'formula one', 'grand prix', 'f1 race',
+  // Other athletics
+  'swimming', 'athletics', 'olympic', 'commonwealth games',
+  // Cricket (additional)
+  'iplb', 'indian premier league', 'test match', 'ashes',
+  // Rugby (additional)
+  'six nations', 'premiership rugby', 'aviva premiership',
+  // Women's football (non-PL)
+  'women\'s super league', 'wsl', 'women\'s fa cup',
+  // Youth football (non-PL)
+  'under-21', 'u21 championship', 'youth cup',
+  // Lower English leagues
+  'national league', 'vanarama',
+  // European leagues
+  'eredivisie', 'swiss super league', 'mls cup', 'concacaf',
+  'el clasico', 'copa del rey', 'dfb pokal', 'coupe de france',
 ]
 
 /**
  * PL-only content filter.
- * - Filters out Reddit and YouTube sources
- * - ALWAYS_HIDE keywords block even if a PL club is mentioned
- * - Editorial RSS sources (BBC, Sky, Guardian, etc.) are allowed unless blocked
- * - For RSS: check the `subreddit` field which contains the feed name
- * - Other sources must mention a PL club or "premier league"
+ * - Filters out Reddit and YouTube sources entirely
+ * - ALWAYS_HIDE keywords block ALL posts regardless of source
+ * - ALL posts require PL club mention or competition match
+ * - No "trusted source" exceptions
  */
 export function filterPLContent(posts: Post[]): Post[] {
-  // Editorial RSS sources that are trusted
-  // These values must match what's stored in the `subreddit` field for RSS posts
-  const editorialSources = ['BBC', 'Sky', 'Guardian', 'Goal', '90min', 'Football365', 'Independent', 'ESPN', 'FourFourTwo', 'talkSPORT']
+  const PL_COMPETITIONS = [
+    'premier league', 'fa cup', 'league cup', 'carabao cup',
+    'champions league', 'europa league', 'community shield',
+  ]
 
   return posts.filter(post => {
-    // Exclude Reddit and YouTube sources entirely
+    // 1. Block Reddit and YouTube entirely
     if (post.source === 'reddit' || post.source === 'youtube') return false
 
-    const text = ((post.title || '') + ' ' + (post.summary || '') + ' ' + (post.content || '')).toLowerCase()
-    const sourceLower = (post.source || '').toLowerCase()
+    const text = (
+      (post.title || '') + ' ' +
+      (post.summary || '') + ' ' +
+      (post.content || '')
+    ).toLowerCase()
 
-    // Block anything matching ALWAYS_HIDE — even if from trusted sources
+    // 2. Block ALWAYS_HIDE keywords — fires for ALL sources including BBC/Sky
     if (ALWAYS_HIDE.some(kw => text.includes(kw))) return false
 
-    // Trust RSS feeds from editorial sources
-    // RSS posts have source='rss' and feed name in subreddit field
-    if (post.source === 'rss') {
-      const feedName = post.subreddit || ''
-      // Check if this feed is from a trusted editorial source
-      if (editorialSources.some(src => feedName.includes(src))) {
-        return true
-      }
-    }
-
-    // Trust other editorial sources (if someone adds non-RSS sources with those names)
-    if (editorialSources.some(src => sourceLower.includes(src.toLowerCase()))) {
-      return true
-    }
-
-    // For other sources, require a PL club mention or "premier league"
+    // 3. PL relevance check — required for ALL posts regardless of source
     const hasPLClub = PL_CLUBS.some(club => text.includes(club))
-    if (hasPLClub) return true
+    const hasPLCompetition = PL_COMPETITIONS.some(comp => text.includes(comp))
 
-    if (text.includes('premier league')) return true
+    if (hasPLClub || hasPLCompetition) return true
 
-    // No PL indicator and not from a trusted source — reject
+    // 4. No PL indicator — reject regardless of source
     return false
   })
 }

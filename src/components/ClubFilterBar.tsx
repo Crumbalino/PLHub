@@ -61,31 +61,35 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
     <>
       {/* DESKTOP VERSION */}
       <div
-        className="hidden md:block rounded-[10px]"
-        style={{
-          background: 'color-mix(in srgb, var(--plh-teal) 8%, var(--plh-card))',
-          padding: '18px 24px 22px',
-          border: '1px solid var(--plh-border)',
-          boxShadow: 'var(--plh-shadow)',
-          marginTop: '16px',
-          marginBottom: '16px',
-        }}
+        className="hidden md:block rounded-[12px] border border-[var(--plh-border)] overflow-hidden"
+        style={{ background: 'var(--plh-card)' }}
       >
-        {/* Label */}
+        {/* Header row */}
         <div
-          className="text-center mb-4"
-          style={{
-            color: 'var(--plh-teal)',
-            fontSize: '10px',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '3px',
-          }}
+          className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--plh-border)]"
+          style={{ background: 'color-mix(in srgb, var(--plh-teal) 6%, transparent)' }}
         >
-          Filter By
+          <span
+            className="text-[11px] font-bold uppercase tracking-[1.5px]"
+            style={{ color: 'var(--plh-teal)' }}
+          >
+            Filter by club
+          </span>
+          {selectedClub && (
+            <button
+              onClick={handleClear}
+              className="text-[11px] font-medium transition-colors duration-150"
+              style={{ color: 'rgba(250,245,240,0.5)' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-pink)' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(250,245,240,0.5)' }}
+            >
+              Clear ✕
+            </button>
+          )}
         </div>
 
-        {/* Badge Grid - 10 per row, 2 rows */}
+        {/* Badge Grid — 10 per row, 2 rows */}
+        <div className="p-3">
         <div
           style={{
             display: 'grid',
@@ -93,7 +97,6 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
             gap: '12px 10px',
             alignItems: 'center',
             justifyItems: 'center',
-            marginBottom: selectedClub ? '16px' : '0',
           }}
         >
           {CLUBS.map((club) => {
@@ -109,27 +112,29 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  opacity: opacity,
+                  opacity: selectedClub && selectedClub !== club.slug ? 0.4 : 1,
+                  transform: selectedClub === club.slug ? 'scale(1.15)' : 'scale(1)',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  border: isSelected ? '2px solid var(--plh-gold)' : '2px solid transparent',
+                  transition: 'all 0.15s ease',
+                  border: '2px solid transparent',
                   backgroundColor: 'transparent',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: 0,
+                  filter: selectedClub === club.slug ? 'drop-shadow(0 0 4px var(--plh-teal))' : 'none',
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement
                   el.style.opacity = '1'
-                  el.style.transform = 'scale(1.15)'
-                  el.style.boxShadow = '0 0 12px color-mix(in srgb, var(--plh-gold) 40%, transparent)'
+                  if (!isSelected) {
+                    el.style.transform = 'scale(1.15)'
+                  }
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement
-                  el.style.transform = 'scale(1)'
-                  el.style.boxShadow = 'none'
-                  el.style.opacity = opacity.toString()
+                  el.style.transform = selectedClub === club.slug ? 'scale(1.15)' : 'scale(1)'
+                  el.style.opacity = (selectedClub && selectedClub !== club.slug ? '0.4' : '1')
                 }}
                 title={club.name}
               >
@@ -145,32 +150,7 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
             )
           })}
         </div>
-
-        {/* Clear button - shown when filtered */}
-        {selectedClub && (
-          <div
-            style={{
-              textAlign: 'center',
-              animation: 'fadeIn 0.3s ease',
-            }}
-          >
-            <button
-              onClick={handleClear}
-              style={{
-                color: 'var(--plh-gold)',
-                fontSize: '12px',
-                cursor: 'pointer',
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                fontWeight: 500,
-              }}
-              className="hover:opacity-80 transition-opacity"
-            >
-              ✕ Clear
-            </button>
-          </div>
-        )}
+        </div>
       </div>
 
       {/* MOBILE VERSION — compact, subtle */}

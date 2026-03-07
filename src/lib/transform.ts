@@ -63,7 +63,22 @@ export function transformPost(post: Post): FeedPost {
  * Transform a batch of posts for the feed response.
  */
 export function transformPosts(posts: Post[]): FeedPost[] {
-  return posts.map(transformPost)
+  const transformed = posts.map(transformPost)
+
+  // Rescale index scores so the batch always spreads 35–95
+  // Best story of the day = 95, weakest = 35, rest proportional
+  const scores = transformed.map(p => p.indexScore ?? 0).filter(s => s > 0)
+  if (scores.length < 2) return transformed
+  const min = Math.min(...scores)
+  const max = Math.max(...scores)
+  if (max === min) return transformed
+
+  return transformed.map(p => ({
+    ...p,
+    indexScore: p.indexScore != null
+      ? Math.round(35 + ((p.indexScore - min) / (max - min)) * 60)
+      : p.indexScore,
+  }))
 }
 
 /**

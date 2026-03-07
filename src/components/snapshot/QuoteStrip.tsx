@@ -27,7 +27,7 @@ export default function QuoteStrip({
         className="text-[14px] italic leading-[1.5] mb-3"
         style={{
           color: 'rgba(250, 245, 240, 0.85)',
-          fontFamily: 'Sora, sans-serif',
+          fontFamily: 'var(--font-sora)',
         }}
       >
         "{quote}"
@@ -37,7 +37,7 @@ export default function QuoteStrip({
       <p
         className="text-[11px] font-semibold text-white"
         style={{
-          fontFamily: 'Sora, sans-serif',
+          fontFamily: 'var(--font-sora)',
           marginBottom: context ? '4px' : 0,
         }}
       >
