@@ -32,8 +32,8 @@ const toSlug = (name: string) =>
     .replace(' ', '-')
     .replace(/[^a-z0-9-]/g, '')
 
-function FormDots({ form }: { form?: Array<'W' | 'D' | 'L'> }) {
-  const [hovered, setHovered] = useState(false)
+function FormDots({ form, hoveredRow, rowIndex }: { form?: Array<'W' | 'D' | 'L'>; hoveredRow: number | null; rowIndex: number }) {
+  const isRowHovered = hoveredRow === rowIndex
 
   const formArray = form && form.length > 0
     ? form.slice(0, 5).concat(Array(Math.max(0, 5 - form.length)).fill(undefined))
@@ -42,29 +42,26 @@ function FormDots({ form }: { form?: Array<'W' | 'D' | 'L'> }) {
   return (
     <div
       className="flex gap-[3px]"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      style={{
+        transform: isRowHovered ? 'scale(1.3)' : 'scale(1)',
+        transition: 'transform 150ms ease',
+      }}
     >
       {formArray.map((result, i) => {
         let bgColor = 'rgba(255,255,255,0.15)'
-        let opacity = 1
 
         if (result === 'W') bgColor = '#3AAFA9'
         else if (result === 'D') bgColor = '#D4A843'
         else if (result === 'L') bgColor = '#E84080'
-        else if (!result) opacity = 0.2
 
         return (
           <div
             key={i}
             style={{
-              width: '7px',
-              height: '7px',
+              width: '6px',
+              height: '6px',
               borderRadius: '50%',
               background: bgColor,
-              opacity,
-              transform: hovered ? 'scale(1.3)' : 'scale(1)',
-              transition: 'transform 150ms ease-out',
             }}
           />
         )
@@ -123,6 +120,7 @@ function PtsCounter({ targetPts, rowIndex }: { targetPts: number; rowIndex: numb
 
 export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
   const [expanded, setExpanded] = useState(false)
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null)
   const visibleEntries = expanded ? entries : entries.slice(0, 6)
 
   return (
@@ -143,24 +141,9 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
         <span style={{ fontSize: '16px', fontWeight: 700, color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>
           Premier League
         </span>
-        <span className="text-[10px] font-medium" style={{ color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>
+        <span style={{ fontSize: '12px', fontWeight: 500, color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>
           2024/25
         </span>
-      </div>
-
-      {/* Column headers — # | Club | P | Pts */}
-      <div
-        className="grid items-center px-3 py-1.5"
-        style={{
-          gridTemplateColumns: '18px 1fr 24px 28px',
-          gap: '6px',
-          borderBottom: '1px solid var(--plh-border)',
-        }}
-      >
-        <span style={{ fontSize: '11px', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>#</span>
-        <span style={{ fontSize: '11px', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>Club</span>
-        <span style={{ fontSize: '11px', textAlign: 'center', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>P</span>
-        <span style={{ fontSize: '11px', textAlign: 'center', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>Pts</span>
       </div>
 
       {/* Rows */}
@@ -170,8 +153,8 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
           href={`/?club=${toSlug(entry.name)}`}
           className="grid items-center px-3 py-2.5 border-l-2"
           style={{
-            gridTemplateColumns: '18px 1fr 24px 28px',
-            gap: '6px',
+            gridTemplateColumns: '24px 42px 1fr 44px 24px 28px',
+            gap: '12px',
             borderBottom: '1px solid color-mix(in srgb, var(--plh-text-100) 3%, transparent)',
             background: 'transparent',
             borderLeftColor:
@@ -181,32 +164,33 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
                 ? '#ef4444'
                 : 'transparent',
           }}
+          onMouseEnter={() => setHoveredRow(rowIndex)}
+          onMouseLeave={() => setHoveredRow(null)}
         >
           {/* Position */}
           <span
             style={{
               fontSize: '14px',
               fontWeight: 700,
-              color: entry.position <= 3 ? 'var(--plh-teal)' : '#F8F9FB',
+              textAlign: 'center',
+              color: entry.position <= 3 ? '#3AAFA9' : '#F8F9FB',
               fontFamily: "'JetBrains Mono', 'Consolas', monospace",
             }}
           >
             {entry.position}
           </span>
 
-          {/* Badge + Name */}
-          <div className="flex items-center gap-2 min-w-0">
-            <img
-              src={entry.crest}
-              alt=""
-              className="object-contain shrink-0"
-              style={{ width: '32px', height: '32px', objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }}
-            />
-            <span
-              style={{ fontSize: '14px', fontWeight: 500, color: '#F8F9FB', fontFamily: "'Sora', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-            >
-              {entry.name}
-            </span>
+          {/* Badge */}
+          <img
+            src={entry.crest}
+            alt=""
+            className="object-contain shrink-0"
+            style={{ width: '42px', height: '42px', objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }}
+          />
+
+          {/* Form Dots */}
+          <div className="flex justify-center">
+            <FormDots form={entry.form} hoveredRow={hoveredRow} rowIndex={rowIndex} />
           </div>
 
           {/* Played */}
@@ -224,11 +208,12 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
       {/* Expand */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full py-2 text-center text-[11px] transition-opacity rounded-b-[10px]"
+        className="w-full py-2 text-center transition-opacity rounded-b-[10px]"
         style={{
           borderTop: '1px solid var(--plh-border)',
           color: '#F8F9FB',
           fontFamily: "'Sora', sans-serif",
+          fontSize: '13px',
         }}
         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.8' }}
         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
@@ -241,8 +226,8 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
         className="flex gap-3 px-3 py-1.5"
         style={{ borderTop: '1px solid var(--plh-border)' }}
       >
-        <span className="text-[10px]" style={{ color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>■ UCL</span>
-        <span className="text-[10px]" style={{ color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>■ Relegation</span>
+        <span style={{ fontSize: '12px', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>■ UCL</span>
+        <span style={{ fontSize: '12px', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>■ Relegation</span>
       </div>
     </div>
   )
