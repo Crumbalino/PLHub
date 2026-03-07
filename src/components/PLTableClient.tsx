@@ -110,12 +110,11 @@ function PtsCounter({ targetPts, rowIndex }: { targetPts: number; rowIndex: numb
   }, [targetPts, rowIndex])
 
   const isAnimating = displayValue < targetPts
-  const color = isAnimating ? '#3AAFA9' : 'var(--plh-text-100)'
+  const color = isAnimating ? '#3AAFA9' : '#F8F9FB'
 
   return (
     <span
-      className="text-[12px] font-bold text-center"
-      style={{ color, fontFamily: "'Consolas', 'Courier New', monospace" }}
+      style={{ fontSize: '14px', fontWeight: 700, textAlign: 'center', color, fontFamily: "'JetBrains Mono', 'Consolas', monospace" }}
     >
       {displayValue}
     </span>
@@ -141,28 +140,27 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
         className="flex items-center justify-between px-4 py-2.5 rounded-t-[10px]"
         style={{ borderBottom: '1px solid var(--plh-border)' }}
       >
-        <span className="text-sm font-bold" style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}>
+        <span style={{ fontSize: '16px', fontWeight: 700, color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>
           Premier League
         </span>
-        <span className="text-[10px] font-medium" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>
+        <span className="text-[10px] font-medium" style={{ color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>
           2024/25
         </span>
       </div>
 
-      {/* Column headers — # | Club | Form | P | Pts */}
+      {/* Column headers — # | Club | P | Pts */}
       <div
         className="grid items-center px-3 py-1.5"
         style={{
-          gridTemplateColumns: '18px 1fr 44px 24px 28px',
+          gridTemplateColumns: '18px 1fr 24px 28px',
           gap: '6px',
           borderBottom: '1px solid var(--plh-border)',
         }}
       >
-        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>#</span>
-        <span className="text-[10px]" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>Club</span>
-        <span className="text-[10px] text-center" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>Form</span>
-        <span className="text-[10px] text-center" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>P</span>
-        <span className="text-[10px] text-center" style={{ color: 'var(--plh-text-40)', fontFamily: "'Sora', sans-serif" }}>Pts</span>
+        <span style={{ fontSize: '11px', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>#</span>
+        <span style={{ fontSize: '11px', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>Club</span>
+        <span style={{ fontSize: '11px', textAlign: 'center', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>P</span>
+        <span style={{ fontSize: '11px', textAlign: 'center', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>Pts</span>
       </div>
 
       {/* Rows */}
@@ -170,9 +168,9 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
         <Link
           key={entry.position}
           href={`/?club=${toSlug(entry.name)}`}
-          className="grid items-center px-3 py-2 transition-colors border-l-2"
+          className="grid items-center px-3 py-2.5 border-l-2"
           style={{
-            gridTemplateColumns: '18px 1fr 44px 24px 28px',
+            gridTemplateColumns: '18px 1fr 24px 28px',
             gap: '6px',
             borderBottom: '1px solid color-mix(in srgb, var(--plh-text-100) 3%, transparent)',
             background: 'transparent',
@@ -183,19 +181,14 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
                 ? '#ef4444'
                 : 'transparent',
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'color-mix(in srgb, var(--plh-text-100) 4%, transparent)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent'
-          }}
         >
           {/* Position */}
           <span
-            className="text-[11px] font-semibold"
             style={{
-              color: entry.position <= 3 ? 'var(--plh-teal)' : 'var(--plh-text-40)',
-              fontFamily: "'Consolas', 'Courier New', monospace",
+              fontSize: '14px',
+              fontWeight: 700,
+              color: entry.position <= 3 ? 'var(--plh-teal)' : '#F8F9FB',
+              fontFamily: "'JetBrains Mono', 'Consolas', monospace",
             }}
           >
             {entry.position}
@@ -205,27 +198,20 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
           <div className="flex items-center gap-2 min-w-0">
             <img
               src={entry.crest}
-              alt={entry.name}
+              alt=""
               className="object-contain shrink-0"
-              style={{ width: '20px', height: '20px' }}
+              style={{ width: '32px', height: '32px', objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }}
             />
             <span
-              className="text-[12px] truncate"
-              style={{ color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif" }}
+              style={{ fontSize: '14px', fontWeight: 500, color: '#F8F9FB', fontFamily: "'Sora', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
             >
               {entry.name}
             </span>
           </div>
 
-          {/* Form Dots */}
-          <div className="flex justify-center">
-            <FormDots form={entry.form} />
-          </div>
-
           {/* Played */}
           <span
-            className="text-[11px] text-center"
-            style={{ color: 'var(--plh-text-40)', fontFamily: "'Consolas', 'Courier New', monospace" }}
+            style={{ fontSize: '14px', fontWeight: 700, textAlign: 'center', color: '#F8F9FB', fontFamily: "'JetBrains Mono', 'Consolas', monospace" }}
           >
             {entry.played}
           </span>
@@ -241,11 +227,11 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
         className="w-full py-2 text-center text-[11px] transition-opacity rounded-b-[10px]"
         style={{
           borderTop: '1px solid var(--plh-border)',
-          color: 'var(--plh-text-40)',
+          color: '#F8F9FB',
           fontFamily: "'Sora', sans-serif",
         }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-text-100)' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-text-40)' }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.8' }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
       >
         {expanded ? 'Show less ↑' : 'Full table ↓'}
       </button>
@@ -255,8 +241,8 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
         className="flex gap-3 px-3 py-1.5"
         style={{ borderTop: '1px solid var(--plh-border)' }}
       >
-        <span className="text-[10px] text-green-400/70" style={{ fontFamily: "'Sora', sans-serif" }}>■ UCL</span>
-        <span className="text-[10px] text-red-400/70" style={{ fontFamily: "'Sora', sans-serif" }}>■ Relegation</span>
+        <span className="text-[10px]" style={{ color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>■ UCL</span>
+        <span className="text-[10px]" style={{ color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>■ Relegation</span>
       </div>
     </div>
   )

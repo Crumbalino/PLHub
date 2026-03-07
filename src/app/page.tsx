@@ -45,22 +45,6 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           {/* CENTRE — Feed */}
           <main className="min-w-0">
-            {/* Left-aligned logo above Snapshot */}
-            {!clubSlug && (
-              <div className="flex items-center mb-3" style={{ paddingLeft: '0' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"
-                  style={{ position: 'relative', top: '-6px', marginRight: '6px' }}>
-                  <path d="M2 14V2H14" stroke="var(--plh-pink)" strokeWidth="3.5" strokeLinecap="round" />
-                </svg>
-                <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif", lineHeight: 1 }}>PL</span>
-                <span style={{ fontSize: '24px', fontWeight: 300, color: 'var(--plh-text-100)', fontFamily: "'Sora', sans-serif", lineHeight: 1, letterSpacing: '3px', marginRight: '-3px' }}>HUB</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"
-                  style={{ position: 'relative', top: '6px', marginLeft: '6px' }}>
-                  <path d="M22 10V22H10" stroke="var(--plh-pink)" strokeWidth="3.5" strokeLinecap="round" />
-                </svg>
-              </div>
-            )}
-
             {/* The Snapshot Container */}
             {!clubSlug && <SnapshotContainer matchday="Matchday 30" club={clubSlug} />}
 
