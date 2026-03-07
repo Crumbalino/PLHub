@@ -32,6 +32,15 @@ const formatKickoff = (utcDate: string): string => {
   return new Date(utcDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 }
 
+const getBadgeScale = (clubName: string): string => {
+  const lowerName = clubName.toLowerCase()
+  if (lowerName.includes('tottenham') || lowerName.includes('spurs')) return '1.3'
+  if (lowerName.includes('crystal palace')) return '1.25'
+  if (lowerName.includes('nottingham') || lowerName.includes('forest')) return '1.2'
+  if (lowerName.includes('leeds')) return '1.15'
+  return '1'
+}
+
 const ROW: React.CSSProperties = {
   display: 'grid',
   gridTemplateColumns: '1fr auto 1fr',
@@ -101,7 +110,7 @@ export default function NextFixturesClient({
             return (
               <div key={match.id} style={ROW}>
                 <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                  <img src={match.homeCrest} alt={match.home} style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.25))' }} />
+                  <img src={match.homeCrest} alt={match.home} style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.25))', transform: `scale(${getBadgeScale(match.home)})` }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   <span style={{ ...TIME, color: isLive ? 'var(--plh-pink)' : '#F8F9FB' }}>
@@ -109,7 +118,7 @@ export default function NextFixturesClient({
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                  <img src={match.awayCrest} alt={match.away} style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.25))' }} />
+                  <img src={match.awayCrest} alt={match.away} style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.25))', transform: `scale(${getBadgeScale(match.away)})` }} />
                 </div>
               </div>
             )
@@ -141,11 +150,11 @@ export default function NextFixturesClient({
           {recent.slice(0, 3).map(result => (
             <div key={result.id} style={ROW}>
               <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                <img src={result.homeCrest} alt={result.home} style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.25))' }} />
+                <img src={result.homeCrest} alt={result.home} style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.25))', transform: `scale(${getBadgeScale(result.home)})` }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <div
-                  style={{ position: 'relative', width: '44px', height: '22px', cursor: 'pointer' }}
+                  style={{ position: 'relative', width: '44px', height: '22px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   onClick={() => toggleScore(result.id)}
                 >
                   <div style={{
@@ -167,7 +176,7 @@ export default function NextFixturesClient({
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                <img src={result.awayCrest} alt={result.away} style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.25))' }} />
+                <img src={result.awayCrest} alt={result.away} style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.25))', transform: `scale(${getBadgeScale(result.away)})` }} />
               </div>
             </div>
           ))}

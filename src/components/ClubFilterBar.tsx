@@ -109,8 +109,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                 key={club.slug}
                 onClick={() => handleClubSelect(club.slug)}
                 style={{
-                  width: '40px',
-                  height: '40px',
+                  width: '42px',
+                  height: '42px',
                   borderRadius: '50%',
                   opacity: selectedClub && selectedClub !== club.slug ? 0.4 : 1,
                   transform: selectedClub === club.slug ? 'scale(1.15)' : 'scale(1)',
@@ -141,8 +141,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                 <Image
                   src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
                   alt={club.name}
-                  width={36}
-                  height={36}
+                  width={42}
+                  height={42}
                   unoptimized
                   className="w-full h-full object-contain"
                 />
@@ -235,8 +235,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                     key={club.slug}
                     onClick={() => handleClubSelect(club.slug)}
                     style={{
-                      width: '38px',
-                      height: '38px',
+                      width: '42px',
+                      height: '42px',
                       borderRadius: '50%',
                       opacity: opacity,
                       cursor: 'pointer',
@@ -254,8 +254,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                     <Image
                       src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
                       alt={club.name}
-                      width={34}
-                      height={34}
+                      width={42}
+                      height={42}
                       unoptimized
                       className="w-full h-full object-contain"
                     />

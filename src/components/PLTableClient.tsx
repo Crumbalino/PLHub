@@ -32,6 +32,15 @@ const toSlug = (name: string) =>
     .replace(' ', '-')
     .replace(/[^a-z0-9-]/g, '')
 
+const getBadgeScale = (name: string): string => {
+  const lowerName = name.toLowerCase()
+  if (lowerName.includes('tottenham') || lowerName.includes('spurs')) return '1.3'
+  if (lowerName.includes('crystal palace')) return '1.25'
+  if (lowerName.includes('nottingham') || lowerName.includes('forest')) return '1.2'
+  if (lowerName.includes('leeds')) return '1.15'
+  return '1'
+}
+
 function FormDots({ form, hoveredRow, rowIndex }: { form?: Array<'W' | 'D' | 'L'>; hoveredRow: number | null; rowIndex: number }) {
   const isRowHovered = hoveredRow === rowIndex
 
@@ -185,7 +194,7 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
             src={entry.crest}
             alt=""
             className="object-contain shrink-0"
-            style={{ width: '42px', height: '42px', objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }}
+            style={{ width: '42px', height: '42px', objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))', transform: `scale(${getBadgeScale(entry.name)})` }}
           />
 
           {/* Form Dots */}

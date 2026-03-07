@@ -100,7 +100,7 @@ function GridCard({
               fill="none"
               style={{ color: 'var(--plh-gold)' }}
             >
-              <path d="M22 10V22H10" stroke="var(--plh-gold)" strokeWidth="3.5" strokeLinecap="round"/>
+              <path d="M2 14V2H14" stroke="var(--plh-gold)" strokeWidth="3.5" strokeLinecap="round"/>
             </svg>
             <span
               style={{
