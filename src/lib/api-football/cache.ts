@@ -38,17 +38,14 @@ export async function getCachedOrFetch<T>(
     if (cached) {
       const expiresAt = new Date(cached.expires_at)
       if (expiresAt > now) {
-        console.log(`[Cache] HIT: ${cacheKey}`)
         return cached.data as T
       }
     }
   } catch (err) {
     // Cache miss is normal, continue to fetch
-    console.log(`[Cache] MISS: ${cacheKey}`)
   }
 
   // 3. Fetch fresh data
-  console.log(`[Cache] FETCH: ${cacheKey}`)
   const freshData = await fetchFn()
 
   // 4. Upsert into cache
@@ -78,7 +75,6 @@ export async function invalidateCache(cacheKey: string): Promise<void> {
   const supabase = createServerClient()
   try {
     await supabase.from('api_cache').delete().eq('cache_key', cacheKey)
-    console.log(`[Cache] Invalidated: ${cacheKey}`)
   } catch (err) {
     console.error(`[Cache] Failed to invalidate ${cacheKey}:`, err)
   }
@@ -95,7 +91,6 @@ export async function clearApiFootballCache(): Promise<void> {
       .from('api_cache')
       .delete()
       .eq('source', 'api-football')
-    console.log('[Cache] Cleared all API-Football cache')
   } catch (err) {
     console.error('[Cache] Failed to clear cache:', err)
   }

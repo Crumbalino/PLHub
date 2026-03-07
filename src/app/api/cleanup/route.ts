@@ -35,7 +35,6 @@ export async function GET(req: NextRequest) {
 
       if (!error) {
         deletedNonPLCount += count || 0
-        console.log(`Deleted posts matching "${keyword}": ${count || 0}`)
       }
     }
 
@@ -71,7 +70,6 @@ export async function GET(req: NextRequest) {
             duplicatesRemoved += count || 0
           }
         }
-        console.log(`Removed ${duplicatesRemoved} duplicate posts`)
       }
     }
 

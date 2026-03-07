@@ -76,7 +76,6 @@ export async function GET(req: NextRequest) {
         }
 
         if (!summary) {
-          console.debug(`[backfill-summaries] No summary generated for post ${post.id}`)
           failed++
           continue
         }
@@ -91,7 +90,6 @@ export async function GET(req: NextRequest) {
           failed++
         } else {
           updated++
-          console.debug(`[backfill-summaries] Updated post ${post.id} with summary`)
         }
       } catch (err) {
         console.error(`[backfill-summaries] Unexpected error processing post ${post.id}:`, err)

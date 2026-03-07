@@ -32,15 +32,6 @@ const formatKickoff = (utcDate: string): string => {
   return new Date(utcDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 }
 
-const BADGE: React.CSSProperties = {
-  width: '42px',
-  height: '42px',
-  objectFit: 'contain',
-  display: 'block',
-  flexShrink: 0,
-  filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.25))',
-}
-
 const ROW: React.CSSProperties = {
   display: 'grid',
   gridTemplateColumns: '1fr auto 1fr',

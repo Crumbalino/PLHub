@@ -16,14 +16,12 @@ export async function GET(req: NextRequest) {
     const supabase = createServerClient()
 
     // First, check if the column already exists
-    console.log('Checking if score_significance column exists...')
     const { data: testData, error: testError } = await supabase
       .from('posts')
       .select('score_significance')
       .limit(1)
 
     if (!testError) {
-      console.log('Column already exists')
       return NextResponse.json({
         success: true,
         message: 'Column score_significance already exists',
@@ -33,8 +31,6 @@ export async function GET(req: NextRequest) {
 
     // Column doesn't exist, but we can't create it via the client library
     // We need to provide instructions
-    console.log('Column does not exist:', testError.message)
-
     return NextResponse.json(
       {
         success: false,
