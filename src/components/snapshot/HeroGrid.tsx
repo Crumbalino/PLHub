@@ -42,7 +42,7 @@ function ScoreBadge({ score, hovered }: { score: number; hovered?: boolean }) {
       transition: 'filter 300ms ease',
     }}>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-        <path d="M2 14V2H14" stroke="var(--plh-teal)" strokeWidth="3.5" strokeLinecap="round"/>
+        <path d="M2 14V2H14" stroke="#F8F9FB" strokeWidth="3.5" strokeLinecap="round"/>
       </svg>
       {score}
     </span>
@@ -73,9 +73,7 @@ function HeroTile({ story }: { story: SnapshotStory }) {
   const [hovered, setHovered] = useState(false)
   return (
     <a
-      href={story.url}
-      target="_blank"
-      rel="noopener noreferrer"
+      href={`#story-${story.id}`}
       className="block"
       style={{ textDecoration: 'none', height: '100%' }}
     >
@@ -153,9 +151,7 @@ function SidekickTile({ story }: { story: SnapshotStory }) {
   const [hovered, setHovered] = useState(false)
   return (
     <a
-      href={story.url}
-      target="_blank"
-      rel="noopener noreferrer"
+      href={`#story-${story.id}`}
       className="block"
       style={{ textDecoration: 'none', height: '100%' }}
     >

@@ -91,6 +91,13 @@ export default function StoryCard({
         }
         .nudge { animation: bob 1.9s ease-in-out infinite; display: inline-block; }
 
+        @keyframes typewrite {
+          0% { width: 0; }
+          99% { width: 100%; }
+          100% { width: 100%; }
+        }
+        .typewriter { overflow: hidden; display: inline-block; }
+
         .teaser-fade {
           mask-image: linear-gradient(90deg, #000 50%, transparent 92%);
           -webkit-mask-image: linear-gradient(90deg, #000 50%, transparent 92%);
@@ -117,7 +124,7 @@ export default function StoryCard({
 
       <article
         ref={cardRef}
-        id={`post-${post.id}`}
+        id={`story-${post.id}`}
         className="animate-card-enter"
         style={{
           background: expanded ? 'rgba(58,175,169,0.035)' : 'var(--plh-card)',
@@ -137,7 +144,7 @@ export default function StoryCard({
           {/* HEADLINE */}
           <h3
             style={{
-              fontSize: '13.5px',
+              fontSize: '17px',
               fontWeight: 600,
               color: '#F8F9FB',
               fontFamily: "'Sora', sans-serif",
@@ -168,10 +175,10 @@ export default function StoryCard({
               </div>
 
               {/* Separator */}
-              <span style={{ color: 'rgba(248,249,251,0.25)' }}>·</span>
+              <span style={{ color: 'rgba(248,249,251,0.7)' }}>·</span>
 
               {/* Time */}
-              <span style={{ color: 'rgba(248,249,251,0.5)' }}>
+              <span style={{ color: 'rgba(248,249,251,0.7)' }}>
                 {post.timeDisplay}
               </span>
 
@@ -210,13 +217,13 @@ export default function StoryCard({
                 alignItems: 'center',
                 gap: '4px',
                 flexShrink: 0,
-                color: '#3AAFA9',
+                color: '#F8F9FB',
                 fontFamily: "'JetBrains Mono', monospace",
                 fontWeight: 700,
                 fontSize: '12px',
               }}
             >
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" style={{ stroke: '#3AAFA9', strokeWidth: '3.5', strokeLinecap: 'round' }}>
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" style={{ stroke: '#F8F9FB', strokeWidth: '3.5', strokeLinecap: 'round' }}>
                 <path d="M2 14V2H14" />
               </svg>
               {post.indexScore}
@@ -247,14 +254,14 @@ export default function StoryCard({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                fontSize: '12px',
+                fontSize: '14px',
                 marginBottom: '4px',
               }}
             >
               <span
                 className="teaser-fade"
                 style={{
-                  color: 'rgba(248,249,251,0.45)',
+                  color: 'rgba(248,249,251,0.7)',
                   fontStyle: 'italic',
                   flex: 1,
                 }}
@@ -312,19 +319,44 @@ export default function StoryCard({
 
                 {/* Summary text */}
                 <p
+                  className="typewriter"
                   style={{
-                    fontSize: '13px',
+                    fontSize: '15px',
                     lineHeight: 1.72,
                     color: 'rgba(248,249,251,0.82)',
                     fontFamily: "'Sora', sans-serif",
                     margin: '0 0 16px 0',
+                    animation: `typewrite ${(summaryText?.length ?? 0) * 0.018}s steps(${summaryText?.length ?? 1}, end) 1`,
                   }}
                 >
                   {summaryText}
                 </p>
 
-                {/* Next story button */}
-                <div style={{ textAlign: 'right' }}>
+                {/* Read on Publisher link */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      color: sourceColor,
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      fontFamily: "'Sora', sans-serif",
+                      textDecoration: 'none',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      transition: 'opacity 0.2s ease',
+                      opacity: 0.85,
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.85')}
+                  >
+                    Read on {post.sourceInfo.name} →
+                  </a>
+
+                  {/* Next story button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
