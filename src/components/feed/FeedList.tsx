@@ -7,9 +7,10 @@ import type { SortMode } from '@/lib/types'
 
 interface FeedListProps {
   club?: string | null
+  onCardExpand?: () => void
 }
 
-export default function FeedList({ club = null }: FeedListProps) {
+export default function FeedList({ club = null, onCardExpand }: FeedListProps) {
   const [showHowItWorks, setShowHowItWorks] = useState(false)
   const [headingPhase, setHeadingPhase] = useState(0)
   const [readCount, setReadCount] = useState(0)
@@ -146,6 +147,7 @@ export default function FeedList({ club = null }: FeedListProps) {
               post={post}
               index={idx}
               onRead={handleRead}
+              onExpand={onCardExpand}
             />
           ))}
         </div>

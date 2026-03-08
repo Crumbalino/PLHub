@@ -30,15 +30,18 @@ export default function StoryCard({
   post,
   index = 0,
   onRead,
+  onExpand,
 }: {
   post: FeedPost;
   index?: number;
   onRead?: () => void;
+  onExpand?: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [hasBeenRead, setHasBeenRead] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const nextCardRef = useRef<HTMLElement | null>(null);
+  const hasBeenExpandedRef = useRef(false);
 
   const sourceColor = getPublisherColor(post.sourceInfo.name);
 
@@ -61,6 +64,11 @@ export default function StoryCard({
       if (!hasBeenRead) {
         setHasBeenRead(true);
         onRead?.();
+      }
+      // Call onExpand only on first expand
+      if (!hasBeenExpandedRef.current) {
+        hasBeenExpandedRef.current = true;
+        onExpand?.();
       }
     } else {
       setExpanded(false);
