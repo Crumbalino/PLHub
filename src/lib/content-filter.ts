@@ -37,7 +37,6 @@ export const ALWAYS_HIDE = [
   'qatar league', 'al-sailiya',
   'ligue 1', 'serie a', 'la liga', 'eredivisie', 'liga nos',
   'bundesliga', 'segunda division', 'spanish second division',
-  'conference league', 'europa conference',
   'fenerbahce', 'zrinjski', 'dortmund', 'borussia dortmund',
   'celtic', 'rangers', 'scottish',
   'championship goal', 'league one', 'league two', 'efl',
@@ -53,7 +52,7 @@ export const ALWAYS_HIDE = [
   'ronaldo buys', 'ronaldo live', 'al-fayha vs',
   'cameron trilogy', 'red bull chief', 'sprinkler pitch',
   'eric ramsay',
-  'american football', 'champions league cash', 'world cup', 'carabao cup',
+  'american football', 'champions league cash', 'world cup',
   // Horse racing
   'horse racing', 'racing tips', 'grand national', 'cheltenham',
   'horse race', 'jockey', 'flat racing', 'jump racing',
@@ -88,7 +87,11 @@ export const ALWAYS_HIDE = [
 export function filterPLContent(posts: Post[]): Post[] {
   const PL_COMPETITIONS = [
     'premier league', 'fa cup', 'league cup', 'carabao cup',
-    'champions league', 'europa league', 'community shield',
+    'champions league', 'europa league', 'conference league',
+    'community shield',
+    'premier league promotion', 'promotion to the premier league',
+    'england squad', 'england international', 'england manager', 'three lions',
+    'scotland squad', 'wales squad', 'northern ireland squad',
   ]
 
   return posts.filter(post => {
