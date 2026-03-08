@@ -1,25 +1,46 @@
 'use client';
 
-import { useState } from 'react';
-import { getSourceColor } from '@/lib/theme';
+import { useState, useRef } from 'react';
 import type { FeedPost } from '@/lib/types';
+
+const PUBLISHER_COLORS: Record<string, string> = {
+  'BBC Sport': '#D4A843',
+  'Sky Sports': '#E84080',
+  'The Guardian': '#6B9E78',
+  'Goal.com': '#7B5EA7',
+  '90min': '#FF6B35',
+  'Football365': '#E84080',
+  'The Independent': '#C0392B',
+  'ESPN FC': '#E84080',
+  'FourFourTwo': '#D4A843',
+};
+
+function getPublisherColor(publisherName: string): string {
+  return PUBLISHER_COLORS[publisherName] || 'rgba(248,249,251,0.4)';
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 export default function StoryCard({
   post,
   index = 0,
+  onRead,
 }: {
   post: FeedPost;
   index?: number;
+  onRead?: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [summaryVisible, setSummaryVisible] = useState(false);
-  const [scorePulse, setScorePulse] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [hasBeenRead, setHasBeenRead] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const nextCardRef = useRef<HTMLElement | null>(null);
 
-  const sourceColor =
-    (post.sourceInfo as any).color ||
-    getSourceColor(post.sourceInfo.name) ||
-    'var(--plh-text-100)';
+  const sourceColor = getPublisherColor(post.sourceInfo.name);
 
   const isLive =
     (/\blive\b/i.test(post.title) &&
@@ -27,342 +48,299 @@ export default function StoryCard({
     post.sourceInfo.name.toLowerCase().includes('live');
   const isBreaking = post.title.toUpperCase().includes('BREAKING');
   const isPriority = isLive || isBreaking;
-  const borderColor = isPriority ? 'var(--plh-pink)' : sourceColor;
+  const borderColor = isPriority ? '#E84080' : sourceColor;
 
   const summaryText = post.summary || post.summaryHook;
   const hasSummary = !!summaryText;
   const teaserText = summaryText ? summaryText.slice(0, 85) : null;
 
-  const summaryParagraphs = summaryText
-    ? summaryText.split(/(?<=\.)\s+/).filter(Boolean)
-    : [];
-
   function handleExpand() {
     if (!hasSummary) return;
     if (!expanded) {
       setExpanded(true);
-      setScorePulse(true);
-      setTimeout(() => setSummaryVisible(true), 180);
-      setTimeout(() => setScorePulse(false), 500);
+      if (!hasBeenRead) {
+        setHasBeenRead(true);
+        onRead?.();
+      }
     } else {
-      setSummaryVisible(false);
-      setTimeout(() => setExpanded(false), 120);
+      setExpanded(false);
     }
   }
 
-  async function handleShare(e: React.MouseEvent) {
-    e.stopPropagation();
-    const shareUrl =
-      typeof window !== 'undefined'
-        ? window.location.origin
-        : 'https://thefootballhub.uk';
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: post.title, url: shareUrl });
-      } catch {}
-    } else {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  function handleNextStory() {
+    const nextCard = cardRef.current?.nextElementSibling as HTMLElement | null;
+    if (nextCard) {
+      nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }
 
   return (
-    <article
-      id={`post-${post.id}`}
-      className="bg-[var(--plh-card)] rounded-[10px] overflow-hidden border border-[var(--plh-border)] animate-card-enter"
-      style={{
-        borderLeftWidth: '3px',
-        borderLeftColor: borderColor,
-        boxShadow: 'var(--plh-shadow)',
-        animationDelay: `${index * 50}ms`,
-        cursor: hasSummary ? 'pointer' : 'default',
-        transition: 'border-color 150ms ease-out, border-left-width 150ms ease-out',
-      }}
-      onClick={handleExpand}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.borderColor = 'var(--plh-border-hover)';
-        el.style.borderLeftColor = borderColor;
-        el.style.borderLeftWidth = '4px';
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLElement;
-        el.style.borderColor = 'var(--plh-border)';
-        el.style.borderLeftColor = borderColor;
-        el.style.borderLeftWidth = '3px';
-      }}
-    >
-      {/* CARD BODY */}
-      <div className="p-4">
-        {/* HEADLINE ROW */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="flex-1 min-w-0">
-            {isPriority && (
-              <div className="flex items-center gap-1.5 mb-1.5">
-                {isLive && (
-                  <span
-                    className="w-[6px] h-[6px] rounded-full bg-[var(--plh-pink)]"
-                    style={{ animation: 'livePulse 2s ease-in-out infinite' }}
-                  />
-                )}
+    <>
+      <style>{`
+        @keyframes bob {
+          0%, 100% { transform: translateY(0); opacity: 0.4; }
+          55% { transform: translateY(5px); opacity: 1; }
+        }
+        .nudge { animation: bob 1.9s ease-in-out infinite; display: inline-block; }
+
+        .teaser-fade {
+          mask-image: linear-gradient(90deg, #000 50%, transparent 92%);
+          -webkit-mask-image: linear-gradient(90deg, #000 50%, transparent 92%);
+          overflow: hidden;
+          white-space: nowrap;
+        }
+
+        .summary-grid {
+          display: grid;
+          transition: grid-template-rows 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease;
+        }
+        .summary-grid.open {
+          grid-template-rows: 1fr;
+          opacity: 1;
+        }
+        .summary-grid.closed {
+          grid-template-rows: 0fr;
+          opacity: 0;
+        }
+        .summary-inner {
+          overflow: hidden;
+        }
+      `}</style>
+
+      <article
+        ref={cardRef}
+        id={`post-${post.id}`}
+        className="animate-card-enter"
+        style={{
+          background: expanded ? 'rgba(58,175,169,0.035)' : 'var(--plh-card)',
+          border: '1px solid var(--plh-border)',
+          borderLeftWidth: '3px',
+          borderLeftColor: expanded ? borderColor : hexToRgba(borderColor, 0.4),
+          borderRadius: '10px',
+          overflow: 'hidden',
+          boxShadow: 'var(--plh-shadow)',
+          animationDelay: `${index * 50}ms`,
+          cursor: hasSummary ? 'pointer' : 'default',
+          transition: 'background 0.3s ease, border-left-color 0.3s ease',
+        }}
+        onClick={handleExpand}
+      >
+        <div style={{ padding: '16px' }}>
+          {/* HEADLINE */}
+          <h3
+            style={{
+              fontSize: '13.5px',
+              fontWeight: 600,
+              color: '#F8F9FB',
+              fontFamily: "'Sora', sans-serif",
+              lineHeight: 1.3,
+              marginBottom: expanded ? '16px' : '12px',
+            }}
+          >
+            {post.title}
+          </h3>
+
+          {/* META ROW — Publisher, Time, Clubs, Score */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: expanded ? '16px' : '8px', fontSize: '11px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', minWidth: 0, flex: 1 }}>
+              {/* Publisher dot + name */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
                 <span
-                  className="text-[9px] font-bold uppercase tracking-[1.5px] text-[var(--plh-pink)]"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                >
-                  {isLive ? 'LIVE' : 'BREAKING'}
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: sourceColor,
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ color: sourceColor, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  {post.sourceInfo.name}
                 </span>
               </div>
-            )}
-            <h3
-              className="text-[19px] font-semibold leading-[1.3]"
-              style={{ color: 'var(--plh-text-100)' }}
-            >
-              {post.title}
-            </h3>
-          </div>
 
-          {hasSummary && (
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--plh-text-40)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              style={{
-                flexShrink: 0,
-                marginTop: '4px',
-                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 250ms ease',
-              }}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          )}
-        </div>
+              {/* Separator */}
+              <span style={{ color: 'rgba(248,249,251,0.25)' }}>·</span>
 
-        {/* TEASER — visible only when collapsed and summary exists */}
-        {hasSummary && !expanded && (
-          <p
-            className="text-[12px] font-light leading-[1.5] mb-3"
-            style={{
-              color: 'rgba(250,245,240,0.55)',
-              fontStyle: 'italic',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-              textOverflow: 'clip',
-              maxWidth: '100%',
-            }}
-          >
-            {teaserText}…
-          </p>
-        )}
+              {/* Time */}
+              <span style={{ color: 'rgba(248,249,251,0.5)' }}>
+                {post.timeDisplay}
+              </span>
 
-        {/* SUMMARY PANEL — two-step reveal */}
-        {hasSummary && expanded && (
-          <div
-            className="mb-3"
-            style={{
-              background: 'var(--plh-elevated)',
-              borderRadius: '6px',
-              padding: '12px 14px',
-              borderLeft: '2px solid var(--plh-pink)',
-              overflow: 'hidden',
-              maxHeight: expanded ? '600px' : '0',
-              transition: 'max-height 180ms ease-out',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+              {/* Clubs */}
+              {post.clubs.length > 0 && (
+                <>
+                  <span style={{ color: 'rgba(248,249,251,0.25)' }}>·</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {post.clubs.slice(0, 2).map((club) => (
+                      <span
+                        key={club.slug}
+                        style={{
+                          fontSize: '9px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          background: '#3AAFA9',
+                          color: '#0D1B2A',
+                          fontFamily: "'JetBrains Mono', monospace",
+                          borderRadius: '3px',
+                          padding: '2px 6px',
+                        }}
+                      >
+                        {club.code}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Score (right-aligned) */}
             <div
               style={{
-                opacity: summaryVisible ? 1 : 0,
-                transition: 'opacity 120ms ease-in',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                flexShrink: 0,
+                color: '#3AAFA9',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 700,
+                fontSize: '12px',
               }}
             >
-              <div className="mb-3">
-                {summaryParagraphs.map((para, i) => (
-                  <p
-                    key={i}
-                    className="text-[14px] font-light leading-[1.65]"
-                    style={{
-                      color: 'var(--plh-text-100)',
-                      marginBottom:
-                        i < summaryParagraphs.length - 1 ? '10px' : '0',
-                    }}
-                  >
-                    {para}
-                  </p>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-end gap-4">
-                <button
-                  onClick={handleShare}
-                  className="flex items-center gap-1.5 text-[12px] font-medium transition-colors duration-200"
-                  style={{
-                    color: 'var(--plh-text-75)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 0,
-                  }}
-                >
-                  {copied ? (
-                    <>
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="var(--plh-teal)"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      <span style={{ color: 'var(--plh-teal)' }}>Copied</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="18" cy="5" r="3" />
-                        <circle cx="6" cy="12" r="3" />
-                        <circle cx="18" cy="19" r="3" />
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                      </svg>
-                      Share
-                    </>
-                  )}
-                </button>
-
-                <a
-                  href={post.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-[12px] font-semibold transition-colors duration-200"
-                  style={{ color: 'var(--plh-teal)', textDecoration: 'none' }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.textDecoration =
-                      'underline';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.textDecoration =
-                      'none';
-                  }}
-                >
-                  Full story →
-                </a>
-              </div>
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" style={{ stroke: '#3AAFA9', strokeWidth: '3.5', strokeLinecap: 'round' }}>
+                <path d="M2 14V2H14" />
+              </svg>
+              {post.indexScore}
             </div>
-          </div>
-        )}
 
-        {/* BOTTOM BAR */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-            <span
-              className="w-[6px] h-[6px] rounded-full flex-shrink-0"
-              style={{ background: sourceColor }}
-            />
-            <span
-              className="text-[11px] font-semibold uppercase tracking-[1px] whitespace-nowrap"
-              style={{ color: 'var(--plh-text-100)' }}
-            >
-              {post.sourceInfo.name}
-            </span>
-            <span style={{ color: 'var(--plh-text-40)', fontSize: '10px' }}>
-              ·
-            </span>
-            <span
-              className="text-[11px] whitespace-nowrap"
-              style={{ color: 'var(--plh-text-75)' }}
-            >
-              {post.timeDisplay}
-            </span>
-            {post.clubs.length > 0 && (
-              <>
-                <span
-                  style={{ color: 'var(--plh-text-40)', fontSize: '10px' }}
-                >
-                  ·
-                </span>
-                <div className="flex items-center gap-1">
-                  {post.clubs.slice(0, 3).map((club) => (
-                    <span
-                      key={club.slug}
-                      className="text-[10px] font-bold uppercase tracking-[0.5px] rounded-[3px] px-1.5 py-0.5"
-                      style={{
-                        background: '#3AAFA9',
-                        color: '#0D1B2A',
-                        fontFamily: "'JetBrains Mono', 'Consolas', monospace",
-                      }}
-                    >
-                      {club.code}
-                    </span>
-                  ))}
-                </div>
-              </>
+            {/* Read dot (top-right if has been read and collapsed) */}
+            {hasBeenRead && !expanded && (
+              <div
+                style={{
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  background: '#3AAFA9',
+                  opacity: 0.5,
+                  flexShrink: 0,
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                }}
+              />
             )}
           </div>
 
-          {/* Hub Index score badge */}
-          <div
-            className="flex items-center gap-1 flex-shrink-0 px-2 py-0.5 rounded-[5px] cursor-default select-none"
-            style={{
-              background:
-                'color-mix(in srgb, var(--plh-text-100) 7%, transparent)',
-              border:
-                '1px solid color-mix(in srgb, var(--plh-text-100) 12%, transparent)',
-              boxShadow: scorePulse
-                ? '0 0 12px rgba(58,175,169,0.7)'
-                : 'none',
-              transition: 'box-shadow 400ms ease-out',
-            }}
-            title="Hub Index score — ranked by relevance and recency"
-          >
-            <svg
-              width="9"
-              height="9"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-              style={{ flexShrink: 0 }}
-            >
-              <path
-                d="M2 14V2H14"
-                stroke="var(--plh-teal)"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-              />
-            </svg>
-            <span
+          {/* TEASER (collapsed only) */}
+          {hasSummary && !expanded && teaserText && (
+            <div
               style={{
-                fontSize: '13px',
-                fontWeight: 700,
-                fontFamily: "'JetBrains Mono', 'Consolas', monospace",
-                color: 'var(--plh-text-100)',
-                lineHeight: 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12px',
+                marginBottom: '4px',
               }}
             >
-              {post.indexScore}
-            </span>
-          </div>
+              <span
+                className="teaser-fade"
+                style={{
+                  color: 'rgba(248,249,251,0.45)',
+                  fontStyle: 'italic',
+                  flex: 1,
+                }}
+              >
+                {teaserText}
+              </span>
+              <span style={{ color: '#3AAFA9', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                read →
+              </span>
+            </div>
+          )}
+
+          {/* SUMMARY GRID (expanded only) */}
+          {hasSummary && expanded && (
+            <div className={`summary-grid ${expanded ? 'open' : 'closed'}`}>
+              <div className="summary-inner">
+                {/* THE HUB TAKE header */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    marginBottom: '12px',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      background: '#3AAFA9',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '8px',
+                      color: '#0D1B2A',
+                      fontWeight: 700,
+                    }}
+                  >
+                    ✦
+                  </div>
+                  <span
+                    style={{
+                      color: '#3AAFA9',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.07em',
+                      fontFamily: "'Sora', sans-serif",
+                    }}
+                  >
+                    The Hub Take
+                  </span>
+                </div>
+
+                {/* Summary text */}
+                <p
+                  style={{
+                    fontSize: '13px',
+                    lineHeight: 1.72,
+                    color: 'rgba(248,249,251,0.82)',
+                    fontFamily: "'Sora', sans-serif",
+                    margin: '0 0 16px 0',
+                  }}
+                >
+                  {summaryText}
+                </p>
+
+                {/* Next story button */}
+                <div style={{ textAlign: 'right' }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNextStory();
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#3AAFA9',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      fontFamily: "'Sora', sans-serif",
+                      padding: 0,
+                    }}
+                  >
+                    next story <span className="nudge">↓</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-    </article>
+      </article>
+    </>
   );
 }

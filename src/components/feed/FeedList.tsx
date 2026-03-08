@@ -12,6 +12,8 @@ interface FeedListProps {
 export default function FeedList({ club = null }: FeedListProps) {
   const [showHowItWorks, setShowHowItWorks] = useState(false)
   const [headingPhase, setHeadingPhase] = useState(0)
+  const [readCount, setReadCount] = useState(0)
+  const [showStreakBadge, setShowStreakBadge] = useState(false)
   const {
     posts,
     isLoading,
@@ -21,6 +23,14 @@ export default function FeedList({ club = null }: FeedListProps) {
     loadMore,
     hasMore,
   } = useFeed({ club })
+
+  const handleRead = () => {
+    const newCount = readCount + 1
+    setReadCount(newCount)
+    if (newCount === 2 && !showStreakBadge) {
+      setShowStreakBadge(true)
+    }
+  }
 
   const handleToggleSort = () => {
     setHeadingPhase(1)
@@ -36,12 +46,43 @@ export default function FeedList({ club = null }: FeedListProps) {
 
   return (
     <>
+      <style>{`
+        @keyframes pop {
+          from { transform: scale(0.5); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .streak-pop { animation: pop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+      `}</style>
+
       {/* Section Heading — stacks on mobile, inline on desktop */}
       <div className="mb-4 mt-2 border-l-[3px] border-l-[var(--plh-teal)] pl-3">
         <div className={`transition-opacity duration-200 ${headingPhase === 1 ? 'opacity-0' : 'opacity-100'}`}>
-          <h2 className="text-lg sm:text-xl font-bold text-[var(--plh-text-100)] leading-tight">
-            {title}
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <h2 className="text-lg sm:text-xl font-bold text-[var(--plh-text-100)] leading-tight">
+              {title}
+            </h2>
+            {showStreakBadge && (
+              <div
+                className="streak-pop"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'rgba(58,175,169,0.15)',
+                  border: '1px solid rgba(58,175,169,0.3)',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  color: '#3AAFA9',
+                  fontWeight: 600,
+                  fontFamily: "'Sora', sans-serif",
+                }}
+              >
+                <span>⚡</span>
+                <span>{readCount} read today</span>
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-3 mt-1">
             <button
               onClick={handleToggleSort}
@@ -104,6 +145,7 @@ export default function FeedList({ club = null }: FeedListProps) {
               key={post.id}
               post={post}
               index={idx}
+              onRead={handleRead}
             />
           ))}
         </div>
