@@ -45,7 +45,7 @@ Voice rules:
 - 7/10 factual, 3/10 voice. The numbers talk. You raise an eyebrow.
 - British English. Colour not color.
 - Short club names: Spurs, Forest, Palace, Saints, Villa etc.
-- Spell out one to nine. Figures for 10+. Scores always figures.
+- ALL NUMBERS IN TILES MUST BE DIGITS — no words. "6 points", not "six points". "14 goals", not "fourteen goals". "£72m", not "seventy-two million". This applies to: number field, label, context. No exceptions.
 - Contractions are fine.
 - No exclamation marks.
 - No intensifiers: incredible, unbelievable, mind-blowing.

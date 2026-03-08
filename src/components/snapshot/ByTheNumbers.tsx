@@ -109,7 +109,7 @@ function HeroTile({ tile, swapping, inView }: {
         lineHeight: 1,
         fontFamily: "'Consolas','Courier New',monospace",
         letterSpacing: '2px',
-        color: tile.accent ? 'var(--plh-teal)' : 'var(--plh-text-100)',
+        color: '#3AAFA9',
         marginBottom: '10px',
         transition: 'color 0.3s',
       }}>
@@ -206,7 +206,7 @@ function SupportTile({ tile, onClick, inView }: {
             fontWeight: 800,
             lineHeight: 1,
             fontFamily: "'Consolas','Courier New',monospace",
-            color: tile.accent ? 'var(--plh-teal)' : 'var(--plh-text-100)',
+            color: '#3AAFA9',
             marginBottom: '6px',
           }}>
             {counted}
