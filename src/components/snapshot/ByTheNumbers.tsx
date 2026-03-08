@@ -73,7 +73,7 @@ function useCountUp(target: string, active: boolean, duration = 800): string {
 
 // Intersection observer hook — fires once when element enters viewport
 function useInView(ref: React.RefObject<Element>): boolean {
-  const [inView, setInView] = useState(false)
+  const [inView, setInView] = useState(true)
   useEffect(() => {
     if (!ref.current) return
     const obs = new IntersectionObserver(([entry]) => {
@@ -109,7 +109,7 @@ function HeroTile({ tile, swapping, inView }: {
         lineHeight: 1,
         fontFamily: "'Consolas','Courier New',monospace",
         letterSpacing: '2px',
-        color: tile.accent ? 'var(--plh-pink)' : 'var(--plh-text-100)',
+        color: tile.accent ? 'var(--plh-teal)' : 'var(--plh-text-100)',
         marginBottom: '10px',
         transition: 'color 0.3s',
       }}>
@@ -206,7 +206,7 @@ function SupportTile({ tile, onClick, inView }: {
             fontWeight: 800,
             lineHeight: 1,
             fontFamily: "'Consolas','Courier New',monospace",
-            color: tile.accent ? 'var(--plh-pink)' : 'var(--plh-text-100)',
+            color: tile.accent ? 'var(--plh-teal)' : 'var(--plh-text-100)',
             marginBottom: '6px',
           }}>
             {counted}
@@ -229,7 +229,7 @@ function SupportTile({ tile, onClick, inView }: {
           backfaceVisibility: 'hidden',
           WebkitBackfaceVisibility: 'hidden',
           transform: 'rotateY(180deg)',
-          background: 'color-mix(in srgb, var(--plh-pink) 12%, var(--plh-elevated))',
+          background: 'color-mix(in srgb, var(--plh-teal) 12%, var(--plh-elevated))',
           border: '1px solid rgba(232,64,128,0.25)',
           borderRadius: '10px',
           padding: '14px',

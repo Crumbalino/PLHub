@@ -149,7 +149,7 @@ export default function SnapshotContainer({
                 </h1>
                 <span
                   className="text-xs sm:text-sm font-mono flex-shrink-0"
-                  style={{ color: 'var(--plh-text-40)', opacity: 0.4 }}
+                  style={{ color: 'rgba(250,245,240,0.35)' }}
                 >
                   P.302
                 </span>
@@ -159,7 +159,7 @@ export default function SnapshotContainer({
             {/* Right: Matchday indicator */}
             <div
               className="text-sm sm:text-base font-semibold flex-shrink-0"
-              style={{ color: 'var(--plh-text-75)', fontFamily: 'var(--font-sora)' }}
+              style={{ color: '#FAF5F0', fontFamily: 'var(--font-sora)' }}
             >
               Matchday{' '}
               <span style={{ fontFamily: 'var(--font-mono)' }}>
@@ -209,7 +209,7 @@ export default function SnapshotContainer({
               </h1>
               <span
                 className="text-xs sm:text-sm font-mono flex-shrink-0"
-                style={{ color: 'var(--plh-text-40)', opacity: 0.4 }}
+                style={{ color: 'rgba(250,245,240,0.35)' }}
               >
                 P.302
               </span>
@@ -219,7 +219,7 @@ export default function SnapshotContainer({
           {/* Right: Matchday indicator */}
           <div
             className="text-sm sm:text-base font-semibold flex-shrink-0"
-            style={{ color: 'var(--plh-text-75)', fontFamily: 'var(--font-sora)' }}
+            style={{ color: '#FAF5F0', fontFamily: 'var(--font-sora)' }}
           >
             Matchday{' '}
             <span style={{ fontFamily: 'var(--font-mono)' }}>

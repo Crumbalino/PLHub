@@ -64,8 +64,8 @@ export default function FeedList({ club = null }: FeedListProps) {
         {isIndexSort && showHowItWorks && (
           <div className="mt-3 overflow-hidden animate-in fade-in-0 slide-in-from-top-2 duration-300">
             <div
-              className="text-xs sm:text-sm text-[var(--plh-text-75)] leading-relaxed p-3 sm:p-4 rounded-lg border border-[var(--plh-border)]"
-              style={{ background: 'color-mix(in srgb, var(--plh-text-100) 5%, transparent)' }}
+              className="text-xs sm:text-sm leading-relaxed p-3 sm:p-4 rounded-lg border border-[var(--plh-border)]"
+              style={{ background: 'color-mix(in srgb, var(--plh-text-100) 5%, transparent)', color: 'rgba(250,245,240,0.6)' }}
             >
               Every story is scored 0–100 based on four things: how trusted the source is, how fresh the story is, how much people are talking about it, and how significant it actually is. No paid placement, no algorithms favouring advertisers. Just good stories, ranked fairly.
             </div>

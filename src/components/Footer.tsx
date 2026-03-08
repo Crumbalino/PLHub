@@ -63,13 +63,12 @@ export default function Footer() {
               style={{
                 fontWeight: 700,
                 lineHeight: 1,
-                color: 'var(--plh-text-100)',
+                color: '#FAF5F0',
                 fontSize: '8px',
                 fontFamily: "'Sora', sans-serif",
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
                 marginBottom: '1px',
-                opacity: 0.85,
               }}
             >
               THE
@@ -81,7 +80,7 @@ export default function Footer() {
                 style={{
                   fontWeight: 700,
                   lineHeight: 1,
-                  color: 'var(--plh-text-100)',
+                  color: '#FAF5F0',
                   fontSize: '13px',
                   fontFamily: "'Sora', sans-serif",
                   letterSpacing: '-0.5px',
@@ -93,7 +92,7 @@ export default function Footer() {
                 style={{
                   fontWeight: 300,
                   lineHeight: 1,
-                  color: 'var(--plh-text-100)',
+                  color: '#FAF5F0',
                   fontSize: '13px',
                   fontFamily: "'JetBrains Mono', 'Consolas', monospace",
                   letterSpacing: '0.5px',
