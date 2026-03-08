@@ -38,6 +38,30 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'yt3.ggpht.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.365dm.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.guim.co.uk',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.talksport.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.goal.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.90min.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.theathletic.com',
+      },
     ],
   },
 }

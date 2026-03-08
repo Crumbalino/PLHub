@@ -12,7 +12,7 @@ export default function Navbar() {
         boxShadow: '0 2px 20px rgba(58,175,169,0.25)',
       }}
     >
-      <div className="max-w-[700px] mx-auto pt-5 pb-3 px-4 sm:px-6 flex items-center justify-between">
+      <div className="max-w-[700px] mx-auto pt-5 pb-5 px-4 sm:px-6 flex items-center justify-between">
 
         {/* Left spacer — About link */}
         <div className="w-20 sm:w-24 flex items-center">
@@ -43,8 +43,10 @@ export default function Navbar() {
             flexDirection: 'column',
             alignItems: 'flex-start',
             position: 'relative',
-            paddingLeft: '6px',
             paddingTop: '16px',
+            paddingBottom: '14px',
+            paddingLeft: '10px',
+            paddingRight: '10px',
           }}>
             {/* TL bracket */}
             <svg
@@ -56,7 +58,7 @@ export default function Navbar() {
               style={{
                 position: 'absolute',
                 top: '0px',
-                left: '-6px',
+                left: '-4px',
                 opacity: 0.9,
               }}
             >
@@ -102,6 +104,23 @@ export default function Navbar() {
                 HUB
               </span>
             </div>
+
+            {/* BR bracket */}
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                bottom: '0px',
+                right: '-4px',
+                opacity: 0.9,
+              }}
+            >
+              <path d="M22 10V22H10" stroke="var(--plh-teal)" strokeWidth="3.5" strokeLinecap="round" />
+            </svg>
           </div>
         </a>
 
