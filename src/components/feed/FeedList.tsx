@@ -31,7 +31,7 @@ export default function FeedList({ club = null }: FeedListProps) {
   }
 
   const isIndexSort = sortMode === 'pulse'
-  const title = isIndexSort ? 'Ranked by the PLHub Index' : 'Latest stories'
+  const title = isIndexSort ? 'Ranked by the Hub Index' : 'Latest stories'
   const toggleText = isIndexSort ? 'or show latest' : 'or rank by Index'
 
   return (

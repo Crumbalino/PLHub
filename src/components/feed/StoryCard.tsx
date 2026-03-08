@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { getSourceColor } from '@/lib/theme';
 import type { FeedPost } from '@/lib/types';
 
-// ── Inline summary component ──────────────────────────────────
-function InlineSummary({
+// ── AI Summary Reveal component ─────────────────────────────
+function AISummaryReveal({
   summary,
   hook,
   url,
@@ -15,69 +15,155 @@ function InlineSummary({
   url: string;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const sentences = summary
-    ? (summary.match(/[^.!?]+[.!?]+/g) ?? [summary])
-    : null;
+  const text = summary || hook;
+  if (!text) return null;
 
-  const first = sentences?.[0]?.trim() ?? hook ?? null;
-  const rest =
-    sentences && sentences.length > 1
-      ? sentences.slice(1).join(' ').trim()
-      : null;
+  const teaser = text.length > 100 ? text.slice(0, 97) + '…' : text;
 
-  if (!first) return null;
+  async function handleShare(e: React.MouseEvent) {
+    e.stopPropagation();
+    const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://thefootballhub.uk';
+    if (navigator.share) {
+      try { await navigator.share({ title: text as string, url: shareUrl }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
 
   return (
-    <div className="mt-2.5">
-      <p
-        className="text-[15px] font-light leading-[1.65]"
-        style={{ color: 'rgba(250,245,240,0.85)' }}
-      >
-        {first}
-        {!expanded && rest && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded(true);
-            }}
-            className="ml-1.5 text-[13px] font-semibold cursor-pointer transition-opacity duration-150"
-            style={{ color: 'var(--plh-gold)' }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = '0.7';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = '1';
+    <div className="mt-2.5" onClick={(e) => e.stopPropagation()}>
+      {/* Collapsed teaser */}
+      {!expanded && (
+        <div style={{ position: 'relative' }}>
+          <p
+            className="text-[14px] font-light leading-[1.6]"
+            style={{
+              color: 'rgba(250,245,240,0.75)',
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
             }}
           >
-            more...
-          </button>
-        )}
-        {expanded && rest && (
-          <span style={{ color: 'rgba(250,245,240,0.75)' }}> {rest}</span>
-        )}
-      </p>
-      {expanded && (
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="inline-block mt-2 text-[12px] font-medium transition-colors duration-200"
-          style={{ color: 'var(--plh-teal)', textDecoration: 'none' }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.color = 'var(--plh-pink)';
-            el.style.textDecoration = 'underline';
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.color = 'var(--plh-teal)';
-            el.style.textDecoration = 'none';
+            {teaser}
+          </p>
+          {/* Bottom gradient fade */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '20px',
+            background: 'linear-gradient(to bottom, transparent, var(--plh-card))',
+            pointerEvents: 'none',
+          }} />
+        </div>
+      )}
+
+      {/* AI SUMMARY pill trigger */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+        className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full transition-all duration-200"
+        style={{
+          background: 'color-mix(in srgb, var(--plh-teal) 12%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--plh-teal) 30%, transparent)',
+          color: 'var(--plh-teal)',
+          cursor: 'pointer',
+        }}
+      >
+        <span style={{
+          fontSize: '9px',
+          fontWeight: 600,
+          letterSpacing: '1.5px',
+          fontFamily: "'JetBrains Mono', 'Consolas', monospace",
+          textTransform: 'uppercase',
+        }}>
+          AI SUMMARY
+        </span>
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--plh-teal)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          style={{
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 200ms ease',
+            flexShrink: 0,
           }}
         >
-          Read original →
-        </a>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {/* Expanded panel */}
+      {expanded && (
+        <div
+          className="mt-2"
+          style={{
+            borderLeft: '2px solid var(--plh-teal)',
+            paddingLeft: '12px',
+          }}
+        >
+          <p
+            className="text-[14px] font-light leading-[1.65]"
+            style={{ color: 'rgba(250,245,240,0.85)' }}
+          >
+            {text}
+          </p>
+          <div className="flex items-center gap-3 mt-2">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-[12px] font-medium transition-colors duration-200"
+              style={{ color: 'var(--plh-teal)', textDecoration: 'none' }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.color = 'var(--plh-pink)';
+                el.style.textDecoration = 'underline';
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.color = 'var(--plh-teal)';
+                el.style.textDecoration = 'none';
+              }}
+            >
+              Read original →
+            </a>
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1 text-[12px] font-medium transition-colors duration-200"
+              style={{ color: 'rgba(250,245,240,0.6)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-teal)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(250,245,240,0.6)'; }}
+            >
+              {copied ? (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--plh-teal)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span style={{ color: 'var(--plh-teal)' }}>Copied</span>
+                </>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  </svg>
+                  Share
+                </>
+              )}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -92,7 +178,10 @@ export default function StoryCard({
   index?: number;
 }) {
   const [copied, setCopied] = useState(false);
-  const sourceColor = getSourceColor(post.sourceInfo.name);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
+
+  // Use sourceInfo.color if available, otherwise fall back to getSourceColor
+  const sourceColor = (post.sourceInfo as any).color || getSourceColor(post.sourceInfo.name) || 'rgba(255,255,255,0.3)';
   const primaryClub = post.clubs[0];
 
   const isLive =
@@ -100,7 +189,7 @@ export default function StoryCard({
     post.sourceInfo.name.toLowerCase().includes('live');
   const isBreaking = post.title.toUpperCase().includes('BREAKING');
   const isPriority = isLive || isBreaking;
-  const borderColor = isPriority ? 'var(--plh-pink)' : 'var(--plh-teal)';
+  const borderColor = isPriority ? 'var(--plh-pink)' : sourceColor;
 
   async function onShare(e: React.MouseEvent) {
     e.stopPropagation();
@@ -215,12 +304,12 @@ export default function StoryCard({
         <span
           className="flex items-center gap-0.5 flex-shrink-0 px-2 py-0.5 rounded-[6px] font-bold tabular-nums text-[13px]"
           style={{
-            color: 'var(--plh-gold)',
-            background: 'color-mix(in srgb, var(--plh-gold) 12%, transparent)',
+            color: 'var(--plh-teal)',
+            background: 'color-mix(in srgb, var(--plh-teal) 12%, transparent)',
           }}
         >
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-            <path d="M2 14V2H14" stroke="var(--plh-gold)" strokeWidth="3.5" strokeLinecap="round" />
+            <path d="M2 14V2H14" stroke="var(--plh-teal)" strokeWidth="3.5" strokeLinecap="round" />
           </svg>
           {post.indexScore}
         </span>
@@ -233,59 +322,66 @@ export default function StoryCard({
 
       {/* ── INLINE SUMMARY ── */}
       {(post.summary || post.summaryHook) && (
-        <InlineSummary summary={post.summary} hook={post.summaryHook} url={post.url} />
+        <AISummaryReveal summary={post.summary} hook={post.summaryHook} url={post.url} />
       )}
 
       {/* ── FOOTER ROW ── */}
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center gap-1.5">
           {post.clubs.length > 1 &&
-            post.clubs.map((club) => (
+            post.clubs.slice(1).map((club) => (
               <span
                 key={club.slug}
-                className="text-[12px] font-semibold uppercase tracking-[1px] text-[var(--plh-teal)] px-2 py-1 rounded-[3px]"
-                style={{ background: 'color-mix(in srgb, var(--plh-teal) 12%, transparent)' }}
+                className="text-[11px] font-semibold uppercase tracking-[0.5px] rounded-[4px]"
+                style={{
+                  background: '#3AAFA9',
+                  color: '#ffffff',
+                  padding: '2px 6px',
+                  fontFamily: 'var(--font-mono)',
+                }}
               >
                 {club.code}
               </span>
             ))}
         </div>
 
-        <button
-          onClick={onShare}
-          className="flex items-center gap-1.5 px-2 py-1 text-[13px] font-medium text-[rgba(250,245,240,0.7)] rounded-[6px] transition-all duration-200"
-          onMouseEnter={(e) => {
-            const el = e.currentTarget;
-            el.style.color = 'var(--plh-teal)';
-            el.style.background = 'color-mix(in srgb, var(--plh-teal) 8%, transparent)';
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget;
-            el.style.color = 'rgba(250,245,240,0.7)';
-            el.style.background = 'transparent';
-          }}
-          aria-label="Share this story"
-        >
-          {copied ? (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--plh-teal)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <span className="text-[var(--plh-teal)]">Copied</span>
-            </>
-          ) : (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="18" cy="5" r="3" />
-                <circle cx="6" cy="12" r="3" />
-                <circle cx="18" cy="19" r="3" />
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-              </svg>
-              <span>Share</span>
-            </>
-          )}
-        </button>
+        {((!post.summary && !post.summaryHook) || summaryExpanded) && (
+          <button
+            onClick={onShare}
+            className="flex items-center gap-1.5 px-2 py-1 text-[13px] font-medium text-[rgba(250,245,240,0.7)] rounded-[6px] transition-all duration-200"
+            onMouseEnter={(e) => {
+              const el = e.currentTarget;
+              el.style.color = 'var(--plh-teal)';
+              el.style.background = 'color-mix(in srgb, var(--plh-teal) 8%, transparent)';
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget;
+              el.style.color = 'rgba(250,245,240,0.7)';
+              el.style.background = 'transparent';
+            }}
+            aria-label="Share this story"
+          >
+            {copied ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--plh-teal)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span className="text-[var(--plh-teal)]">Copied</span>
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+                <span>Share</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
     </article>
   );

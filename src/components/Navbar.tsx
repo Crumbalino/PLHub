@@ -1,7 +1,6 @@
 'use client';
 
 export default function Navbar() {
-
   return (
     <nav
       className="sticky top-0 z-50 h-auto transition-colors duration-300"
@@ -33,48 +32,76 @@ export default function Navbar() {
           </a>
         </div>
 
-        {/* Logo — centred, Brand v3.1 Tier 2 Inline */}
-        <a href="/" className="inline-flex items-center select-none group" aria-label="PLHub home">
+        {/* Logo — centred, The Football Hub wordmark */}
+        <a
+          href="/"
+          className="inline-flex items-center select-none group"
+          aria-label="The Football Hub home"
+        >
           <div style={{
             display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px',
-            backgroundColor: 'var(--plh-card)',
-            padding: '6px 14px',
-            borderRadius: '6px',
-            width: 'fit-content',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
             position: 'relative',
+            paddingLeft: '6px',
+            paddingTop: '16px',
           }}>
             {/* TL bracket */}
             <svg
-              width="22" height="22" viewBox="0 0 24 24" fill="none"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
               aria-hidden="true"
-              style={{ position: 'absolute', top: '-11px', left: '-11px', opacity: 0.85 }}
+              style={{
+                position: 'absolute',
+                top: '0px',
+                left: '-6px',
+                opacity: 0.9,
+              }}
             >
-              <path d="M2 14V2H14" stroke="var(--plh-pink)" strokeWidth="3.5" strokeLinecap="round" />
+              <path d="M2 14V2H14" stroke="var(--plh-teal)" strokeWidth="3.5" strokeLinecap="round" />
             </svg>
 
-            {/* PL wordmark */}
+            {/* THE */}
             <span style={{
               fontWeight: 700,
               lineHeight: 1,
               color: 'var(--plh-text-100)',
-              fontSize: '36px',
+              fontSize: '10px',
               fontFamily: "'Sora', sans-serif",
+              letterSpacing: '3.5px',
+              textTransform: 'uppercase',
+              marginBottom: '3px',
+              opacity: 0.85,
             }}>
-              PL
+              THE
             </span>
-            {/* HUB wordmark */}
-            <span style={{
-              fontWeight: 300,
-              lineHeight: 1,
-              letterSpacing: '2px',
-              color: 'var(--plh-text-100)',
-              fontSize: '36px',
-              fontFamily: "'Sora', sans-serif",
-            }}>
-              HUB
-            </span>
+
+            {/* FOOTBALL HUB */}
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <span style={{
+                fontWeight: 700,
+                lineHeight: 1,
+                color: 'var(--plh-text-100)',
+                fontSize: '27px',
+                fontFamily: "'Sora', sans-serif",
+                letterSpacing: '-0.5px',
+              }}>
+                FOOTBALL
+              </span>
+              <span style={{
+                fontWeight: 300,
+                lineHeight: 1,
+                color: 'var(--plh-text-100)',
+                fontSize: '27px',
+                fontFamily: "'JetBrains Mono', 'Consolas', monospace",
+                letterSpacing: '1px',
+                marginLeft: '7px',
+              }}>
+                HUB
+              </span>
+            </div>
           </div>
         </a>
 

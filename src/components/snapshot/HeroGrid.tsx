@@ -28,60 +28,20 @@ function ScoreBadge({ score, hovered }: { score: number; hovered?: boolean }) {
       display: 'inline-flex',
       alignItems: 'center',
       gap: '4px',
-      color: 'var(--plh-gold)',
+      color: 'var(--plh-teal)',
       fontWeight: 700,
       fontSize: '16px',
-      fontFamily: "'Consolas','Courier New',monospace",
+      fontFamily: "'JetBrains Mono', 'Consolas', 'Courier New', monospace",
       lineHeight: 1,
       zIndex: 10,
-      filter: hovered ? 'drop-shadow(0 0 8px rgba(212, 168, 67, 0.7))' : 'none',
+      filter: hovered ? 'drop-shadow(0 0 8px rgba(58, 175, 169, 0.7))' : 'none',
       transition: 'filter 300ms ease',
     }}>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-        <path d="M2 14V2H14" stroke="var(--plh-gold)" strokeWidth="3.5" strokeLinecap="round"/>
+        <path d="M2 14V2H14" stroke="var(--plh-teal)" strokeWidth="3.5" strokeLinecap="round"/>
       </svg>
       {score}
     </span>
-  )
-}
-
-function SummaryReveal({ summary }: { summary: string }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div style={{ marginTop: '8px' }} onClick={(e) => e.stopPropagation()}>
-      <button
-        onClick={(e) => { e.stopPropagation(); e.preventDefault(); setOpen(!open) }}
-        style={{
-          fontSize: '10px',
-          fontWeight: 600,
-          letterSpacing: '1px',
-          textTransform: 'uppercase',
-          color: 'rgba(250,245,240,0.45)',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 0,
-          fontFamily: "'Sora', sans-serif",
-          transition: 'color 0.2s',
-        }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-gold)' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(250,245,240,0.45)' }}
-      >
-        {open ? 'Hide ▴' : 'Summary ▾'}
-      </button>
-      {open && (
-        <p style={{
-          marginTop: '6px',
-          fontSize: '12px',
-          lineHeight: 1.6,
-          color: 'rgba(250,245,240,0.75)',
-          fontFamily: "'Sora', sans-serif",
-          fontWeight: 300,
-        }}>
-          {summary}
-        </p>
-      )}
-    </div>
   )
 }
 
@@ -178,7 +138,6 @@ function HeroTile({ story }: { story: SnapshotStory }) {
             </span>
             <ClubTag slug={story.clubs?.[0]?.slug} />
           </div>
-          {story.summary && <SummaryReveal summary={story.summary} />}
         </div>
       </div>
     </a>
@@ -259,7 +218,6 @@ function SidekickTile({ story }: { story: SnapshotStory }) {
             </span>
             <ClubTag slug={story.clubs?.[0]?.slug} />
           </div>
-          {story.summary && <SummaryReveal summary={story.summary} />}
         </div>
       </div>
     </a>

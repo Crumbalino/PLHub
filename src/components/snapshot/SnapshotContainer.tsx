@@ -13,6 +13,7 @@ interface SnapshotStory {
   headline: string
   summary: string | null
   source: { name: string; url: string }
+  url: string
   clubs: Array<{ slug: string; shortName: string; code: string; badgeUrl: string }>
   plhub_index: number | null
   published_at: string
@@ -237,7 +238,6 @@ export default function SnapshotContainer({
             <HeroGrid
               stories={getCaughtUpStories}
               isLoading={isLoading}
-              error={error}
             />
           )}
           {isLoading && <HeroGridSkeleton />}
@@ -514,11 +514,7 @@ function ByTheNumbersModule({ snapshotData }: ByTheNumbersModuleProps) {
   }
 
   return (
-    <ByTheNumbers
-      heroTile={heroTile}
-      supportingTiles={supportingTiles}
-      matchday={snapshotData.metadata.matchday}
-    />
+    <ByTheNumbers />
   )
 }
 

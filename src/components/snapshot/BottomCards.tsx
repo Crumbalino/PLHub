@@ -251,7 +251,7 @@ export default function BottomCards({ transferStory, beyondBigSixStory, fplStory
       {andFinallyData?.has_content && andFinallyData.headline && (
         <AndFinallyCard
           headline={andFinallyData.headline}
-          imagUrl={andFinallyData.image_url}
+          imagUrl={andFinallyData.image_url ?? undefined}
           colourLine={andFinallyData.colour_line}
         />
       )}

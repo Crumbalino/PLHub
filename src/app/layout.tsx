@@ -28,11 +28,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'PLHub — Premier League News. Right Now.',
-    template: '%s | PLHub',
+    default: 'The Football Hub — Football. Framed. Fast.',
+    template: '%s | The Football Hub',
   },
   description:
-    'The pulse of the Premier League. News and views from all 20 clubs, ranked by the community. Transfer rumours, match reports and fan discussion. Constantly updated.',
+    'Football news from every angle. Results, transfers, analysis and debate from across Europe — ranked, filtered and always up to date.',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
@@ -41,13 +41,13 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'PLHub',
+    title: 'The Football Hub',
   },
   manifest: '/manifest.json',
   openGraph: {
     type: 'website',
     url: siteUrl,
-    siteName: 'PLHub',
+    siteName: 'The Football Hub',
     locale: 'en_GB',
     images: [{ url: '/logo.png', width: 4000, height: 1000 }],
   },
@@ -73,18 +73,18 @@ export const viewport: Viewport = {
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'PLHub',
+  name: 'The Football Hub',
   url: siteUrl,
   description:
-    'Premier League news aggregator bringing together BBC Sport, Sky Sports, The Guardian and more editorial sources.',
+    'Football news aggregator bringing together BBC Sport, Sky Sports, The Guardian and more editorial sources.',
 }
 
 const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'PLHub',
+  name: 'The Football Hub',
   url: siteUrl,
-  description: 'Premier League news and views ranked by the community',
+  description: 'Football news and views ranked by the community',
   potentialAction: {
     '@type': 'SearchAction',
     target: `${siteUrl}/?q={search_term_string}`,
