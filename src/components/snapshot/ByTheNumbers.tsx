@@ -118,7 +118,7 @@ function HeroTile({ tile, swapping, inView }: {
       <div style={{
         fontSize: '15px',
         fontWeight: 500,
-        color: 'rgba(250,245,240,0.65)',
+        color: '#FAF5F0',
         marginBottom: '8px',
         fontFamily: "'Sora', sans-serif",
       }}>
@@ -126,7 +126,7 @@ function HeroTile({ tile, swapping, inView }: {
       </div>
       <div style={{
         fontSize: '12px',
-        color: 'rgba(250,245,240,0.35)',
+        color: '#FAF5F0',
         lineHeight: 1.5,
         maxWidth: '400px',
         margin: '0 auto',
@@ -214,7 +214,7 @@ function SupportTile({ tile, onClick, inView }: {
           <div style={{
             fontSize: '10px',
             fontWeight: 500,
-            color: 'rgba(250,245,240,0.45)',
+            color: '#FAF5F0',
             lineHeight: 1.3,
             fontFamily: "'Sora', sans-serif",
           }}>
@@ -240,7 +240,7 @@ function SupportTile({ tile, onClick, inView }: {
           <p style={{
             fontSize: '11px',
             lineHeight: 1.45,
-            color: 'rgba(250,245,240,0.85)',
+            color: '#FAF5F0',
             fontFamily: "'Sora', sans-serif",
             textAlign: 'center',
             margin: 0,
@@ -401,10 +401,10 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
         justifyContent: 'space-between',
         alignItems: 'center',
       }}>
-        <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: 'rgba(250,245,240,0.5)', fontFamily: "'Sora', sans-serif" }}>
+        <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: '#FAF5F0', fontFamily: "'Sora', sans-serif" }}>
           By The Numbers
         </div>
-        <div style={{ fontSize: '10px', color: 'rgba(250,245,240,0.25)', letterSpacing: '1px', fontFamily: "'Consolas','Courier New',monospace" }}>
+        <div style={{ fontSize: '10px', color: '#FAF5F0', letterSpacing: '1px', fontFamily: "'Consolas','Courier New',monospace" }}>
           MD {data.matchday}
         </div>
       </div>

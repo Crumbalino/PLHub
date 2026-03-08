@@ -1,178 +1,203 @@
 'use client'
-
 import { useState } from 'react'
-import { getSourceColor } from '@/lib/theme'
 
-interface SnapshotStory {
+const SOURCE_COLORS: Record<string, string> = {
+  'BBC Sport': '#D4A843',
+  'BBC SPORT': '#D4A843',
+  'Sky Sports': '#E84080',
+  'SKY SPORTS': '#E84080',
+  'The Guardian': '#3AAFA9',
+  'THE GUARDIAN': '#3AAFA9',
+  'talkSPORT': '#8AACCC',
+  'TALKSPORT': '#8AACCC',
+  'Goal': '#C084FC',
+  'GOAL': '#C084FC',
+  '90min': '#F97316',
+  '90MIN': '#F97316',
+  'ESPN FC': '#E8402A',
+  'ESPN.COM': '#E8402A',
+  'FourFourTwo': '#C084FC',
+  'FOURFOURTWO': '#C084FC',
+  'Football365': '#F97316',
+  'FOOTBALL365': '#F97316',
+  'The Independent': '#6B9E78',
+  'THE INDEPENDENT': '#6B9E78',
+}
+
+function getColor(sourceName: string | null | undefined): string {
+  if (!sourceName) return '#3AAFA9'
+  return SOURCE_COLORS[sourceName] || SOURCE_COLORS[sourceName.toUpperCase()] || '#3AAFA9'
+}
+
+interface Story {
   id: string
   headline: string
   summary: string | null
   source: { name: string; url: string }
   clubs: Array<{ slug: string; shortName: string; code: string; badgeUrl: string }>
   plhub_index: number | null
-  published_at: string
-  story_card_id: string
   image_url: string | null
 }
 
-interface CardGridData {
+interface CardData {
   label: string
-  story?: SnapshotStory | null
+  story?: Story | null
   headline?: string | null
   imageUrl?: string | null
   source?: { name: string } | null
   plhubIndex?: number | null
 }
 
-interface SnapshotCardGridProps {
-  cards: CardGridData[]
+function ScoreBadge({ score }: { score: number }) {
+  return (
+    <span style={{
+      position: 'absolute',
+      top: '8px',
+      right: '8px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '3px',
+      background: 'rgba(13,27,42,0.75)',
+      border: '1px solid rgba(250,245,240,0.12)',
+      borderRadius: '5px',
+      padding: '2px 6px',
+      zIndex: 10,
+    }}>
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
+        <path d="M2 14V2H14" stroke="#3AAFA9" strokeWidth="3.5" strokeLinecap="round"/>
+      </svg>
+      <span style={{
+        fontSize: '13px',
+        fontWeight: 700,
+        fontFamily: "'JetBrains Mono','Consolas','Courier New',monospace",
+        color: '#FAF5F0',
+        lineHeight: 1,
+      }}>
+        {score}
+      </span>
+    </span>
+  )
 }
 
-// Fallback gradients — subtle navy
-const FALLBACK_GRADIENTS: Record<string, string> = {
-  teal: 'linear-gradient(135deg, #1c2c3a 0%, #141f28 30%, #1c3a48 60%, #0f1820 100%)',
-  pink: 'linear-gradient(135deg, #1c2c3a 0%, #141f28 30%, #1c3a48 60%, #0f1820 100%)',
-}
-
-function GridCard({
-  label,
-  story,
-  headline,
-  imageUrl,
-  source,
-  sourceColor,
-  plhubIndex,
-}: CardGridData & { sourceColor: string }) {
+function GridCard({ label, story, headline, imageUrl, source, plhubIndex }: CardData) {
   const [hovered, setHovered] = useState(false)
-  const displayHeadline = story?.headline || headline
-  const imageUrl_final = story?.image_url || imageUrl
-  const fallbackColor =
-    label === 'THE REST' ? FALLBACK_GRADIENTS.pink : FALLBACK_GRADIENTS.teal
-  const backgroundColor = imageUrl_final ? 'transparent' : fallbackColor
-  const metricIndex = story?.plhub_index ?? plhubIndex
+  const displayHeadline = story?.headline || headline || ''
+  const displayImage = story?.image_url || imageUrl || null
+  const displaySource = story?.source?.name || source?.name || null
+  const displayScore = story?.plhub_index ?? plhubIndex ?? null
+  const sourceColor = getColor(displaySource)
 
   const handleClick = () => {
     if (story?.id) {
       const el = document.getElementById(`post-${story.id}`)
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }
 
   return (
     <div
-      className="relative overflow-hidden cursor-pointer rounded-lg"
       onClick={handleClick}
-      style={{
-        aspectRatio: '4/3',
-        background: backgroundColor,
-        borderLeft: `3px solid ${sourceColor}`,
-      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative',
+        aspectRatio: '4/3',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        background: 'var(--plh-elevated)',
+        borderLeft: `3px solid ${sourceColor}`,
+      }}
     >
       {/* Background image */}
-      <div
-        style={{
+      {displayImage && (
+        <div style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: imageUrl_final ? `url(${imageUrl_final})` : 'none',
+          backgroundImage: `url(${displayImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          overflow: 'hidden',
-          borderRadius: 'inherit',
           transform: hovered ? 'scale(1.04)' : 'scale(1)',
-          transition: 'transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        }}
-      />
+          transition: 'transform 300ms ease',
+        }} />
+      )}
 
-      {/* Dark gradient overlay */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(transparent 20%, rgba(13,27,42,0.4) 45%, rgba(13,27,42,0.92) 100%)',
-        }}
-      />
+      {/* Gradient overlay */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'linear-gradient(to top, rgba(10,20,32,0.95) 0%, rgba(10,20,32,0.4) 55%, transparent 100%)',
+      }} />
 
-      {/* Content overlay */}
-      <div className="relative h-full flex flex-col p-3 group">
-        {/* Metric overlay in top-right corner */}
-        {metricIndex !== null && metricIndex !== undefined && (
-          <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '4px', filter: hovered ? 'drop-shadow(0 0 8px rgba(212, 168, 67, 0.7))' : 'none', transition: 'filter 300ms ease' }}>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              style={{ color: 'var(--plh-gold)' }}
-            >
-              <path d="M2 14V2H14" stroke="var(--plh-gold)" strokeWidth="3.5" strokeLinecap="round"/>
-            </svg>
-            <span
-              style={{
-                color: 'var(--plh-gold)',
-                fontWeight: 700,
-                fontFamily: "'Consolas','Courier New',monospace",
-                fontSize: '16px',
-                lineHeight: 1,
-              }}
-            >
-              {metricIndex}
-            </span>
-          </div>
-        )}
+      {/* Score badge */}
+      {displayScore !== null && <ScoreBadge score={displayScore} />}
 
-        {/* Spacer to push content to bottom */}
-        <div className="flex-1" />
-
-        {/* Category label */}
-        <span
-          className="text-[9px] font-semibold uppercase tracking-widest text-white/70 mb-1"
-          style={{ color: sourceColor }}
-        >
+      {/* Content */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        padding: '12px',
+      }}>
+        {/* Label */}
+        <span style={{
+          fontSize: '9px',
+          fontWeight: 700,
+          letterSpacing: '1.5px',
+          textTransform: 'uppercase',
+          color: sourceColor,
+          fontFamily: "'Sora', sans-serif",
+          marginBottom: '5px',
+        }}>
           {label}
         </span>
 
-        {/* Headline */}
-        <h3
-          className="text-[13px] font-semibold leading-tight text-white line-clamp-2 mb-2"
-          style={{
-            fontFamily: 'var(--font-sora)',
-          }}
-        >
+        {/* Headline — one line */}
+        <p style={{
+          fontSize: '13px',
+          fontWeight: 600,
+          lineHeight: 1.3,
+          color: '#FAF5F0',
+          fontFamily: "'Sora', sans-serif",
+          margin: 0,
+          marginBottom: '8px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}>
           {displayHeadline}
-        </h3>
+        </p>
 
-        {/* Bottom row: source on left, club tags on right */}
-        <div className="flex items-end justify-between gap-1">
-          {/* Source name */}
-          {source && (
-            <span
-              style={{
-                color: getSourceColor(source.name),
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.3px',
-                fontSize: '9px',
-              }}
-            >
-              {source.name}
+        {/* Bottom row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          {displaySource && (
+            <span style={{
+              fontSize: '9px',
+              fontWeight: 600,
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              color: sourceColor,
+              fontFamily: "'Sora', sans-serif",
+            }}>
+              {displaySource}
             </span>
           )}
-
-          {/* Club tags (only for stories) */}
-          {story && story.clubs.length > 0 && (
-            <div className="flex items-center gap-1 flex-wrap justify-end">
-              {story.clubs.map((club) => (
-                <span
-                  key={club.slug}
-                  className="text-[9px] font-semibold uppercase tracking-[0.5px] px-1.5 py-0.5 rounded-[2px]"
-                  style={{
-                    color: 'white',
-                    background: '#3AAFA9',
-                  }}
-                >
+          {story?.clubs && story.clubs.length > 0 && (
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {story.clubs.slice(0, 2).map(club => (
+                <span key={club.slug} style={{
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase',
+                  color: '#0D1B2A',
+                  background: '#3AAFA9',
+                  padding: '2px 5px',
+                  borderRadius: '3px',
+                  fontFamily: "'Sora', sans-serif",
+                }}>
                   {club.code}
                 </span>
               ))}
@@ -184,32 +209,13 @@ function GridCard({
   )
 }
 
-export default function SnapshotCardGrid({ cards }: SnapshotCardGridProps) {
-  if (cards.length === 0) {
-    return null
-  }
-
+export default function SnapshotCardGrid({ cards }: { cards: CardData[] }) {
+  if (!cards || cards.length === 0) return null
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {cards.map((card, idx) => {
-        const sourceColor =
-          card.label === 'THE REST'
-            ? 'var(--plh-pink)'
-            : 'var(--plh-teal)'
-
-        return (
-          <GridCard
-            key={`grid-card-${idx}`}
-            label={card.label}
-            story={card.story || null}
-            headline={card.headline || null}
-            imageUrl={card.imageUrl || null}
-            source={card.source || null}
-            sourceColor={sourceColor}
-            plhubIndex={card.plhubIndex || null}
-          />
-        )
-      })}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+      {cards.map((card, idx) => (
+        <GridCard key={idx} {...card} />
+      ))}
     </div>
   )
 }

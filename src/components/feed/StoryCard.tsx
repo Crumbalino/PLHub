@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { getSourceColor } from '@/lib/theme';
 import type { FeedPost } from '@/lib/types';
 
@@ -20,19 +19,14 @@ export default function StoryCard({
     getSourceColor(post.sourceInfo.name) ||
     'var(--plh-text-100)';
 
-  const isLive = post.title.toLowerCase().includes('live') ||
-    post.sourceInfo.name.toLowerCase().includes('live');
-  const isBreaking = post.title.toUpperCase().includes('BREAKING');
+  const titleLower = post.title.toLowerCase();
+  const isLive = /\blive\b/.test(titleLower) && !/liverpool|wolverhampton|olive|alive|believe|relative/i.test(post.title);
+  const isBreaking = /\bbreaking\b/i.test(post.title);
   const isPriority = isLive || isBreaking;
-  const borderColor = isPriority ? 'var(--plh-pink)' : sourceColor;
+  const borderColor = isLive ? '#D4A843' : (isBreaking ? 'var(--plh-pink)' : sourceColor);
 
-  const hasImage = !!(post as any).imageUrl;
-  const imageUrl = (post as any).imageUrl as string | undefined;
   const summaryText = post.summary || post.summaryHook;
   const hasSummary = !!summaryText;
-  const score = post.indexScore ?? 0;
-  const isHeroImage = hasImage && score >= 70;
-  const isThumbnailImage = hasImage && score >= 50 && score < 70;
 
   // Split summary into sentences for paragraph rendering
   const summaryParagraphs = summaryText
@@ -52,58 +46,42 @@ export default function StoryCard({
   }
 
   return (
-    <article
-      id={`post-${post.id}`}
-      className="bg-[var(--plh-card)] rounded-[10px] overflow-hidden border border-[var(--plh-border)] transition-all duration-200 ease-out animate-card-enter"
-      style={{
-        borderLeftWidth: '3px',
-        borderLeftColor: borderColor,
-        boxShadow: 'var(--plh-shadow)',
-        animationDelay: `${index * 50}ms`,
-        cursor: hasSummary ? 'pointer' : 'default',
-      }}
-      onClick={() => hasSummary && setExpanded(!expanded)}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'var(--plh-border-hover)';
-        (e.currentTarget as HTMLElement).style.borderLeftColor = borderColor;
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'var(--plh-border)';
-        (e.currentTarget as HTMLElement).style.borderLeftColor = borderColor;
-      }}
-    >
-      {/* HERO IMAGE — full-width, only for top stories (score >= 70) */}
-      {isHeroImage && imageUrl && (
-        <div style={{ width: '100%', height: '160px', position: 'relative', overflow: 'hidden' }}>
-          <Image
-            src={imageUrl}
-            alt={post.title}
-            fill
-            style={{ objectFit: 'cover', objectPosition: 'center top' }}
-            sizes="(max-width: 700px) 100vw, 700px"
-          />
-          {isPriority && (
-            <div style={{ position: 'absolute', top: 8, left: 8 }}>
-              <span
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-                style={{ background: 'var(--plh-pink)', color: '#fff', fontSize: '9px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: "'JetBrains Mono', monospace" }}
-              >
-                {isLive && <span className="w-[5px] h-[5px] rounded-full bg-white" style={{ animation: 'livePulse 2s ease-in-out infinite' }} />}
-                {isLive ? 'LIVE' : 'BREAKING'}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
+    <>
+      <style>{`
+        @keyframes livePulseBorder {
+          0% { box-shadow: var(--plh-shadow), 0 0 0 1px rgba(212,168,67,0.4), 0 0 12px rgba(212,168,67,0.2); }
+          100% { box-shadow: var(--plh-shadow), 0 0 0 2px rgba(212,168,67,0.7), 0 0 20px rgba(212,168,67,0.4); }
+        }
+      `}</style>
+      <article
+        id={`post-${post.id}`}
+        className="bg-[var(--plh-card)] rounded-[10px] overflow-hidden border border-[var(--plh-border)] transition-all duration-200 ease-out animate-card-enter"
+        style={{
+          borderLeftWidth: '3px',
+          borderLeftColor: borderColor,
+          boxShadow: isLive ? undefined : 'var(--plh-shadow)',
+          animation: isLive ? 'livePulseBorder 1.5s ease-in-out infinite alternate' : undefined,
+          animationDelay: `${index * 50}ms`,
+          cursor: hasSummary ? 'pointer' : 'default',
+        }}
+        onClick={() => hasSummary && setExpanded(!expanded)}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.borderColor = 'var(--plh-border-hover)';
+          (e.currentTarget as HTMLElement).style.borderLeftColor = borderColor;
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.borderColor = 'var(--plh-border)';
+          (e.currentTarget as HTMLElement).style.borderLeftColor = borderColor;
+        }}
+      >
       {/* CARD BODY */}
       <div className="p-4">
 
         {/* HEADLINE ROW */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="flex-1 min-w-0">
-            {/* LIVE/BREAKING label — only show inline if NOT hero image */}
-            {!isHeroImage && isPriority && (
+            {/* LIVE/BREAKING label */}
+            {isPriority && (
               <div className="flex items-center gap-1.5 mb-1.5">
                 {isLive && (
                   <span className="w-[6px] h-[6px] rounded-full bg-[var(--plh-pink)]" style={{ animation: 'livePulse 2s ease-in-out infinite' }} />
@@ -113,33 +91,27 @@ export default function StoryCard({
                 </span>
               </div>
             )}
-            <h3 className="text-[19px] font-semibold leading-[1.3]" style={{ color: 'var(--plh-text-100)' }}>
+            <h3 className="text-[19px] font-semibold leading-[1.3]" style={{ color: 'var(--plh-text-100)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
               {post.title}
             </h3>
-          </div>
 
-          {/* Thumbnail image — right side for mid-tier stories (50-69) */}
-          {isThumbnailImage && imageUrl && (
-            <div
-              style={{
-                position: 'relative',
-                width: '80px',
-                height: '80px',
-                flexShrink: 0,
-                borderRadius: '6px',
+            {/* SUMMARY TEASER — one line below headline, only when collapsed */}
+            {hasSummary && !expanded && (
+              <p style={{
+                marginTop: '4px',
+                fontSize: '13px',
+                fontWeight: 300,
+                color: 'var(--plh-text-100)',
+                opacity: 0.6,
                 overflow: 'hidden',
-                marginLeft: '8px',
-              }}
-            >
-              <Image
-                src={imageUrl}
-                alt={post.title}
-                fill
-                style={{ objectFit: 'cover', objectPosition: 'center top' }}
-                sizes="80px"
-              />
-            </div>
-          )}
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}>
+                {summaryText}
+              </p>
+            )}
+          </div>
 
           {/* Expand chevron — only if summary exists */}
           {hasSummary && (
@@ -289,5 +261,6 @@ export default function StoryCard({
 
       </div>
     </article>
+    </>
   );
 }

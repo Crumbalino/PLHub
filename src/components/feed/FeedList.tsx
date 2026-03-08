@@ -123,7 +123,7 @@ export default function FeedList({ club = null }: FeedListProps) {
       {/* Load More */}
       {!isLoading && hasMore && posts.length > 0 && (
         <div className="text-center mt-8 mb-4">
-          <p className="text-xs text-[var(--plh-text-50)] mb-3">
+          <p className="text-xs mb-3" style={{ color: '#FAF5F0' }}>
             Showing {posts.length} stories
           </p>
           <button

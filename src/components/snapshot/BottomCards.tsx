@@ -21,7 +21,7 @@ interface BottomCardsProps {
   andFinallyData: { has_content: boolean; headline: string | null; colour_line: string | null; image_url?: string | null } | null
 }
 
-function ScoreBadge({ score, hovered }: { score: number; hovered?: boolean }) {
+function ScoreBadge({ score }: { score: number }) {
   return (
     <span style={{
       position: 'absolute',
@@ -29,20 +29,25 @@ function ScoreBadge({ score, hovered }: { score: number; hovered?: boolean }) {
       right: '8px',
       display: 'inline-flex',
       alignItems: 'center',
-      gap: '4px',
-      color: 'var(--plh-gold)',
-      fontWeight: 700,
-      fontSize: '16px',
-      fontFamily: "'Consolas','Courier New',monospace",
-      lineHeight: 1,
+      gap: '3px',
+      background: 'rgba(13,27,42,0.75)',
+      border: '1px solid rgba(250,245,240,0.12)',
+      borderRadius: '5px',
+      padding: '2px 6px',
       zIndex: 10,
-      filter: hovered ? 'drop-shadow(0 0 8px rgba(212, 168, 67, 0.7))' : 'none',
-      transition: 'filter 300ms ease',
     }}>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-        <path d="M2 14V2H14" stroke="var(--plh-gold)" strokeWidth="3.5" strokeLinecap="round"/>
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
+        <path d="M2 14V2H14" stroke="#3AAFA9" strokeWidth="3.5" strokeLinecap="round"/>
       </svg>
-      {score}
+      <span style={{
+        fontSize: '13px',
+        fontWeight: 700,
+        fontFamily: "'JetBrains Mono','Consolas','Courier New',monospace",
+        color: '#FAF5F0',
+        lineHeight: 1,
+      }}>
+        {score}
+      </span>
     </span>
   )
 }
@@ -100,7 +105,7 @@ function PhotoCard({ story, label, labelColor }: {
           }}
         />
 
-        {story.plhub_index != null && <ScoreBadge score={story.plhub_index} hovered={hovered} />}
+        {story.plhub_index != null && <ScoreBadge score={story.plhub_index} />}
         <div>
           <span style={{
             display: 'inline-block',

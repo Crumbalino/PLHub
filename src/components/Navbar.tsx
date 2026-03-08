@@ -12,25 +12,7 @@ export default function Navbar() {
         boxShadow: '0 2px 20px rgba(58,175,169,0.25)',
       }}
     >
-      <div className="max-w-[700px] mx-auto pt-5 pb-5 px-4 sm:px-6 flex items-center justify-between">
-
-        {/* Left spacer — About link */}
-        <div className="w-20 sm:w-24 flex items-center">
-          <a
-            href="/about"
-            style={{
-              fontSize: '13px',
-              color: 'rgba(250,245,240,0.5)',
-              textDecoration: 'none',
-              fontFamily: "'Sora', sans-serif",
-              transition: 'color 0.15s',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-teal)' }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(250,245,240,0.5)' }}
-          >
-            About
-          </a>
-        </div>
+      <div className="max-w-[700px] mx-auto pt-5 pb-5 px-4 sm:px-6 flex items-center justify-center">
 
         {/* Logo — centred, The Football Hub wordmark */}
         <a
@@ -123,9 +105,6 @@ export default function Navbar() {
             </svg>
           </div>
         </a>
-
-        {/* Right spacer — for layout balance */}
-        <div className="w-20 sm:w-24" />
       </div>
     </nav>
   );

@@ -39,6 +39,9 @@ const DOMAIN_MAP: [string, string][] = [
   ['chroniclelive', 'Chronicle Live'],
   ['fourfourtwo', 'FourFourTwo'],
   ['football365', 'Football365'],
+  ['espn', 'ESPN FC'],
+  ['independent', 'The Independent'],
+  ['standard', 'Evening Standard'],
 ]
 
 /**

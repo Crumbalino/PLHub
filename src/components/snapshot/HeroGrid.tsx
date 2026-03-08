@@ -84,7 +84,7 @@ function HeroTile({ story }: { story: SnapshotStory }) {
         style={{
           background: 'linear-gradient(135deg, #1c2c3a 0%, #0f1820 100%)',
           minHeight: '360px',
-          border: '1px solid var(--plh-border)',
+          borderLeft: `3px solid ${sourceColor}`,
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -164,7 +164,7 @@ function SidekickTile({ story }: { story: SnapshotStory }) {
         style={{
           background: 'linear-gradient(135deg, #1c2c3a 0%, #0f1820 100%)',
           minHeight: '160px',
-          border: '1px solid var(--plh-border)',
+          borderLeft: `3px solid ${sourceColor}`,
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

@@ -26,37 +26,99 @@ export default function Footer() {
             gap: '16px',
           }}
         >
-          {/* Wordmark */}
+          {/* Wordmark — THE FOOTBALL HUB with chevron frame */}
           <a
             href="/"
             style={{
               textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '2px',
+              display: 'inline-flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              position: 'relative',
+              paddingTop: '8px',
+              paddingBottom: '8px',
+              paddingLeft: '8px',
+              paddingRight: '8px',
             }}
           >
-            <span
+            {/* TL bracket */}
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
               style={{
-                fontSize: '16px',
-                fontWeight: 700,
-                color: 'var(--plh-text-100)',
-                fontFamily: "'Sora', sans-serif",
+                position: 'absolute',
+                top: '0px',
+                left: '0px',
+                opacity: 0.9,
               }}
             >
-              PL
-            </span>
+              <path d="M2 14V2H14" stroke="var(--plh-teal)" strokeWidth="3.5" strokeLinecap="round" />
+            </svg>
+
+            {/* THE */}
             <span
               style={{
-                fontSize: '16px',
-                fontWeight: 300,
+                fontWeight: 700,
+                lineHeight: 1,
                 color: 'var(--plh-text-100)',
+                fontSize: '8px',
                 fontFamily: "'Sora', sans-serif",
                 letterSpacing: '2px',
+                textTransform: 'uppercase',
+                marginBottom: '1px',
+                opacity: 0.85,
               }}
             >
-              HUB
+              THE
             </span>
+
+            {/* FOOTBALL HUB */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+              <span
+                style={{
+                  fontWeight: 700,
+                  lineHeight: 1,
+                  color: 'var(--plh-text-100)',
+                  fontSize: '13px',
+                  fontFamily: "'Sora', sans-serif",
+                  letterSpacing: '-0.5px',
+                }}
+              >
+                FOOTBALL
+              </span>
+              <span
+                style={{
+                  fontWeight: 300,
+                  lineHeight: 1,
+                  color: 'var(--plh-text-100)',
+                  fontSize: '13px',
+                  fontFamily: "'JetBrains Mono', 'Consolas', monospace",
+                  letterSpacing: '0.5px',
+                }}
+              >
+                HUB
+              </span>
+            </div>
+
+            {/* BR bracket */}
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                bottom: '0px',
+                right: '0px',
+                opacity: 0.9,
+              }}
+            >
+              <path d="M22 10V22H10" stroke="var(--plh-teal)" strokeWidth="3.5" strokeLinecap="round" />
+            </svg>
           </a>
 
           {/* Nav links */}
@@ -67,7 +129,7 @@ export default function Footer() {
                 href={l.href}
                 style={{
                   fontSize: '13px',
-                  color: 'rgba(250,245,240,0.5)',
+                  color: '#FAF5F0',
                   textDecoration: 'none',
                   fontFamily: "'Sora', sans-serif",
                   transition: 'color 0.15s',
@@ -78,7 +140,7 @@ export default function Footer() {
                 }}
                 onMouseLeave={(e) => {
                   ;(e.currentTarget as HTMLElement).style.color =
-                    'rgba(250,245,240,0.5)'
+                    '#FAF5F0'
                 }}
               >
                 {l.label}
@@ -92,9 +154,8 @@ export default function Footer() {
           style={{
             marginTop: '20px',
             fontSize: '12px',
-            color: 'rgba(250,245,240,0.3)',
+            color: '#FAF5F0',
             fontFamily: "'Sora', sans-serif",
-            fontStyle: 'italic',
             margin: '20px 0 0',
           }}
         >
