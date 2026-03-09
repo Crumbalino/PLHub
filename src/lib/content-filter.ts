@@ -87,7 +87,6 @@ export const ALWAYS_HIDE = [
 export function filterPLContent(posts: Post[]): Post[] {
   const PL_COMPETITIONS = [
     'premier league', 'fa cup', 'league cup', 'carabao cup',
-    'champions league', 'europa league', 'conference league',
     'community shield',
     'premier league promotion', 'promotion to the premier league',
     'england squad', 'england international', 'england manager', 'three lions',

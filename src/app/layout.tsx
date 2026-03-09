@@ -23,7 +23,7 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '600', '700'],
 })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thefootballhub.uk'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary',
-    site: '@plhub',
+    site: '@thefootballhub',
   },
   robots: {
     index: true,
