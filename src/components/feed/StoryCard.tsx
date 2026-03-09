@@ -238,7 +238,7 @@ export default function StoryCard({
     // Story / LOL — only if there is a real image (not broken)
     if ((cardType === 'story' || cardType === 'lol') && post.imageUrl && !imgError) {
       return (
-        <div style={{ position: 'relative', paddingBottom: '52%', overflow: 'hidden' }}>
+        <div style={{ position: 'relative', height: '200px', overflow: 'hidden' }}>
           <img
             src={post.imageUrl}
             alt=""
@@ -431,7 +431,7 @@ export default function StoryCard({
             </div>
           </div>
 
-          {/* COLLAPSED — teaser + chevron */}
+          {/* COLLAPSED — teaser */}
           {!expanded && hasSummary && teaserText && (
             <div style={{
               display: 'flex', alignItems: 'center',
@@ -444,14 +444,6 @@ export default function StoryCard({
               }}>
                 {teaserText}
               </span>
-              <svg className="tfh-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                style={{
-                  stroke: W70, strokeWidth: '2.5',
-                  strokeLinecap: 'round', strokeLinejoin: 'round',
-                  flexShrink: 0,
-                }}>
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
             </div>
           )}
 
@@ -479,15 +471,6 @@ export default function StoryCard({
                   }}>
                     The Hub Take
                   </span>
-                  <svg className="tfh-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                    style={{
-                      stroke: TEAL, strokeWidth: '2.5',
-                      strokeLinecap: 'round', strokeLinejoin: 'round',
-                      marginLeft: 'auto',
-                      transform: 'rotate(180deg)',
-                    }}>
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
                 </div>
               )}
 
@@ -541,6 +524,22 @@ export default function StoryCard({
                   next story <span className="tfh-nudge">↓</span>
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Unified chevron — always bottom-right, rotates on expand */}
+          {hasSummary && (
+            <div style={{
+              position: 'absolute', bottom: '12px', right: '12px',
+            }}>
+              <svg className="tfh-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                style={{
+                  stroke: TEAL, strokeWidth: '2.5',
+                  strokeLinecap: 'round', strokeLinejoin: 'round',
+                  transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </div>
           )}
 

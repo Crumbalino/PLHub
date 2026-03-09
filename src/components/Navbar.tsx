@@ -1,110 +1,94 @@
 'use client';
+import { useEffect, useState } from 'react';
+
+const TEAL = '#3AAFA9';
+const PINK = '#E84080';
+const GOLD = '#D4A843';
+const WHITE = '#F8F9FB';
+
+function useReadingProgress() {
+  const [pct, setPct] = useState(0);
+  const [caughtUp, setCaughtUp] = useState(false);
+  const [label, setLabel] = useState('');
+
+  useEffect(() => {
+    function load() {
+      try {
+        const today = new Date().toDateString();
+        const raw = localStorage.getItem('tfh_progress');
+        const data = raw ? JSON.parse(raw) : null;
+        if (!data || data.date !== today) return;
+        const expanded: string[] = data.expanded || [];
+        const total: number = data.total || 0;
+        if (total === 0) return;
+        const p = Math.min(100, Math.round((expanded.length / total) * 100));
+        setPct(p);
+        if (p >= 100) {
+          setCaughtUp(true);
+          const d = new Date();
+          const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+          const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+          setLabel(`${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`);
+        }
+      } catch {}
+    }
+    load();
+    window.addEventListener('tfh_progress_update', load);
+    return () => window.removeEventListener('tfh_progress_update', load);
+  }, []);
+
+  return { pct, caughtUp, label };
+}
 
 export default function Navbar() {
+  const { pct, caughtUp, label } = useReadingProgress();
+
   return (
-    <nav
-      className="sticky top-0 z-50 h-auto transition-colors duration-300"
-      style={{
-        backgroundColor: 'color-mix(in srgb, var(--plh-bg) 95%, transparent)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: '1px solid #3AAFA9',
-        boxShadow: '0 2px 20px rgba(58,175,169,0.25)',
-      }}
-    >
-      <div className="max-w-[700px] mx-auto pt-5 pb-5 px-4 sm:px-6 flex items-center justify-center">
-
-        {/* Logo — centred, The Football Hub wordmark */}
-        <a
-          href="/"
-          className="inline-flex items-center select-none group"
-          aria-label="The Football Hub home"
-        >
-          <div style={{
-            display: 'inline-flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            position: 'relative',
-            paddingTop: '16px',
-            paddingBottom: '14px',
-            paddingLeft: '10px',
-            paddingRight: '10px',
-          }}>
-            {/* TL bracket */}
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                top: '0px',
-                left: '-4px',
-                opacity: 0.9,
-              }}
-            >
-              <path d="M2 14V2H14" stroke="var(--plh-teal)" strokeWidth="3.5" strokeLinecap="round" />
-            </svg>
-
-            {/* THE */}
-            <span style={{
-              fontWeight: 700,
-              lineHeight: 1,
-              color: 'var(--plh-text-100)',
-              fontSize: '10px',
-              fontFamily: "'Sora', sans-serif",
-              letterSpacing: '3.5px',
-              textTransform: 'uppercase',
-              marginBottom: '3px',
-              opacity: 0.85,
-            }}>
-              THE
-            </span>
-
-            {/* FOOTBALL HUB */}
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
-              <span style={{
-                fontWeight: 700,
-                lineHeight: 1,
-                color: 'var(--plh-text-100)',
-                fontSize: '27px',
-                fontFamily: "'Sora', sans-serif",
-                letterSpacing: '-0.5px',
-              }}>
-                FOOTBALL
-              </span>
-              <span style={{
-                fontWeight: 300,
-                lineHeight: 1,
-                color: 'var(--plh-text-100)',
-                fontSize: '27px',
-                fontFamily: "'JetBrains Mono', 'Consolas', monospace",
-                letterSpacing: '1px',
-                marginLeft: '7px',
-              }}>
-                HUB
-              </span>
+    <nav style={{
+      position: 'sticky', top: 0, zIndex: 50,
+      backgroundColor: 'color-mix(in srgb, #0D1B2A 96%, transparent)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      borderBottom: '1px solid rgba(58,175,169,0.15)',
+    }}>
+      <div style={{
+        maxWidth: '1400px', margin: '0 auto',
+        padding: '0 24px',
+        height: '64px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'relative',
+      }}>
+        <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'flex-start', position: 'relative', padding: '14px 12px' }} aria-label="The Football Hub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', top: 0, left: -2 }}>
+            <path d="M2 14V2H14" stroke={PINK} strokeWidth="3.5" strokeLinecap="round" />
+          </svg>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '9px', letterSpacing: '3.5px', textTransform: 'uppercase', color: WHITE, opacity: 0.7, marginBottom: '2px', lineHeight: 1 }}>THE</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '7px' }}>
+              <span style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '26px', color: WHITE, letterSpacing: '-0.5px', lineHeight: 1 }}>FOOTBALL</span>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300, fontSize: '26px', color: WHITE, letterSpacing: '1px', lineHeight: 1 }}>HUB</span>
             </div>
-
-            {/* BR bracket */}
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                bottom: '0px',
-                right: '-4px',
-                opacity: 0.9,
-              }}
-            >
-              <path d="M22 10V22H10" stroke="var(--plh-teal)" strokeWidth="3.5" strokeLinecap="round" />
-            </svg>
           </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', bottom: 0, right: -2 }}>
+            <path d="M22 10V22H10" stroke={PINK} strokeWidth="3.5" strokeLinecap="round" />
+          </svg>
         </a>
+
+        {caughtUp && (
+          <span style={{
+            position: 'absolute', right: '24px',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: GOLD,
+          }}>CAUGHT UP · {label}</span>
+        )}
+      </div>
+
+      <div style={{ height: '3px', background: 'rgba(58,175,169,0.12)' }}>
+        <div style={{
+          height: '100%', width: `${pct}%`,
+          background: caughtUp ? GOLD : TEAL,
+          transition: 'width 0.4s ease-out, background 0.6s ease',
+        }} />
       </div>
     </nav>
   );

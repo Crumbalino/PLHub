@@ -1,194 +1,79 @@
-'use client'
+'use client';
+import { useState } from 'react';
+import { useFeed } from '@/hooks/useFeed';
+import StoryCard from './StoryCard';
+import type { SortMode } from '@/lib/types';
 
-import { useState } from 'react'
-import { useFeed } from '@/hooks/useFeed'
-import StoryCard from './StoryCard'
-import type { SortMode } from '@/lib/types'
+const TEAL = '#3AAFA9';
+const WHITE = '#F8F9FB';
+const W70 = 'rgba(248,249,251,0.7)';
 
-interface FeedListProps {
-  club?: string | null
-  onCardExpand?: () => void
+function trackExpand(postId: string, totalPosts: number) {
+  try {
+    const today = new Date().toDateString();
+    const raw = localStorage.getItem('tfh_progress');
+    const data = raw ? JSON.parse(raw) : null;
+    const existing: string[] = data?.date === today ? data.expanded : [];
+    if (!existing.includes(postId)) {
+      localStorage.setItem('tfh_progress', JSON.stringify({
+        date: today, expanded: [...existing, postId], total: totalPosts,
+      }));
+      window.dispatchEvent(new Event('tfh_progress_update'));
+    }
+  } catch {}
 }
 
-export default function FeedList({ club = null, onCardExpand }: FeedListProps) {
-  const [showHowItWorks, setShowHowItWorks] = useState(false)
-  const [headingPhase, setHeadingPhase] = useState(0)
-  const [readCount, setReadCount] = useState(0)
-  const [showStreakBadge, setShowStreakBadge] = useState(false)
-  const {
-    posts,
-    isLoading,
-    isLoadingMore,
-    sortMode,
-    setSortMode,
-    loadMore,
-    hasMore,
-  } = useFeed({ club })
+export default function FeedList({ club = null }: { club?: string | null }) {
+  const [sortMode, setSortMode] = useState<SortMode>('pulse');
+  const [fading, setFading] = useState(false);
+  const { posts, isLoading, isLoadingMore, loadMore, hasMore } = useFeed({ club, sortMode });
 
-  const handleRead = () => {
-    const newCount = readCount + 1
-    setReadCount(newCount)
-    if (newCount === 2 && !showStreakBadge) {
-      setShowStreakBadge(true)
-    }
+  function toggleSort() {
+    setFading(true);
+    setTimeout(() => { setSortMode(s => s === 'pulse' ? 'new' : 'pulse'); setFading(false); }, 150);
   }
-
-  const handleToggleSort = () => {
-    setHeadingPhase(1)
-    setTimeout(() => {
-      setSortMode(sortMode === 'pulse' ? 'new' : 'pulse')
-      setHeadingPhase(0)
-    }, 100)
-  }
-
-  const isIndexSort = sortMode === 'pulse'
-  const title = isIndexSort ? 'Ranked by the Hub Index' : 'Latest stories'
-  const toggleText = isIndexSort ? 'or show latest' : 'or rank by Index'
 
   return (
-    <>
-      <style>{`
-        @keyframes pop {
-          from { transform: scale(0.5); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        .streak-pop { animation: pop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
-      `}</style>
-
-      {/* Section Heading — stacks on mobile, inline on desktop */}
-      <div className="mb-4 mt-2 border-l-[3px] border-l-[var(--plh-teal)] pl-3">
-        <div className={`transition-opacity duration-200 ${headingPhase === 1 ? 'opacity-0' : 'opacity-100'}`}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-            <h2 className="text-lg sm:text-xl font-bold text-[var(--plh-text-100)] leading-tight">
-              {title}
-            </h2>
-            {showStreakBadge && (
-              <div
-                className="streak-pop"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: 'rgba(58,175,169,0.15)',
-                  border: '1px solid rgba(58,175,169,0.3)',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  color: '#3AAFA9',
-                  fontWeight: 600,
-                  fontFamily: "'Sora', sans-serif",
-                }}
-              >
-                <span>⚡</span>
-                <span>{readCount} read today</span>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-3 mt-1">
-            <button
-              onClick={handleToggleSort}
-              className="text-xs text-[var(--plh-teal)] hover:underline cursor-pointer transition-colors whitespace-nowrap"
-            >
-              {toggleText}
-            </button>
-            {isIndexSort && (
-              <button
-                onClick={() => setShowHowItWorks(!showHowItWorks)}
-                className="text-xs text-[var(--plh-teal)] hover:underline cursor-pointer transition-colors"
-              >
-                • How this works
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* How it works explainer */}
-        {isIndexSort && showHowItWorks && (
-          <div className="mt-3 overflow-hidden animate-in fade-in-0 slide-in-from-top-2 duration-300">
-            <div
-              className="text-xs sm:text-sm leading-relaxed p-3 sm:p-4 rounded-lg border border-[var(--plh-border)]"
-              style={{ background: 'color-mix(in srgb, var(--plh-text-100) 5%, transparent)', color: 'rgba(250,245,240,0.6)' }}
-            >
-              Every story is scored 0–100 based on four things: how trusted the source is, how fresh the story is, how much people are talking about it, and how significant it actually is. No paid placement, no algorithms favouring advertisers. Just good stories, ranked fairly.
-            </div>
-          </div>
-        )}
+    <div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '20px', borderLeft: `3px solid ${TEAL}`, paddingLeft: '12px' }}>
+        <h2 style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '18px', color: WHITE, margin: 0, opacity: fading ? 0 : 1, transition: 'opacity 0.15s ease' }}>
+          {sortMode === 'pulse' ? 'Ranked by the Hub Index' : 'Latest stories'}
+        </h2>
+        <button onClick={toggleSort} style={{ fontFamily: "'Sora', sans-serif", fontSize: '12px', fontWeight: 500, color: TEAL, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          {sortMode === 'pulse' ? 'show latest' : 'rank by index'}
+        </button>
       </div>
 
-      {/* Loading skeleton */}
       {isLoading && (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="skeleton-shimmer rounded-xl border-l-2 border-[var(--plh-border)] overflow-hidden"
-              style={{ animationDelay: `${i * 150}ms` }}
-            >
-              {i < 2 && <div className="w-full h-[140px] sm:h-[200px]" style={{ background: 'rgba(var(--plh-text-base), 0.02)' }} />}
-              <div className="p-4 sm:p-5 space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full" style={{ background: 'rgba(var(--plh-text-base), 0.05)' }} />
-                  <div className="w-20 h-3 rounded" style={{ background: 'rgba(var(--plh-text-base), 0.05)' }} />
-                </div>
-                <div className="w-[85%] h-5 rounded" style={{ background: 'rgba(var(--plh-text-base), 0.05)' }} />
-                <div className="w-[60%] h-5 rounded" style={{ background: 'rgba(var(--plh-text-base), 0.05)' }} />
-              </div>
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} style={{ borderRadius: '10px', height: '90px', background: 'var(--plh-card)', border: '1px solid var(--plh-border)', animation: 'tfhPulse 1.8s ease-in-out infinite', animationDelay: `${i * 120}ms` }} />
           ))}
+          <style>{`@keyframes tfhPulse { 0%,100%{opacity:0.4} 50%{opacity:0.15} }`}</style>
         </div>
       )}
 
-      {/* Feed */}
       {!isLoading && (
-        <div className="space-y-3 animate-feed-enter" key={sortMode}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} key={`${sortMode}-${club}`}>
           {posts.map((post, idx) => (
-            <StoryCard
-              key={post.id}
-              post={post}
-              index={idx}
-              onRead={handleRead}
-              onExpand={onCardExpand}
-            />
+            <StoryCard key={post.id} post={post} index={idx} onExpand={() => trackExpand(post.id, posts.length)} />
           ))}
         </div>
       )}
 
-      {/* Empty state */}
       {!isLoading && posts.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--plh-border)] py-12 sm:py-16 text-center animate-fadeIn">
-          <span className="text-4xl">⚽</span>
-          <h3 className="mt-4 text-base font-semibold text-[var(--plh-text-100)]">No stories yet</h3>
-          <p className="mt-2 max-w-sm text-sm text-[var(--plh-text-50)] px-4">
-            News will appear here once the cron jobs have fetched the latest posts.
-          </p>
+        <div style={{ textAlign: 'center', padding: '64px 24px', border: '1px dashed rgba(248,249,251,0.1)', borderRadius: '10px' }}>
+          <p style={{ fontFamily: "'Sora', sans-serif", color: W70, fontSize: '14px' }}>No stories yet. Check back soon.</p>
         </div>
       )}
 
-      {/* Load More */}
       {!isLoading && hasMore && posts.length > 0 && (
-        <div className="text-center mt-8 mb-4">
-          <p className="text-xs mb-3" style={{ color: '#FAF5F0' }}>
-            Showing {posts.length} stories
-          </p>
-          <button
-            onClick={loadMore}
-            disabled={isLoadingMore}
-            className="load-more-btn bg-[var(--plh-card)] hover:bg-[var(--plh-elevated)] text-[var(--plh-text-100)] rounded-xl py-3 px-8 text-sm font-medium transition-all disabled:opacity-50"
-          >
-            {isLoadingMore ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Loading
-              </span>
-            ) : (
-              'Load more stories'
-            )}
+        <div style={{ textAlign: 'center', marginTop: '32px' }}>
+          <button onClick={loadMore} disabled={isLoadingMore} style={{ fontFamily: "'Sora', sans-serif", fontSize: '13px', fontWeight: 600, color: TEAL, background: 'none', border: `1px solid ${TEAL}40`, borderRadius: '8px', padding: '10px 28px', cursor: isLoadingMore ? 'default' : 'pointer', opacity: isLoadingMore ? 0.5 : 1 }}>
+            {isLoadingMore ? 'Loading…' : 'Load more stories'}
           </button>
         </div>
       )}
-    </>
-  )
+    </div>
+  );
 }

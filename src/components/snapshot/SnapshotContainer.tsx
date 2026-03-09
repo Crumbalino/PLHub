@@ -1,578 +1,268 @@
-'use client'
+'use client';
+import { useEffect, useState } from 'react';
 
-import { useEffect, useState } from 'react'
-import HeroGrid from './HeroGrid'
-import BottomCards from './BottomCards'
-import SnapshotCardGrid from './SnapshotCardGrid'
-import ByTheNumbers from './ByTheNumbers'
-import QuoteStrip from './QuoteStrip'
-import StaleDataBanner from './StaleDataBanner'
+const TEAL = '#3AAFA9';
+const PINK = '#E84080';
+const GOLD = '#D4A843';
+const WHITE = '#F8F9FB';
+const W70 = 'rgba(248,249,251,0.7)';
+const W40 = 'rgba(248,249,251,0.4)';
+
+// ── Interfaces (keep exact shapes that /api/snapshot returns) ─────────────────
 
 interface SnapshotStory {
-  id: string
-  headline: string
-  summary: string | null
-  source: { name: string; url: string }
-  url: string
-  clubs: Array<{ slug: string; shortName: string; code: string; badgeUrl: string }>
-  plhub_index: number | null
-  published_at: string
-  story_card_id: string
-  image_url: string | null
+  id: string;
+  headline: string;
+  summary: string | null;
+  source: { name: string; url: string };
+  url: string;
+  clubs: Array<{ slug: string; shortName: string; code: string; badgeUrl: string }>;
+  plhub_index: number | null;
+  published_at: string;
+  story_card_id: string;
+  image_url: string | null;
 }
 
 interface SnapshotData {
-  metadata: {
-    generatedAt: string
-    matchday: number
-    postsCount: number
-  }
+  metadata: { generatedAt: string; matchday: number; postsCount: number };
   modules: {
-    get_caught_up: SnapshotStory[]
-    transfers: SnapshotStory[]
-    beyond_big_six: SnapshotStory[]
-    fantasy_premier_league: SnapshotStory[]
+    get_caught_up: SnapshotStory[];
+    transfers: SnapshotStory[];
+    beyond_big_six: SnapshotStory[];
+    fantasy_premier_league: SnapshotStory[];
     by_the_numbers: {
-      tiles: Array<{
-        number: string
-        label: string
-        context: string
-        accent: boolean
-      }>
-      matchday: number
-    } | null
+      tiles: Array<{ number: string; label: string; context: string; accent: boolean }>;
+      matchday: number;
+    } | null;
     the_table: {
-      standings: Array<{
-        position: number
-        club: string
-        points: number
-      }>
-      highlighted_club: string | null
-    } | null
+      standings: Array<{ position: number; club: string; points: number }>;
+      highlighted_club: string | null;
+    } | null;
     fixture_focus: Array<{
-      home: { name: string; slug: string }
-      away: { name: string; slug: string }
-      kickoff: string
-      status: string
-      score: { home: number; away: number } | null
-      stakes_line: string | null
-    }> | null
+      home: { name: string; slug: string };
+      away: { name: string; slug: string };
+      kickoff: string;
+      status: string;
+      score: { home: number; away: number } | null;
+      stakes_line: string | null;
+    }> | null;
     the_quote: {
-      has_quote: boolean
-      quote: string | null
-      attribution: string | null
-      club: string | null
-      context: string | null
-    }
+      has_quote: boolean;
+      quote: string | null;
+      attribution: string | null;
+      club: string | null;
+      context: string | null;
+    };
     and_finally: {
-      has_content: boolean
-      headline: string | null
-      colour_line: string | null
-      image_url?: string | null
-      plhub_index: number | null
-    }
-  }
+      has_content: boolean;
+      headline: string | null;
+      colour_line: string | null;
+      image_url?: string | null;
+      plhub_index: number | null;
+    };
+  };
 }
 
-interface SnapshotContainerProps {
-  matchday?: string
-  club?: string | null
-  children?: React.ReactNode
+// ── Module: Get Caught Up ─────────────────────────────────────────────────────
+
+function ModuleGetCaughtUp({ stories }: { stories: SnapshotStory[] }) {
+  const [selected, setSelected] = useState(0);
+  if (!stories.length) return null;
+  const story = stories[Math.min(selected, stories.length - 1)];
+
+  return (
+    <div>
+      <div style={{ fontSize: '9px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: '0.12em', color: TEAL, textTransform: 'uppercase', marginBottom: '8px' }}>
+        Get Caught Up
+      </div>
+      <a href={story.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
+        <div style={{ background: 'rgba(58,175,169,0.06)', border: `1px solid rgba(58,175,169,0.2)`, borderLeft: `3px solid ${TEAL}`, borderRadius: '8px', padding: '12px 14px', cursor: 'pointer' }}>
+          <p style={{ fontFamily: "'Sora', sans-serif", fontWeight: 600, fontSize: '14px', color: WHITE, margin: '0 0 6px 0', lineHeight: 1.35 }}>{story.headline}</p>
+          {story.summary && (
+            <p style={{ fontFamily: "'Sora', sans-serif", fontSize: '12px', color: W70, margin: '0 0 8px 0', lineHeight: 1.5 }}>{story.summary}</p>
+          )}
+          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', fontWeight: 700, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{story.source.name} →</span>
+        </div>
+      </a>
+      {stories.length > 1 && (
+        <div style={{ display: 'flex', gap: '5px', marginTop: '8px' }}>
+          {stories.slice(0, 5).map((_, i) => (
+            <button key={i} onClick={() => setSelected(i)} style={{ width: i === selected ? '18px' : '6px', height: '6px', borderRadius: '3px', background: i === selected ? TEAL : 'rgba(58,175,169,0.2)', border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.2s ease' }} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default function SnapshotContainer({
-  matchday: matchdayProp = 'Matchday 30',
-  club = null,
-  children,
-}: SnapshotContainerProps) {
-  const [snapshotData, setSnapshotData] = useState<SnapshotData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+// ── Module: By The Numbers ────────────────────────────────────────────────────
+
+function ModuleByTheNumbers({ tiles, matchday }: { tiles: Array<{ number: string; label: string; context: string; accent: boolean }>; matchday: number }) {
+  if (!tiles?.length) return null;
+  const hero = tiles.find(t => t.accent) ?? tiles[0];
+  const supporting = tiles.filter(t => t !== hero).slice(0, 3);
+
+  return (
+    <div>
+      <div style={{ fontSize: '9px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: '0.12em', color: W40, textTransform: 'uppercase', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+        <span>By The Numbers</span>
+        <span>MD {matchday}</span>
+      </div>
+      <div style={{ background: `rgba(232,64,128,0.08)`, border: `1px solid rgba(232,64,128,0.2)`, borderRadius: '8px', padding: '14px', marginBottom: supporting.length ? '8px' : 0 }}>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: '40px', lineHeight: 1, color: WHITE, letterSpacing: '-2px', marginBottom: '4px' }}>{hero.number}</div>
+        <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '12px', fontWeight: 600, color: WHITE, marginBottom: '4px' }}>{hero.label}</div>
+        <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '11px', color: W70, lineHeight: 1.5 }}>{hero.context}</div>
+      </div>
+      {supporting.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${supporting.length}, 1fr)`, gap: '6px' }}>
+          {supporting.map((tile, i) => (
+            <div key={i} style={{ background: 'rgba(58,175,169,0.06)', border: '1px solid rgba(58,175,169,0.12)', borderRadius: '8px', padding: '10px' }}>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: '22px', lineHeight: 1, color: TEAL, letterSpacing: '-1px', marginBottom: '3px' }}>{tile.number}</div>
+              <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '10px', color: W70, lineHeight: 1.4 }}>{tile.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Module: The Table ─────────────────────────────────────────────────────────
+
+function ModuleTable({ standings }: { standings: Array<{ position: number; club: string; points: number }> }) {
+  if (!standings?.length) return null;
+  const top6 = standings.slice(0, 6);
+  const bottom3 = standings.slice(-3);
+
+  const Row = ({ e }: { e: typeof standings[0] }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '5px 0', borderBottom: '1px solid rgba(248,249,251,0.05)' }}>
+      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', fontWeight: 700, color: e.position <= 4 ? TEAL : e.position >= 18 ? PINK : W40, width: '18px', textAlign: 'right', flexShrink: 0 }}>{e.position}</span>
+      <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '12px', fontWeight: 500, color: WHITE, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.club}</span>
+      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', fontWeight: 700, color: WHITE, flexShrink: 0 }}>{e.points}</span>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ fontSize: '9px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: '0.12em', color: W40, textTransform: 'uppercase', marginBottom: '8px' }}>The Table</div>
+      {top6.map(e => <Row key={e.position} e={e} />)}
+      <div style={{ textAlign: 'center', padding: '4px 0', color: W40, fontSize: '11px', letterSpacing: '2px' }}>· · ·</div>
+      {bottom3.map(e => <Row key={e.position} e={e} />)}
+    </div>
+  );
+}
+
+// ── Module: Story row (Transfers, Beyond Big Six) ─────────────────────────────
+
+function ModuleStoryRow({ label, story }: { label: string; story: SnapshotStory }) {
+  return (
+    <a href={story.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
+      <div style={{ background: 'var(--plh-card)', border: '1px solid var(--plh-border)', borderRadius: '8px', padding: '12px 14px', cursor: 'pointer' }}>
+        <div style={{ fontSize: '9px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: '0.12em', color: W40, textTransform: 'uppercase', marginBottom: '6px' }}>{label}</div>
+        <p style={{ fontFamily: "'Sora', sans-serif", fontWeight: 600, fontSize: '13px', color: WHITE, margin: '0 0 4px 0', lineHeight: 1.35 }}>{story.headline}</p>
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', fontWeight: 700, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{story.source.name} →</span>
+      </div>
+    </a>
+  );
+}
+
+// ── Module: The Quote ─────────────────────────────────────────────────────────
+
+function ModuleQuote({ quote, attribution, context }: { quote: string; attribution: string; context: string | null }) {
+  return (
+    <div style={{ background: 'rgba(232,64,128,0.07)', border: '1px solid rgba(232,64,128,0.2)', borderRadius: '8px', padding: '14px' }}>
+      <div style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '36px', lineHeight: 0.8, color: PINK, opacity: 0.35, marginBottom: '8px', userSelect: 'none' }}>"</div>
+      <p style={{ fontFamily: "'Sora', sans-serif", fontStyle: 'italic', fontSize: '13px', color: WHITE, lineHeight: 1.55, margin: '0 0 8px 0', fontWeight: 500 }}>{quote}</p>
+      <p style={{ fontFamily: "'Sora', sans-serif", fontSize: '11px', color: W70, margin: 0 }}>
+        — {attribution}{context && <span style={{ color: W40 }}> · {context}</span>}
+      </p>
+    </div>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+export default function SnapshotContainer({ club = null }: { club?: string | null }) {
+  const [data, setData] = useState<SnapshotData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchSnapshot = async () => {
+    async function load() {
       try {
-        setIsLoading(true)
-        const url = new URL(
-          '/api/snapshot',
-          typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
-        )
-        if (club) {
-          url.searchParams.set('club', club)
-        }
-
-        const response = await fetch(url.toString())
-        if (!response.ok) {
-          throw new Error('Failed to fetch snapshot')
-        }
-
-        const responseData = await response.json()
-        if (responseData.success && responseData.data) {
-          setSnapshotData(responseData.data)
-          setError(null)
-        } else {
-          throw new Error(responseData.error || 'Invalid response format')
-        }
-      } catch (err) {
-        console.error('[SnapshotContainer] Error fetching data:', err)
-        setError(err instanceof Error ? err.message : 'Unknown error')
-        setSnapshotData(null)
+        const url = new URL('/api/snapshot', window.location.origin);
+        if (club) url.searchParams.set('club', club);
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error('Failed');
+        const json = await res.json();
+        if (json.success && json.data) setData(json.data);
+        else throw new Error(json.error || 'Invalid response');
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Unknown error');
       } finally {
-        setIsLoading(false)
+        setLoading(false);
       }
     }
+    load();
+  }, [club]);
 
-    fetchSnapshot()
-  }, [club])
-
-  // If children are provided, render them instead (legacy support)
-  if (children) {
-    return (
-      <div
-        className="relative w-full mb-8 rounded-lg overflow-hidden"
-        style={{
-          background: 'var(--plh-card)',
-        }}
-      >
-        {/* Main content area with padding */}
-        <div className="relative px-3 pt-4 pb-4 sm:px-5 sm:pt-5 sm:pb-5">
-          {/* Header Row */}
-          <div className="mb-6 flex items-baseline justify-between gap-4">
-            {/* Left: Title and subtitle */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-3">
-                <h1
-                  className="font-bold leading-tight"
-                  style={{ color: 'var(--plh-text-100)', fontFamily: 'var(--font-sora)', fontSize: '24px' }}
-                >
-                  The Snapshot
-                </h1>
-                <span
-                  className="text-xs sm:text-sm font-mono flex-shrink-0"
-                  style={{ color: 'rgba(250,245,240,0.35)' }}
-                >
-                  P.302
-                </span>
-              </div>
-            </div>
-
-            {/* Right: Matchday indicator */}
-            <div
-              className="text-sm sm:text-base font-semibold flex-shrink-0"
-              style={{ color: '#FAF5F0', fontFamily: 'var(--font-sora)' }}
-            >
-              Matchday{' '}
-              <span style={{ fontFamily: 'var(--font-mono)' }}>
-                {matchdayProp.split(' ')[1] || matchdayProp}
-              </span>
-            </div>
-          </div>
-
-          {/* Children content */}
-          <div>{children}</div>
-        </div>
-      </div>
-    )
-  }
-
-  // Determine matchday string
-  const matchday = snapshotData
-    ? `Matchday ${snapshotData.metadata.matchday}`
-    : matchdayProp
-
-  const getCaughtUpStories = snapshotData?.modules.get_caught_up || []
-  const transferStory = snapshotData?.modules.transfers?.[0] || null
-  const beyondBigSixStory = snapshotData?.modules.beyond_big_six?.[0] || null
-  const fplStory = snapshotData?.modules.fantasy_premier_league?.[0] || null
-  const theRestData = snapshotData?.modules.and_finally || null
-  const quoteData = snapshotData?.modules.the_quote || null
+  const matchday = data ? `Matchday ${data.metadata.matchday}` : '—';
 
   return (
-    <div
-      className="relative w-full mb-8 rounded-lg overflow-hidden"
-      style={{
-        background: 'var(--plh-card)',
-      }}
-    >
-      {/* Main content area with padding */}
-      <div className="relative px-4 pt-3 pb-3 sm:px-5 sm:pt-4 sm:pb-4">
-        {/* Header Row */}
-        <div className="mb-6 flex items-baseline justify-between gap-4">
-          {/* Left: Title and subtitle */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-3">
-              <h1
-                className="font-bold leading-tight"
-                style={{ color: 'var(--plh-text-100)', fontFamily: 'var(--font-sora)', fontSize: '24px' }}
-              >
-                The Snapshot
-              </h1>
-              <span
-                className="text-xs sm:text-sm font-mono flex-shrink-0"
-                style={{ color: 'rgba(250,245,240,0.35)' }}
-              >
-                P.302
-              </span>
-            </div>
-          </div>
-
-          {/* Right: Matchday indicator */}
-          <div
-            className="text-sm sm:text-base font-semibold flex-shrink-0"
-            style={{ color: '#FAF5F0', fontFamily: 'var(--font-sora)' }}
-          >
-            Matchday{' '}
-            <span style={{ fontFamily: 'var(--font-mono)' }}>
-              {matchday.split(' ')[1] || matchday}
-            </span>
-          </div>
+    <div style={{ background: 'var(--plh-card)', border: '1px solid var(--plh-border)', borderRadius: '12px', overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid rgba(248,249,251,0.06)', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+          <h2 style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '20px', color: WHITE, margin: 0 }}>The Snapshot</h2>
+          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: W40 }}>P.302</span>
         </div>
-
-        {/* Stale Data Banner */}
-        <StaleDataBanner />
-
-        {/* Magazine-style layout with reordered modules */}
-        <div className="space-y-2">
-          {/* Row 1: Hero Grid (Get Caught Up) */}
-          {!isLoading && (
-            <HeroGrid
-              stories={getCaughtUpStories}
-              isLoading={isLoading}
-            />
-          )}
-          {isLoading && <HeroGridSkeleton />}
-
-          {/* Rows 2-4: Transfers, Beyond Big Six, The Rest — 3-column grid */}
-          {!isLoading && (
-            <SnapshotCardGrid
-              cards={[
-                transferStory
-                  ? { label: 'TRANSFERS', story: transferStory, source: transferStory.source }
-                  : null,
-                beyondBigSixStory
-                  ? { label: 'BEYOND BIG SIX', story: beyondBigSixStory, source: beyondBigSixStory.source }
-                  : null,
-                theRestData?.has_content
-                  ? { label: 'THE REST', headline: theRestData.headline, imageUrl: theRestData.image_url, plhubIndex: theRestData.plhub_index }
-                  : null,
-              ].filter((c) => c !== null) as Array<any>}
-            />
-          )}
-
-          {/* Row 4: By The Numbers */}
-          {!isLoading && snapshotData && (
-            <ByTheNumbersModule snapshotData={snapshotData} />
-          )}
-
-          {/* Quote Strip (conditional) */}
-          {!isLoading && quoteData?.has_quote && quoteData.quote && quoteData.attribution && (
-            <QuoteStrip
-              quote={quoteData.quote}
-              attribution={quoteData.attribution}
-              club={quoteData.club}
-              context={quoteData.context}
-            />
-          )}
-        </div>
-
-        {/* Pink end bar */}
-        <div
-          className="h-0.5 rounded-full mt-3"
-          style={{
-            background: 'linear-gradient(to right, var(--plh-pink), transparent)',
-          }}
-        />
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', fontWeight: 700, color: W70 }}>{matchday}</span>
       </div>
+
+      {/* Body */}
+      <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {loading && (
+          <>
+            {[120, 80, 80, 100].map((h, i) => (
+              <div key={i} style={{ height: `${h}px`, borderRadius: '8px', background: 'rgba(248,249,251,0.04)', animation: 'tfhPulse 1.8s ease-in-out infinite', animationDelay: `${i * 150}ms` }} />
+            ))}
+            <style>{`@keyframes tfhPulse { 0%,100%{opacity:0.5} 50%{opacity:0.15} }`}</style>
+          </>
+        )}
+
+        {!loading && error && (
+          <p style={{ fontFamily: "'Sora', sans-serif", fontSize: '12px', color: W40, textAlign: 'center', padding: '24px 0' }}>Snapshot unavailable right now.</p>
+        )}
+
+        {!loading && !error && data && (
+          <>
+            <ModuleGetCaughtUp stories={data.modules.get_caught_up ?? []} />
+
+            {data.modules.transfers?.[0] && (
+              <ModuleStoryRow label="Transfers & Contracts" story={data.modules.transfers[0]} />
+            )}
+
+            {data.modules.the_table?.standings?.length && (
+              <ModuleTable standings={data.modules.the_table.standings} />
+            )}
+
+            {data.modules.by_the_numbers?.tiles?.length && (
+              <ModuleByTheNumbers tiles={data.modules.by_the_numbers.tiles} matchday={data.modules.by_the_numbers.matchday} />
+            )}
+
+            {data.modules.beyond_big_six?.[0] && (
+              <ModuleStoryRow label="Beyond Big Six" story={data.modules.beyond_big_six[0]} />
+            )}
+
+            {data.modules.the_quote?.has_quote && data.modules.the_quote.quote && data.modules.the_quote.attribution && (
+              <ModuleQuote quote={data.modules.the_quote.quote} attribution={data.modules.the_quote.attribution} context={data.modules.the_quote.context ?? null} />
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Pink footer bar */}
+      <div style={{ height: '2px', background: `linear-gradient(to right, ${PINK}, transparent)` }} />
     </div>
-  )
-}
-
-interface SnapshotTableEntry {
-  position: number
-  club: string
-  points: number
-}
-
-interface SnapshotFixture {
-  home: { name: string }
-  away: { name: string }
-  kickoff: string
-}
-
-interface ByTheNumbersData {
-  tiles: Array<{
-    number: string
-    label: string
-    context: string
-    accent: boolean
-  }>
-  matchday: number
-}
-
-interface ByTheNumbersModuleProps {
-  snapshotData: SnapshotData
-}
-
-/**
- * Build evergreen fallback tiles from snapshot data
- */
-function buildEvergreens(snapshotData: SnapshotData): Array<{
-  number: string
-  label: string
-  isEvergreen: boolean
-}> {
-  const evergreens: Array<{ number: string; label: string; isEvergreen: boolean }> = []
-
-  // Pull from the_table
-  const standings = snapshotData.modules.the_table?.standings || []
-  const topTeam = standings[0]
-  const eighteenthPlace = standings[17]
-
-  if (topTeam) {
-    evergreens.push({
-      number: topTeam.points.toString(),
-      label: `${topTeam.club} top of the table`,
-      isEvergreen: true,
-    })
-  }
-
-  // Pull from fixture_focus (next fixture)
-  const nextFixture = snapshotData.modules.fixture_focus?.[0]
-  if (nextFixture && nextFixture.kickoff) {
-    try {
-      const kickoffDate = new Date(nextFixture.kickoff)
-      const kickoffHour = String(kickoffDate.getHours()).padStart(2, '0')
-      const kickoffMin = String(kickoffDate.getMinutes()).padStart(2, '0')
-      evergreens.push({
-        number: `${kickoffHour}:${kickoffMin}`,
-        label: `${nextFixture.home.name} vs ${nextFixture.away.name}`,
-        isEvergreen: true,
-      })
-    } catch (err) {
-      console.warn('[ByTheNumbers] Error parsing fixture kickoff:', err)
-    }
-  }
-
-  // Relegation gap: points difference between 18th and 17th
-  if (standings.length >= 18) {
-    const seventeenthPlace = standings[16]
-    if (eighteenthPlace && seventeenthPlace) {
-      const gap = seventeenthPlace.points - eighteenthPlace.points
-      evergreens.push({
-        number: gap.toString(),
-        label: `points above relegation for ${eighteenthPlace.club}`,
-        isEvergreen: true,
-      })
-    }
-  }
-
-  return evergreens.filter((e) => e.number) // Remove any with null numbers
-}
-
-/**
- * Build hero tile from evergreen data when AI data is unavailable
- */
-function buildEvergreensHero(snapshotData: SnapshotData): {
-  number: string
-  label: string
-  context: string
-  usePink: boolean
-  isEvergreen: boolean
-} | null {
-  // Candidate 1: Total goals scored across all matches this matchday
-  const fixtures = snapshotData.modules.fixture_focus || []
-  const finishedMatches = fixtures.filter((f) => f.status === 'finished' && f.score)
-
-  if (finishedMatches.length > 0) {
-    const totalGoals = finishedMatches.reduce((sum, m) => {
-      if (m.score) {
-        return sum + m.score.home + m.score.away
-      }
-      return sum
-    }, 0)
-
-    if (totalGoals > 0) {
-      // Find the highest-scoring match
-      const highestScoringMatch = finishedMatches.reduce((max, m) => {
-        const matchTotal = (m.score ? m.score.home + m.score.away : 0)
-        const maxTotal = (max.score ? max.score.home + max.score.away : 0)
-        return matchTotal > maxTotal ? m : max
-      })
-
-      const scoreStr = highestScoringMatch.score
-        ? `${highestScoringMatch.score.home}–${highestScoringMatch.score.away}`
-        : ''
-
-      return {
-        number: totalGoals.toString(),
-        label: 'goals across the matchday',
-        context: scoreStr ? `A busy one — ${scoreStr} the standout scoreline.` : `A busy one across the matchday.`,
-        usePink: false,
-        isEvergreen: true,
-      }
-    }
-  }
-
-  // Candidate 2: League leader's points
-  const standings = snapshotData.modules.the_table?.standings || []
-  const topTeam = standings[0]
-  const secondTeam = standings[1]
-
-  if (topTeam && secondTeam) {
-    const pointsGap = topTeam.points - secondTeam.points
-    const gapText = pointsGap > 0 ? `${pointsGap} point${pointsGap !== 1 ? 's' : ''}` : 'tied on points'
-    return {
-      number: topTeam.points.toString(),
-      label: `${topTeam.club} lead the league`,
-      context: `${gapText} clear of ${secondTeam.club}. Title race is on.`,
-      usePink: false,
-      isEvergreen: true,
-    }
-  }
-
-  // Candidate 3: Relegation gap
-  if (standings.length >= 18) {
-    const eighteenthPlace = standings[17]
-    const seventeenthPlace = standings[16]
-
-    if (eighteenthPlace && seventeenthPlace) {
-      const gap = seventeenthPlace.points - eighteenthPlace.points
-      if (gap > 0) {
-        return {
-          number: gap.toString(),
-          label: 'points between safety and the drop',
-          context: `${eighteenthPlace.club} are in the red zone. Fight's on.`,
-          usePink: false,
-          isEvergreen: true,
-        }
-      }
-    }
-  }
-
-  return null
-}
-
-/**
- * ByTheNumbers module wrapper — handles data extraction and fallback logic
- */
-function ByTheNumbersModule({ snapshotData }: ByTheNumbersModuleProps) {
-  const byTheNumbersData = snapshotData.modules.by_the_numbers as ByTheNumbersData | null
-  const evergreens = buildEvergreens(snapshotData)
-
-  // Extract hero (the accent tile) and supporting tiles
-  let heroTile = null
-  let supportingTiles: Array<{
-    number: string
-    label: string
-    context?: string
-    usePink?: boolean
-    isEvergreen?: boolean
-  }> = []
-
-  if (byTheNumbersData?.tiles && byTheNumbersData.tiles.length > 0) {
-    // Find the accent tile (hero)
-    const accentIdx = byTheNumbersData.tiles.findIndex((t) => t.accent)
-    const heroIdx = accentIdx >= 0 ? accentIdx : 0
-
-    const heroData = byTheNumbersData.tiles[heroIdx]
-    heroTile = {
-      number: heroData.number,
-      label: heroData.label,
-      context: heroData.context,
-      usePink: true, // Always use pink for AI-generated hero
-    }
-
-    // Collect supporting tiles (non-hero)
-    supportingTiles = byTheNumbersData.tiles
-      .map((tile, idx) => ({
-        number: tile.number,
-        label: tile.label,
-        context: tile.context,
-        usePink: false,
-        isEvergreen: false,
-      }))
-      .filter((_, idx) => idx !== heroIdx)
-  } else {
-    // Fallback: build hero from evergreen data
-    heroTile = buildEvergreensHero(snapshotData)
-  }
-
-  // Backfill supporting tiles with evergreens to reach 3 total
-  while (supportingTiles.length < 3 && evergreens.length > 0) {
-    const evergreen = evergreens.shift()
-    if (evergreen) {
-      supportingTiles.push({
-        ...evergreen,
-        usePink: false,
-      })
-    }
-  }
-
-  // If no hero at all, don't render the module
-  if (!heroTile) {
-    return null
-  }
-
-  return (
-    <ByTheNumbers />
-  )
-}
-
-function HeroGridSkeleton() {
-  return (
-    <div className="w-full">
-      {/* Desktop: 2-column grid for top 3 stories */}
-      <div className="hidden sm:grid sm:grid-cols-2 sm:gap-1.5 mb-1.5">
-        {/* Hero skeleton (left, spans 2 rows) */}
-        <div
-          className="sm:row-span-2 rounded-lg overflow-hidden"
-          style={{
-            minHeight: '320px',
-            background: 'rgba(250, 245, 240, 0.04)',
-            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          }}
-        />
-        {/* Sidekick 1 skeleton (right top) */}
-        <div
-          className="rounded-lg overflow-hidden"
-          style={{
-            minHeight: '152px',
-            background: 'rgba(250, 245, 240, 0.04)',
-            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          }}
-        />
-        {/* Sidekick 2 skeleton (right bottom) */}
-        <div
-          className="rounded-lg overflow-hidden"
-          style={{
-            minHeight: '152px',
-            background: 'rgba(250, 245, 240, 0.04)',
-            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          }}
-        />
-      </div>
-
-      {/* Mobile: single column */}
-      <div className="sm:hidden flex flex-col gap-1.5">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div
-            key={`skeleton-${i}`}
-            className="rounded-lg"
-            style={{
-              height: i === 0 ? '200px' : '140px',
-              background: 'rgba(250, 245, 240, 0.04)',
-              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            }}
-          />
-        ))}
-      </div>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
-    </div>
-  )
+  );
 }
