@@ -3,38 +3,60 @@
 import { useState, useRef } from 'react';
 import type { FeedPost } from '@/lib/types';
 
+// ─── Brand tokens (locked) ────────────────────────────────────────────────────
+const PINK   = '#E84080';
+const TEAL   = '#3AAFA9';
+const GOLD   = '#D4A843';
+const ORANGE = '#E8622A';
+const NAVY   = '#0D1B2A';
+const WHITE  = '#F8F9FB';
+const W70    = 'rgba(248,249,251,0.7)';
+
+// ─── Publisher colours (brand-locked) ────────────────────────────────────────
 const PUBLISHER_COLORS: Record<string, string> = {
-  'BBC Sport': '#D4A843',
-  'Sky Sports': '#E84080',
+  'BBC Sport':    GOLD,
+  'Sky Sports':   PINK,
   'The Guardian': '#6B9E78',
-  'Goal.com': '#7B5EA7',
-  '90min': '#FF6B35',
-  'Football365': '#E84080',
-  'The Independent': '#C0392B',
-  'ESPN FC': '#E84080',
-  'FourFourTwo': '#D4A843',
+  'talkSPORT':    '#A8D8EA',
+  'Goal.com':     '#7B5EA7',
+  '90min':        ORANGE,
 };
-
-function getPublisherColor(publisherName: string): string {
-  return PUBLISHER_COLORS[publisherName] || '#FFFFFF';
+function getPublisherColor(name: string): string {
+  return PUBLISHER_COLORS[name] ?? WHITE;
 }
 
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
+// ─── Types ────────────────────────────────────────────────────────────────────
 type CardType = 'story' | 'stat' | 'quote' | 'result' | 'lol' | 'rumour';
-
 interface ExtendedFeedPost extends FeedPost {
   card_type?: CardType;
-  generated_headline?: string;
+  generated_headline?: string | null;
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function extractStatNumber(title: string): string {
+  const m = title.match(/\b(\d[\d,]*)\b/);
+  return m ? m[1] : '?';
+}
+
+function extractQuoteText(title: string): string {
+  const m = title.match(/["""''](.*?)["""'']/s);
+  if (m) return m[1].length > 80 ? m[1].slice(0, 80) + '…' : m[1];
+  return title.slice(0, 80);
+}
+
+function extractAttribution(title: string): string {
+  const m = title.match(/["""''']\s*[-–—]?\s*([A-Z][^,.\n]{2,35})(?:$|,|\.)/);
+  return m ? m[1].trim() : '';
+}
+
+function extractScore(title: string): string {
+  const m = title.match(/\b(\d{1,2})\s*[-–]\s*(\d{1,2})\b/);
+  return m ? `${m[1]}–${m[2]}` : '?–?';
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function StoryCard({
-  post: basePost,
+  post: rawPost,
   index = 0,
   onRead,
   onExpand,
@@ -44,410 +66,349 @@ export default function StoryCard({
   onRead?: () => void;
   onExpand?: () => void;
 }) {
-  const post = basePost as ExtendedFeedPost;
-  const [expanded, setExpanded] = useState(false);
+  const post = rawPost as ExtendedFeedPost;
+
+  const [expanded, setExpanded]       = useState(false);
   const [hasBeenRead, setHasBeenRead] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const hasBeenExpandedRef = useRef(false);
+  const [imgError, setImgError]       = useState(false);
+  const hasExpandedOnce               = useRef(false);
+  const cardRef                       = useRef<HTMLDivElement>(null);
 
-  const cardType = (post.card_type || 'story') as CardType;
-  const sourceColor = getPublisherColor(post.sourceInfo.name);
+  const cardType     = (post.card_type ?? 'story') as CardType;
+  const pubColor     = getPublisherColor(post.sourceInfo.name);
+  const isLive       = (/\blive\b/i.test(post.title) && !/live stream|how to watch|watch live|stream live|live blog/i.test(post.title)) || post.sourceInfo.name.toLowerCase().includes('live');
+  const isBreaking   = post.title.toUpperCase().includes('BREAKING');
+  const isPriority   = isLive || isBreaking;
+  const displayTitle = post.generated_headline ?? post.title;
+  const summaryText  = post.summary ?? post.summaryHook ?? post.previewBlurb;
+  const isAiSummary  = !!(post.summary ?? post.summaryHook);
+  const hasSummary   = !!summaryText;
+  const teaserText   = summaryText ? (summaryText.length > 90 ? summaryText.slice(0, 90) + '…' : summaryText) : null;
 
-  const isLive =
-    (/\blive\b/i.test(post.title) &&
-      !/live stream|how to watch|watch live|stream live|live blog/i.test(post.title)) ||
-    post.sourceInfo.name.toLowerCase().includes('live');
-  const isBreaking = post.title.toUpperCase().includes('BREAKING');
-  const isPriority = isLive || isBreaking;
+  // Left border colour — LIVE/BREAKING always overrides
+  const leftBorderColor =
+    isPriority          ? PINK
+    : cardType === 'stat'   ? TEAL
+    : cardType === 'quote'  ? PINK
+    : cardType === 'result' ? ORANGE
+    : cardType === 'lol'    ? GOLD
+    : pubColor;
 
-  // Card type-specific border color
-  const borderColorMap: Record<CardType, string> = {
-    story: isPriority ? '#E84080' : sourceColor,
-    stat: '#3AAFA9',
-    quote: '#E84080',
-    result: '#E8622A',
-    lol: '#D4A843',
-    rumour: '#FFFFFF',
-  };
-  const borderColor = borderColorMap[cardType];
-  const borderStyle = cardType === 'rumour' ? '1px dashed' : '3px solid';
-
-  const summaryText = post.summary || post.summaryHook || post.previewBlurb;
-  const isAiSummary = !!(post.summary || post.summaryHook);
-  const hasSummary = !!summaryText;
-  const teaserText = summaryText ? summaryText.slice(0, 85) : null;
+  // Rumour gets a dashed border instead
+  const borderIsDashed = cardType === 'rumour';
 
   function handleExpand() {
     if (!hasSummary) return;
     if (!expanded) {
       setExpanded(true);
-      if (!hasBeenRead) {
-        setHasBeenRead(true);
-        onRead?.();
-      }
-      if (!hasBeenExpandedRef.current) {
-        hasBeenExpandedRef.current = true;
-        onExpand?.();
-      }
+      if (!hasBeenRead) { setHasBeenRead(true); onRead?.(); }
+      if (!hasExpandedOnce.current) { hasExpandedOnce.current = true; onExpand?.(); }
     } else {
       setExpanded(false);
     }
   }
 
   function handleNextStory() {
-    const nextCard = cardRef.current?.nextElementSibling as HTMLElement | null;
-    if (nextCard) {
-      nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+    const next = cardRef.current?.nextElementSibling as HTMLElement | null;
+    next?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  // Top zone rendering per card type
-  const renderTopZone = () => {
-    const topZoneHeight = '120px';
-
+  // ─── Top zone ───────────────────────────────────────────────────────────────
+  // Rule: only render if the zone contains actual content.
+  // Story / LOL — only if there is a real image. No image = no zone.
+  // Stat / Quote / Result — always (they display data).
+  // Rumour — never.
+  function renderTopZone(): React.ReactNode {
+    // Stat — teal block, giant number
     if (cardType === 'stat') {
       return (
-        <div
-          style={{
-            background: '#3AAFA9',
-            height: topZoneHeight,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px',
-          }}
-        >
-          <div
-            style={{
-              fontSize: '48px',
-              fontFamily: "'JetBrains Mono', monospace",
-              fontWeight: 700,
-              color: '#F8F9FB',
-              lineHeight: 1,
-              marginBottom: '8px',
-            }}
-          >
-            {/* Extract number from title — basic heuristic */}
-            {post.title.match(/\d+/)?.[0] || '?'}
-          </div>
-          <div
-            style={{
-              fontSize: '12px',
-              fontFamily: "'Sora', sans-serif",
-              color: '#F8F9FB',
-              opacity: 0.7,
-              textAlign: 'center',
-            }}
-          >
-            {post.title.split(/\d+/)[1]?.trim().slice(0, 20) || 'Stat'}
-          </div>
+        <div style={{
+          background: TEAL,
+          padding: '20px 16px',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: '4px',
+        }}>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontWeight: 700, fontSize: '56px', lineHeight: 1,
+            color: NAVY, letterSpacing: '-2px',
+          }}>
+            {extractStatNumber(post.title)}
+          </span>
+          <span style={{
+            fontFamily: "'Sora', sans-serif",
+            fontSize: '10px', fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: '0.1em',
+            color: NAVY, opacity: 0.6,
+          }}>
+            by the numbers
+          </span>
         </div>
       );
     }
 
+    // Quote — pink block, oversized quote mark + excerpt
     if (cardType === 'quote') {
-      const quoteMatch = post.title.match(/"([^"]+)"/);
-      const quoteText = quoteMatch?.[1] || post.title;
-      const attribution = post.title.replace(/"[^"]*"/, '').trim();
-
+      const quoteText   = extractQuoteText(post.title);
+      const attribution = extractAttribution(post.title);
       return (
-        <div
-          style={{
-            background: '#E84080',
-            height: topZoneHeight,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px',
-          }}
-        >
-          <div
-            style={{
-              fontSize: '56px',
-              fontFamily: "'Sora', sans-serif",
-              fontWeight: 700,
-              color: '#F8F9FB',
-              marginBottom: '8px',
-              lineHeight: 1,
-            }}
-          >
+        <div style={{
+          background: PINK,
+          padding: '16px 18px 18px',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+        }}>
+          <div style={{
+            fontFamily: "'Sora', sans-serif", fontWeight: 700,
+            fontSize: '64px', lineHeight: 0.8,
+            color: WHITE, opacity: 0.35,
+            marginBottom: '8px', userSelect: 'none',
+          }}>
             "
           </div>
-          <p
-            style={{
-              fontSize: '13px',
-              fontFamily: "'Sora', sans-serif",
-              fontStyle: 'italic',
-              color: '#F8F9FB',
-              margin: '0 0 8px 0',
-              textAlign: 'center',
-              lineHeight: 1.4,
-            }}
-          >
-            {quoteText.slice(0, 60)}
-            {quoteText.length > 60 ? '...' : ''}
+          <p style={{
+            fontFamily: "'Sora', sans-serif",
+            fontStyle: 'italic', fontSize: '13px', lineHeight: 1.5,
+            color: WHITE, margin: 0, fontWeight: 500,
+          }}>
+            {quoteText}
           </p>
           {attribution && (
-            <div
-              style={{
-                fontSize: '11px',
-                fontFamily: "'Sora', sans-serif",
-                color: '#F8F9FB',
-                opacity: 0.7,
-              }}
-            >
-              {attribution.slice(0, 40)}
-            </div>
+            <span style={{
+              fontFamily: "'Sora', sans-serif",
+              fontSize: '11px', color: W70, marginTop: '6px',
+            }}>
+              — {attribution}
+            </span>
           )}
         </div>
       );
     }
 
+    // Result — orange block, Club · score · Club
     if (cardType === 'result') {
-      const scoreMatch = post.title.match(/(\d+)\s*[-–]\s*(\d+)/);
-      const score1 = scoreMatch?.[1] || '0';
-      const score2 = scoreMatch?.[2] || '0';
-
+      const score = extractScore(post.title);
+      const home  = post.clubs[0]?.code ?? post.clubs[0]?.shortName ?? '';
+      const away  = post.clubs[1]?.code ?? post.clubs[1]?.shortName ?? '';
       return (
-        <div
-          style={{
-            background: '#E8622A',
-            height: topZoneHeight,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              fontSize: '24px',
+        <div style={{
+          background: ORANGE,
+          padding: '20px 16px',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: '6px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {home && (
+              <span style={{
+                fontFamily: "'Sora', sans-serif",
+                fontWeight: 700, fontSize: '14px', color: WHITE,
+              }}>
+                {home}
+              </span>
+            )}
+            {home && <span style={{ color: WHITE, opacity: 0.4 }}>·</span>}
+            <span style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontWeight: 700,
-              color: '#F8F9FB',
-              textAlign: 'center',
-            }}
-          >
-            <div style={{ fontSize: '14px', flex: 1 }}>Team A</div>
-            <div
-              style={{
-                fontSize: '32px',
-                fontWeight: 700,
-              }}
-            >
-              {score1}–{score2}
-            </div>
-            <div style={{ fontSize: '14px', flex: 1 }}>Team B</div>
+              fontWeight: 700, fontSize: '40px', lineHeight: 1,
+              color: WHITE, letterSpacing: '-1px',
+            }}>
+              {score}
+            </span>
+            {away && <span style={{ color: WHITE, opacity: 0.4 }}>·</span>}
+            {away && (
+              <span style={{
+                fontFamily: "'Sora', sans-serif",
+                fontWeight: 700, fontSize: '14px', color: WHITE,
+              }}>
+                {away}
+              </span>
+            )}
           </div>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '9px', fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: '0.15em',
+            color: WHITE, opacity: 0.5,
+          }}>
+            FULL TIME
+          </span>
         </div>
       );
     }
 
-    if (cardType === 'rumour') {
-      return null; // Rumour has no image/color block
-    }
-
-    // Story and LOL both use image or colored block
-    if (post.imageUrl) {
+    // Story / LOL — only if there is a real image (not broken)
+    if ((cardType === 'story' || cardType === 'lol') && post.imageUrl && !imgError) {
       return (
-        <img
-          src={post.imageUrl}
-          alt={post.title}
-          style={{
-            width: '100%',
-            height: topZoneHeight,
-            objectFit: 'cover',
-          }}
-        />
+        <div style={{ position: 'relative', paddingBottom: '52%', overflow: 'hidden' }}>
+          <img
+            src={post.imageUrl}
+            alt=""
+            onError={() => setImgError(true)}
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover', display: 'block',
+            }}
+          />
+          {/* Subtle gradient so headline text is readable if overlaid */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to top, rgba(13,27,42,0.5) 0%, transparent 50%)',
+          }} />
+        </div>
       );
     }
 
-    const blockColor = cardType === 'lol' ? '#D4A843' : borderColor;
-    return (
-      <div
-        style={{
-          background: blockColor,
-          height: topZoneHeight,
-        }}
-      />
-    );
-  };
+    // All other cases: no top zone
+    return null;
+  }
 
+  // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
       <style>{`
-        @keyframes bob {
-          0%, 100% { transform: translateY(0); opacity: 0.4; }
-          55% { transform: translateY(5px); opacity: 1; }
+        @keyframes tfhEnter {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
-        .nudge { animation: bob 1.9s ease-in-out infinite; display: inline-block; }
-
-        @keyframes summaryFadeIn {
+        @keyframes tfhSummaryIn {
           from { opacity: 0; transform: translateY(4px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        .summary-fade-in {
-          animation: summaryFadeIn 0.35s ease forwards;
+        @keyframes tfhBob {
+          0%, 100% { transform: translateY(0);   opacity: 0.45; }
+          55%       { transform: translateY(5px); opacity: 1; }
         }
-
-        .teaser-fade {
-          mask-image: linear-gradient(90deg, #000 50%, transparent 92%);
-          -webkit-mask-image: linear-gradient(90deg, #000 50%, transparent 92%);
-          overflow: hidden;
-          white-space: nowrap;
+        .tfh-card {
+          animation: tfhEnter 0.4s ease both;
+          transition: transform 0.15s ease, box-shadow 0.15s ease,
+                      background 0.25s ease, border-left-color 0.25s ease;
         }
-
-        .summary-grid {
-          display: grid;
-          transition: grid-template-rows 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease;
+        .tfh-card:hover { transform: translateY(-2px); }
+        .tfh-nudge { animation: tfhBob 1.9s ease-in-out infinite; display: inline-block; }
+        .tfh-teaser {
+          mask-image: linear-gradient(90deg, #000 55%, transparent 96%);
+          -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent 96%);
+          overflow: hidden; white-space: nowrap;
         }
-        .summary-grid.open {
-          grid-template-rows: 1fr;
-          opacity: 1;
-        }
-        .summary-grid.closed {
-          grid-template-rows: 0fr;
-          opacity: 0;
-        }
-        .summary-inner {
-          overflow: hidden;
-        }
+        .tfh-summary { animation: tfhSummaryIn 0.35s ease forwards; }
+        .tfh-chevron { transition: transform 0.25s ease, stroke 0.15s ease; }
       `}</style>
 
       <article
         ref={cardRef}
         id={`story-${post.id}`}
-        className="animate-card-enter"
+        className="tfh-card"
         style={{
-          background: expanded ? 'rgba(58,175,169,0.035)' : 'var(--plh-card)',
-          border:
-            cardType === 'rumour'
-              ? '1px dashed var(--plh-border)'
-              : '1px solid var(--plh-border)',
-          borderLeftWidth: cardType === 'rumour' ? 'auto' : '3px',
-          borderLeftColor: cardType === 'rumour' ? 'transparent' : borderColor,
+          position: 'relative',
+          background: expanded ? 'rgba(58,175,169,0.03)' : 'var(--plh-card)',
+          border: borderIsDashed
+            ? `1px dashed rgba(248,249,251,0.3)`
+            : '1px solid var(--plh-border)',
+          borderLeftWidth: borderIsDashed ? undefined : '4px',
+          borderLeftStyle: borderIsDashed ? undefined : 'solid',
+          borderLeftColor: borderIsDashed
+            ? undefined
+            : (expanded ? leftBorderColor : `${leftBorderColor}66`),
           borderRadius: '10px',
           overflow: 'hidden',
           boxShadow: 'var(--plh-shadow)',
           animationDelay: `${index * 50}ms`,
           cursor: hasSummary ? 'pointer' : 'default',
-          transition: 'background 0.3s ease, border-left-color 0.3s ease',
         }}
         onClick={handleExpand}
       >
-        {/* TOP ZONE — varies by card type */}
-        {cardType !== 'rumour' && renderTopZone()}
+        {/* TOP ZONE */}
+        {renderTopZone()}
 
-        <div style={{ padding: '16px' }}>
-          {/* RUMOUR LABEL (rumour card only) */}
-          {cardType === 'rumour' && (
-            <div
-              style={{
-                fontSize: '10px',
+        {/* CARD BODY */}
+        <div style={{ padding: '14px 16px 16px' }}>
+
+          {/* LIVE / BREAKING badge */}
+          {isPriority && (
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '5px',
+              background: `${PINK}20`, border: `1px solid ${PINK}55`,
+              borderRadius: '4px', padding: '2px 7px', marginBottom: '8px',
+            }}>
+              {isLive && !isBreaking && (
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: PINK }} />
+              )}
+              <span style={{
                 fontFamily: "'JetBrains Mono', monospace",
-                fontWeight: 700,
-                color: '#3AAFA9',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginBottom: '8px',
-              }}
-            >
-              Rumour
+                fontSize: '9px', fontWeight: 700,
+                letterSpacing: '0.12em', color: PINK,
+              }}>
+                {isBreaking ? 'BREAKING' : 'LIVE'}
+              </span>
             </div>
           )}
 
-          {/* HEADLINE — use generated_headline if available */}
-          <h3
-            style={{
-              fontSize: '17px',
-              fontWeight: 600,
-              color: '#F8F9FB',
-              fontFamily: "'Sora', sans-serif",
-              lineHeight: 1.3,
-              marginBottom: expanded ? '16px' : '12px',
-            }}
-          >
-            {post.generated_headline || post.title}
+          {/* RUMOUR badge */}
+          {cardType === 'rumour' && (
+            <div style={{
+              display: 'inline-flex',
+              background: `${TEAL}18`, border: `1px solid ${TEAL}40`,
+              borderRadius: '4px', padding: '2px 7px', marginBottom: '8px',
+            }}>
+              <span style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '9px', fontWeight: 700,
+                letterSpacing: '0.12em', color: TEAL,
+                textTransform: 'uppercase',
+              }}>
+                RUMOUR
+              </span>
+            </div>
+          )}
+
+          {/* HEADLINE */}
+          <h3 style={{
+            fontFamily: "'Sora', sans-serif",
+            fontSize: '16px', fontWeight: 600,
+            color: WHITE, lineHeight: 1.35,
+            marginBottom: '10px',
+          }}>
+            {displayTitle}
           </h3>
 
-          {/* META ROW — Publisher, Time, Clubs, Score */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '12px',
-              marginBottom: expanded ? '16px' : '8px',
-              fontSize: '11px',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                flexWrap: 'wrap',
-                minWidth: 0,
-                flex: 1,
-              }}
-            >
-              {/* Publisher dot + name */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
-                <span
-                  style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    background: sourceColor,
-                    flexShrink: 0,
-                  }}
-                />
-                <span
-                  style={{
-                    color: sourceColor,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  {post.sourceInfo.name}
-                </span>
-              </div>
-
-              {/* Separator */}
-              <span style={{ color: 'rgba(248,249,251,0.7)' }}>·</span>
-
-              {/* Time */}
-              <span style={{ color: 'rgba(248,249,251,0.7)' }}>
+          {/* META ROW */}
+          <div style={{
+            display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px', marginBottom: '8px', fontSize: '11px',
+          }}>
+            <div style={{
+              display: 'flex', alignItems: 'center',
+              gap: '6px', flexWrap: 'wrap', flex: 1, minWidth: 0,
+            }}>
+              <span style={{
+                width: '6px', height: '6px', borderRadius: '50%',
+                background: pubColor, flexShrink: 0,
+              }} />
+              <span style={{
+                color: pubColor, fontWeight: 700,
+                textTransform: 'uppercase', letterSpacing: '0.04em',
+                whiteSpace: 'nowrap',
+              }}>
+                {post.sourceInfo.name}
+              </span>
+              <span style={{ color: W70 }}>·</span>
+              <span style={{ color: W70, fontFamily: "'JetBrains Mono', monospace" }}>
                 {post.timeDisplay}
               </span>
-
-              {/* Clubs */}
               {post.clubs.length > 0 && (
                 <>
-                  <span style={{ color: 'rgba(248,249,251,0.25)' }}>·</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {post.clubs.slice(0, 2).map((club) => (
-                      <span
-                        key={club.slug}
-                        style={{
-                          fontSize: '9px',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px',
-                          background: '#3AAFA9',
-                          color: '#0D1B2A',
-                          fontFamily: "'JetBrains Mono', monospace",
-                          borderRadius: '3px',
-                          padding: '2px 6px',
-                        }}
-                      >
-                        {club.code}
+                  <span style={{ color: 'rgba(248,249,251,0.2)' }}>·</span>
+                  <div style={{ display: 'flex', gap: '3px' }}>
+                    {post.clubs.slice(0, 2).map((c) => (
+                      <span key={c.slug} style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '9px', fontWeight: 700,
+                        textTransform: 'uppercase', letterSpacing: '0.04em',
+                        background: TEAL, color: NAVY,
+                        borderRadius: '3px', padding: '2px 5px',
+                      }}>
+                        {c.code}
                       </span>
                     ))}
                   </div>
@@ -455,140 +416,141 @@ export default function StoryCard({
               )}
             </div>
 
-            {/* Score (right-aligned) */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                flexShrink: 0,
-                color: '#F8F9FB',
-                fontFamily: "'JetBrains Mono', monospace",
-                fontWeight: 700,
-                fontSize: '12px',
-              }}
-            >
-              <svg
-                width="8"
-                height="8"
-                viewBox="0 0 24 24"
-                fill="none"
-                style={{ stroke: '#F8F9FB', strokeWidth: '3.5', strokeLinecap: 'round' }}
-              >
+            {/* Index score */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '3px',
+              flexShrink: 0, color: WHITE,
+              fontFamily: "'JetBrains Mono', monospace",
+              fontWeight: 700, fontSize: '12px',
+            }}>
+              <svg width="7" height="7" viewBox="0 0 24 24" fill="none"
+                style={{ stroke: WHITE, strokeWidth: '3.5', strokeLinecap: 'round' }}>
                 <path d="M2 14V2H14" />
               </svg>
               {post.indexScore}
             </div>
-
-            {/* Read dot (top-right if has been read and collapsed) */}
-            {hasBeenRead && !expanded && (
-              <div
-                style={{
-                  width: '5px',
-                  height: '5px',
-                  borderRadius: '50%',
-                  background: '#3AAFA9',
-                  opacity: 0.5,
-                  flexShrink: 0,
-                  position: 'absolute',
-                  top: '12px',
-                  right: '12px',
-                }}
-              />
-            )}
           </div>
 
-          {/* TEASER (collapsed only) */}
-          {hasSummary && !expanded && teaserText && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px',
-                marginBottom: '4px',
-              }}
-            >
-              <span
-                className="teaser-fade"
-                style={{
-                  color: 'rgba(248,249,251,0.7)',
-                  fontStyle: 'italic',
-                  flex: 1,
-                }}
-              >
+          {/* COLLAPSED — teaser + chevron */}
+          {!expanded && hasSummary && teaserText && (
+            <div style={{
+              display: 'flex', alignItems: 'center',
+              justifyContent: 'space-between', gap: '8px',
+            }}>
+              <span className="tfh-teaser" style={{
+                fontFamily: "'Sora', sans-serif",
+                fontSize: '13px', fontStyle: 'italic',
+                color: W70, flex: 1,
+              }}>
                 {teaserText}
               </span>
-              <span style={{ color: '#3AAFA9', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                read →
-              </span>
+              <svg className="tfh-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                style={{
+                  stroke: W70, strokeWidth: '2.5',
+                  strokeLinecap: 'round', strokeLinejoin: 'round',
+                  flexShrink: 0,
+                }}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </div>
           )}
 
-          {/* SUMMARY GRID (expanded only) */}
-          {hasSummary && expanded && (
-            <div className={`summary-grid ${expanded ? 'open' : 'closed'}`}>
-              <div className="summary-inner">
-                {/* Summary text */}
-                <p
-                  className="summary-fade-in"
-                  style={{
-                    fontSize: '15px',
-                    lineHeight: 1.72,
-                    color: 'rgba(248,249,251,0.82)',
+          {/* EXPANDED — Hub Take + summary + footer */}
+          {expanded && hasSummary && (
+            <div>
+              {isAiSummary && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  marginBottom: '10px',
+                }}>
+                  <div style={{
+                    width: '12px', height: '12px', borderRadius: '50%',
+                    background: TEAL,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '8px', color: NAVY, fontWeight: 700, flexShrink: 0,
+                  }}>
+                    ✦
+                  </div>
+                  <span style={{
                     fontFamily: "'Sora', sans-serif",
-                    margin: '0 0 16px 0',
+                    fontSize: '10px', fontWeight: 700,
+                    textTransform: 'uppercase', letterSpacing: '0.08em',
+                    color: TEAL,
+                  }}>
+                    The Hub Take
+                  </span>
+                  <svg className="tfh-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    style={{
+                      stroke: TEAL, strokeWidth: '2.5',
+                      strokeLinecap: 'round', strokeLinejoin: 'round',
+                      marginLeft: 'auto',
+                      transform: 'rotate(180deg)',
+                    }}>
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+              )}
+
+              {cardType === 'rumour' && (
+                <p style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: '10px', color: TEAL, opacity: 0.7,
+                  marginBottom: '8px',
+                }}>
+                  Unconfirmed — treat accordingly.
+                </p>
+              )}
+
+              <p className="tfh-summary" style={{
+                fontFamily: "'Sora', sans-serif",
+                fontSize: '14px', lineHeight: 1.72,
+                color: 'rgba(248,249,251,0.82)',
+                margin: '0 0 14px 0',
+              }}>
+                {summaryText}
+              </p>
+
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <a
+                  href={post.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    fontFamily: "'Sora', sans-serif",
+                    fontSize: '11px', fontWeight: 700,
+                    color: pubColor, textDecoration: 'none',
+                    textTransform: 'uppercase', letterSpacing: '0.05em',
+                    opacity: 0.85, transition: 'opacity 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.85')}
+                >
+                  Read on {post.sourceInfo.name} →
+                </a>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleNextStory(); }}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                    fontFamily: "'Sora', sans-serif",
+                    fontSize: '11px', fontWeight: 600, color: TEAL,
                   }}
                 >
-                  {summaryText}
-                </p>
-
-                {/* Read on Publisher link */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <a
-                    href={post.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                      color: sourceColor,
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      fontFamily: "'Sora', sans-serif",
-                      textDecoration: 'none',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      transition: 'opacity 0.2s ease',
-                      opacity: 0.85,
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.85')}
-                  >
-                    Read on {post.sourceInfo.name} →
-                  </a>
-
-                  {/* Next story button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNextStory();
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#3AAFA9',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      fontFamily: "'Sora', sans-serif",
-                      padding: 0,
-                    }}
-                  >
-                    next story <span className="nudge">↓</span>
-                  </button>
-                </div>
+                  next story <span className="tfh-nudge">↓</span>
+                </button>
               </div>
             </div>
+          )}
+
+          {/* Read dot */}
+          {hasBeenRead && !expanded && (
+            <div style={{
+              position: 'absolute', top: '12px', right: '12px',
+              width: '5px', height: '5px', borderRadius: '50%',
+              background: TEAL, opacity: 0.4,
+            }} />
           )}
         </div>
       </article>
