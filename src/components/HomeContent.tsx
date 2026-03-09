@@ -1,42 +1,15 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import ClubFilterBar from '@/components/ClubFilterBar';
 import PLTable from '@/components/PLTable';
 import NextFixtures from '@/components/NextFixtures';
 import FeedList from '@/components/feed/FeedList';
 import SnapshotContainer from '@/components/snapshot/SnapshotContainer';
-import ReadingProgress from '@/components/ReadingProgress';
+import ReadingProgressWrapper from '@/components/ReadingProgressWrapper';
 
 interface HomeContentProps {
   clubSlug: string | null;
 }
 
 export default function HomeContent({ clubSlug }: HomeContentProps) {
-  const [readCount, setReadCount] = useState(0);
-
-  // Daily reset logic
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const savedDate = localStorage.getItem('tfh_read_date');
-    const savedCount = localStorage.getItem('tfh_read_count');
-
-    if (savedDate === today && savedCount) {
-      setReadCount(parseInt(savedCount, 10));
-    } else {
-      setReadCount(0);
-      localStorage.setItem('tfh_read_date', today);
-      localStorage.setItem('tfh_read_count', '0');
-    }
-  }, []);
-
-  const handleCardExpand = () => {
-    const newCount = readCount + 1;
-    setReadCount(newCount);
-    const today = new Date().toISOString().split('T')[0];
-    localStorage.setItem('tfh_read_date', today);
-    localStorage.setItem('tfh_read_count', newCount.toString());
-  };
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 pt-8">
@@ -68,7 +41,7 @@ export default function HomeContent({ clubSlug }: HomeContentProps) {
 
           {/* Reading Progress Zone */}
           <div className="mt-8">
-            <ReadingProgress readCount={readCount} />
+            <ReadingProgressWrapper />
           </div>
 
           {/* Club Filter Bar — between Snapshot and Feed */}
@@ -78,7 +51,7 @@ export default function HomeContent({ clubSlug }: HomeContentProps) {
 
           {/* Feed with fade transition — tight spacing above */}
           <div className="mt-8 transition-opacity duration-300" key={clubSlug || 'all'}>
-            <FeedList club={clubSlug} onCardExpand={handleCardExpand} />
+            <FeedList club={clubSlug} />
           </div>
 
           {/* Mobile: Table + Fixtures below feed */}
