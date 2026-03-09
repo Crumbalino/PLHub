@@ -91,12 +91,13 @@ export default function StoryCard({
         }
         .nudge { animation: bob 1.9s ease-in-out infinite; display: inline-block; }
 
-        @keyframes typewrite {
-          0% { width: 0; }
-          99% { width: 100%; }
-          100% { width: 100%; }
+        @keyframes summaryFadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
-        .typewriter { overflow: hidden; display: inline-block; }
+        .summary-fade-in {
+          animation: summaryFadeIn 0.35s ease forwards;
+        }
 
         .teaser-fade {
           mask-image: linear-gradient(90deg, #000 50%, transparent 92%);
@@ -319,14 +320,13 @@ export default function StoryCard({
 
                 {/* Summary text */}
                 <p
-                  className="typewriter"
+                  className="summary-fade-in"
                   style={{
                     fontSize: '15px',
                     lineHeight: 1.72,
                     color: 'rgba(248,249,251,0.82)',
                     fontFamily: "'Sora', sans-serif",
                     margin: '0 0 16px 0',
-                    animation: `typewrite ${(summaryText?.length ?? 0) * 0.018}s steps(${summaryText?.length ?? 1}, end) 1`,
                   }}
                 >
                   {summaryText}
