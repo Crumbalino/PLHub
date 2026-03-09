@@ -5,7 +5,7 @@ import { themeInitScript } from '@/lib/theme-init'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import JsonLd from '@/components/JsonLd'
+import { JsonLd, websiteSchema, organizationSchema } from '@/components/JsonLd'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import BackToTopButton from '@/components/BackToTopButton'
 
@@ -70,27 +70,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-const organizationSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'The Football Hub',
-  url: siteUrl,
-  description:
-    'Football news aggregator bringing together BBC Sport, Sky Sports, The Guardian and more editorial sources.',
-}
-
-const websiteSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: 'The Football Hub',
-  url: siteUrl,
-  description: 'Football news and views ranked by the community',
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: `${siteUrl}/?q={search_term_string}`,
-    'query-input': 'required name=search_term_string',
-  },
-}
+const orgSchema = organizationSchema()
+const webSchema = websiteSchema()
 
 export default function RootLayout({
   children,
@@ -104,8 +85,8 @@ export default function RootLayout({
       <head>
         {/* Blocking script: reads localStorage before paint to prevent flash-of-wrong-theme */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <JsonLd data={organizationSchema} />
-        <JsonLd data={websiteSchema} />
+        <JsonLd data={orgSchema} />
+        <JsonLd data={webSchema} />
       </head>
       <body className={`${sora.variable} ${jetbrainsMono.variable} font-sora antialiased`}>
         {gaMeasurementId && (

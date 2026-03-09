@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import JsonLd from './JsonLd'
+import { JsonLd, breadcrumbSchema } from './JsonLd'
 
 interface BreadcrumbItem {
   name: string
@@ -11,16 +11,13 @@ interface BreadcrumbProps {
 }
 
 export default function Breadcrumb({ items }: BreadcrumbProps) {
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
+  const baseUrl = 'https://pl-hub-webapp12.vercel.app'
+  const schema = breadcrumbSchema(
+    items.map((item) => ({
       name: item.name,
-      item: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'}${item.href}`,
-    })),
-  }
+      url: `${baseUrl}${item.href}`,
+    }))
+  )
 
   return (
     <>

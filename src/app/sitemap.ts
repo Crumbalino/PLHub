@@ -1,23 +1,27 @@
-import { MetadataRoute } from 'next'
-import { CLUBS } from '@/lib/clubs'
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
+import { MetadataRoute } from 'next';
+import { getAllClubSlugs } from '@/config/clubs';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const clubUrls: MetadataRoute.Sitemap = CLUBS.map((club) => ({
-    url: `${siteUrl}/clubs/${club.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'hourly',
-    priority: 0.8,
-  }))
+  const baseUrl = 'https://pl-hub-webapp12.vercel.app';
 
-  return [
+  // Static routes
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
-      url: siteUrl,
+      url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'hourly',
-      priority: 1.0,
+      priority: 1,
     },
-    ...clubUrls,
-  ]
+  ];
+
+  // Dynamic club routes
+  const clubSlugs = getAllClubSlugs();
+  const clubRoutes: MetadataRoute.Sitemap = clubSlugs.map((slug) => ({
+    url: `${baseUrl}/clubs/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...clubRoutes];
 }
