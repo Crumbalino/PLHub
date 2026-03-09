@@ -20,6 +20,11 @@ export async function generateSummary(
     return { summary: null, hook: null, significance: null }
   }
 
+  const contentLength = (content ?? '').trim().length
+  if (contentLength < 80) {
+    return { summary: null, hook: null, significance: null }
+  }
+
   const clubLine = club ? `\nClub context: ${club}` : ''
 
   const prompt = `You write for The Football Hub — a football news aggregator for knowledgeable fans who don't have time to read everything.
@@ -40,7 +45,7 @@ VOICE RULES:
 
 STRICT RULES:
 - Only use facts stated in the article. Do not add context, history, or speculation not in the source.
-- If the article is under 100 words or a rumour: flag it — start with "Reports suggest..." or "It's being claimed..."
+- If the article body is thin, write only what the title confirms. Do not comment on the quality of the source material.
 - Numbers stay as digits.
 
 GOOD EXAMPLES:
