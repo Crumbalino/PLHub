@@ -53,7 +53,8 @@ export default function StoryCard({
   const isPriority = isLive || isBreaking;
   const borderColor = isPriority ? '#E84080' : sourceColor;
 
-  const summaryText = post.summary || post.summaryHook;
+  const summaryText = post.summary || post.summaryHook || post.previewBlurb;
+  const isAiSummary = !!(post.summary || post.summaryHook);
   const hasSummary = !!summaryText;
   const teaserText = summaryText ? summaryText.slice(0, 85) : null;
 
@@ -279,44 +280,15 @@ export default function StoryCard({
           {hasSummary && expanded && (
             <div className={`summary-grid ${expanded ? 'open' : 'closed'}`}>
               <div className="summary-inner">
-                {/* THE HUB TAKE header */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    marginBottom: '12px',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      background: '#3AAFA9',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '8px',
-                      color: '#0D1B2A',
-                      fontWeight: 700,
-                    }}
-                  >
+              {/* THE HUB TAKE header — AI summaries only */}
+                {isAiSummary && <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', }}>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#3AAFA9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#0D1B2A', fontWeight: 700, }}>
                     ✦
                   </div>
-                  <span
-                    style={{
-                      color: '#3AAFA9',
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.07em',
-                      fontFamily: "'Sora', sans-serif",
-                    }}
-                  >
+                  <span style={{ color: '#3AAFA9', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'Sora', sans-serif", }}>
                     The Hub Take
                   </span>
-                </div>
+                </div>}
 
                 {/* Summary text */}
                 <p
