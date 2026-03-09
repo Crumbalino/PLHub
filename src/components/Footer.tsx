@@ -13,30 +13,36 @@ export default function Footer() {
   const handleBackToTop = useCallback(() => {
     const startY = window.scrollY
     const duration = 320
-    const startTime = Date.now()
+    const startTime = performance.now()
     const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t))
 
-    const animateScroll = () => {
-      const elapsed = Date.now() - startTime
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime
       const progress = Math.min(elapsed / duration, 1)
-      const easeProgress = easeOutExpo(progress)
-      const newScrollY = startY - startY * easeProgress
-
-      window.scrollTo(0, newScrollY)
+      window.scrollTo(0, startY * (1 - easeOutExpo(progress)))
 
       if (progress < 1) {
-        requestAnimationFrame(animateScroll)
+        requestAnimationFrame(animate)
       } else {
-        // Animation complete, trigger bounce
-        const htmlElement = document.documentElement
-        htmlElement.classList.add('page-bounce')
-        setTimeout(() => {
-          htmlElement.classList.remove('page-bounce')
-        }, 400)
+        // Bounce: flash a teal bar at the top of the screen
+        const bar = document.createElement('div')
+        bar.style.cssText = [
+          'position:fixed',
+          'top:0',
+          'left:0',
+          'right:0',
+          'height:4px',
+          'background:#3AAFA9',
+          'z-index:9999',
+          'transform-origin:top center',
+          'animation:topBounce 0.45s cubic-bezier(0.36,0.07,0.19,0.97) forwards',
+        ].join(';')
+        document.body.appendChild(bar)
+        setTimeout(() => bar.remove(), 500)
       }
     }
 
-    requestAnimationFrame(animateScroll)
+    requestAnimationFrame(animate)
   }, [])
 
   return (
