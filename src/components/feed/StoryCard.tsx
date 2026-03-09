@@ -16,7 +16,7 @@ const PUBLISHER_COLORS: Record<string, string> = {
 };
 
 function getPublisherColor(publisherName: string): string {
-  return PUBLISHER_COLORS[publisherName] || 'rgba(248,249,251,0.4)';
+  return PUBLISHER_COLORS[publisherName] || '#FFFFFF';
 }
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -26,8 +26,15 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+type CardType = 'story' | 'stat' | 'quote' | 'result' | 'lol' | 'rumour';
+
+interface ExtendedFeedPost extends FeedPost {
+  card_type?: CardType;
+  generated_headline?: string;
+}
+
 export default function StoryCard({
-  post,
+  post: basePost,
   index = 0,
   onRead,
   onExpand,
@@ -37,12 +44,13 @@ export default function StoryCard({
   onRead?: () => void;
   onExpand?: () => void;
 }) {
+  const post = basePost as ExtendedFeedPost;
   const [expanded, setExpanded] = useState(false);
   const [hasBeenRead, setHasBeenRead] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  const nextCardRef = useRef<HTMLElement | null>(null);
   const hasBeenExpandedRef = useRef(false);
 
+  const cardType = (post.card_type || 'story') as CardType;
   const sourceColor = getPublisherColor(post.sourceInfo.name);
 
   const isLive =
@@ -51,7 +59,18 @@ export default function StoryCard({
     post.sourceInfo.name.toLowerCase().includes('live');
   const isBreaking = post.title.toUpperCase().includes('BREAKING');
   const isPriority = isLive || isBreaking;
-  const borderColor = isPriority ? '#E84080' : sourceColor;
+
+  // Card type-specific border color
+  const borderColorMap: Record<CardType, string> = {
+    story: isPriority ? '#E84080' : sourceColor,
+    stat: '#3AAFA9',
+    quote: '#E84080',
+    result: '#E8622A',
+    lol: '#D4A843',
+    rumour: '#FFFFFF',
+  };
+  const borderColor = borderColorMap[cardType];
+  const borderStyle = cardType === 'rumour' ? '1px dashed' : '3px solid';
 
   const summaryText = post.summary || post.summaryHook || post.previewBlurb;
   const isAiSummary = !!(post.summary || post.summaryHook);
@@ -66,7 +85,6 @@ export default function StoryCard({
         setHasBeenRead(true);
         onRead?.();
       }
-      // Call onExpand only on first expand
       if (!hasBeenExpandedRef.current) {
         hasBeenExpandedRef.current = true;
         onExpand?.();
@@ -82,6 +100,183 @@ export default function StoryCard({
       nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }
+
+  // Top zone rendering per card type
+  const renderTopZone = () => {
+    const topZoneHeight = '120px';
+
+    if (cardType === 'stat') {
+      return (
+        <div
+          style={{
+            background: '#3AAFA9',
+            height: topZoneHeight,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '48px',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontWeight: 700,
+              color: '#F8F9FB',
+              lineHeight: 1,
+              marginBottom: '8px',
+            }}
+          >
+            {/* Extract number from title — basic heuristic */}
+            {post.title.match(/\d+/)?.[0] || '?'}
+          </div>
+          <div
+            style={{
+              fontSize: '12px',
+              fontFamily: "'Sora', sans-serif",
+              color: '#F8F9FB',
+              opacity: 0.7,
+              textAlign: 'center',
+            }}
+          >
+            {post.title.split(/\d+/)[1]?.trim().slice(0, 20) || 'Stat'}
+          </div>
+        </div>
+      );
+    }
+
+    if (cardType === 'quote') {
+      const quoteMatch = post.title.match(/"([^"]+)"/);
+      const quoteText = quoteMatch?.[1] || post.title;
+      const attribution = post.title.replace(/"[^"]*"/, '').trim();
+
+      return (
+        <div
+          style={{
+            background: '#E84080',
+            height: topZoneHeight,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '56px',
+              fontFamily: "'Sora', sans-serif",
+              fontWeight: 700,
+              color: '#F8F9FB',
+              marginBottom: '8px',
+              lineHeight: 1,
+            }}
+          >
+            "
+          </div>
+          <p
+            style={{
+              fontSize: '13px',
+              fontFamily: "'Sora', sans-serif",
+              fontStyle: 'italic',
+              color: '#F8F9FB',
+              margin: '0 0 8px 0',
+              textAlign: 'center',
+              lineHeight: 1.4,
+            }}
+          >
+            {quoteText.slice(0, 60)}
+            {quoteText.length > 60 ? '...' : ''}
+          </p>
+          {attribution && (
+            <div
+              style={{
+                fontSize: '11px',
+                fontFamily: "'Sora', sans-serif",
+                color: '#F8F9FB',
+                opacity: 0.7,
+              }}
+            >
+              {attribution.slice(0, 40)}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (cardType === 'result') {
+      const scoreMatch = post.title.match(/(\d+)\s*[-–]\s*(\d+)/);
+      const score1 = scoreMatch?.[1] || '0';
+      const score2 = scoreMatch?.[2] || '0';
+
+      return (
+        <div
+          style={{
+            background: '#E8622A',
+            height: topZoneHeight,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              fontSize: '24px',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontWeight: 700,
+              color: '#F8F9FB',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: '14px', flex: 1 }}>Team A</div>
+            <div
+              style={{
+                fontSize: '32px',
+                fontWeight: 700,
+              }}
+            >
+              {score1}–{score2}
+            </div>
+            <div style={{ fontSize: '14px', flex: 1 }}>Team B</div>
+          </div>
+        </div>
+      );
+    }
+
+    if (cardType === 'rumour') {
+      return null; // Rumour has no image/color block
+    }
+
+    // Story and LOL both use image or colored block
+    if (post.imageUrl) {
+      return (
+        <img
+          src={post.imageUrl}
+          alt={post.title}
+          style={{
+            width: '100%',
+            height: topZoneHeight,
+            objectFit: 'cover',
+          }}
+        />
+      );
+    }
+
+    const blockColor = cardType === 'lol' ? '#D4A843' : borderColor;
+    return (
+      <div
+        style={{
+          background: blockColor,
+          height: topZoneHeight,
+        }}
+      />
+    );
+  };
 
   return (
     <>
@@ -130,9 +325,12 @@ export default function StoryCard({
         className="animate-card-enter"
         style={{
           background: expanded ? 'rgba(58,175,169,0.035)' : 'var(--plh-card)',
-          border: '1px solid var(--plh-border)',
-          borderLeftWidth: '3px',
-          borderLeftColor: expanded ? borderColor : hexToRgba(borderColor, 0.4),
+          border:
+            cardType === 'rumour'
+              ? '1px dashed var(--plh-border)'
+              : '1px solid var(--plh-border)',
+          borderLeftWidth: cardType === 'rumour' ? 'auto' : '3px',
+          borderLeftColor: cardType === 'rumour' ? 'transparent' : borderColor,
           borderRadius: '10px',
           overflow: 'hidden',
           boxShadow: 'var(--plh-shadow)',
@@ -142,8 +340,28 @@ export default function StoryCard({
         }}
         onClick={handleExpand}
       >
+        {/* TOP ZONE — varies by card type */}
+        {cardType !== 'rumour' && renderTopZone()}
+
         <div style={{ padding: '16px' }}>
-          {/* HEADLINE */}
+          {/* RUMOUR LABEL (rumour card only) */}
+          {cardType === 'rumour' && (
+            <div
+              style={{
+                fontSize: '10px',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 700,
+                color: '#3AAFA9',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '8px',
+              }}
+            >
+              Rumour
+            </div>
+          )}
+
+          {/* HEADLINE — use generated_headline if available */}
           <h3
             style={{
               fontSize: '17px',
@@ -154,12 +372,30 @@ export default function StoryCard({
               marginBottom: expanded ? '16px' : '12px',
             }}
           >
-            {post.title}
+            {post.generated_headline || post.title}
           </h3>
 
           {/* META ROW — Publisher, Time, Clubs, Score */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: expanded ? '16px' : '8px', fontSize: '11px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', minWidth: 0, flex: 1 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              marginBottom: expanded ? '16px' : '8px',
+              fontSize: '11px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+                minWidth: 0,
+                flex: 1,
+              }}
+            >
               {/* Publisher dot + name */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
                 <span
@@ -171,7 +407,14 @@ export default function StoryCard({
                     flexShrink: 0,
                   }}
                 />
-                <span style={{ color: sourceColor, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <span
+                  style={{
+                    color: sourceColor,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}
+                >
                   {post.sourceInfo.name}
                 </span>
               </div>
@@ -225,7 +468,13 @@ export default function StoryCard({
                 fontSize: '12px',
               }}
             >
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" style={{ stroke: '#F8F9FB', strokeWidth: '3.5', strokeLinecap: 'round' }}>
+              <svg
+                width="8"
+                height="8"
+                viewBox="0 0 24 24"
+                fill="none"
+                style={{ stroke: '#F8F9FB', strokeWidth: '3.5', strokeLinecap: 'round' }}
+              >
                 <path d="M2 14V2H14" />
               </svg>
               {post.indexScore}
@@ -280,16 +529,6 @@ export default function StoryCard({
           {hasSummary && expanded && (
             <div className={`summary-grid ${expanded ? 'open' : 'closed'}`}>
               <div className="summary-inner">
-              {/* THE HUB TAKE header — AI summaries only */}
-                {isAiSummary && <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#3AAFA9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#0D1B2A', fontWeight: 700, }}>
-                    ✦
-                  </div>
-                  <span style={{ color: '#3AAFA9', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'Sora', sans-serif", }}>
-                    The Hub Take
-                  </span>
-                </div>}
-
                 {/* Summary text */}
                 <p
                   className="summary-fade-in"

@@ -104,3 +104,38 @@ CREATE POLICY IF NOT EXISTS "Service role all cron_logs" ON cron_logs
 CREATE POLICY IF NOT EXISTS "Public read cron_logs" ON cron_logs
   FOR SELECT
   USING (true);
+
+-- ============================================================
+-- Front-end redesign: card types and headlines
+-- ============================================================
+
+-- Add card_type column to posts (story|stat|quote|result|lol|rumour)
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS card_type VARCHAR DEFAULT 'story'
+  CHECK (card_type IN ('story', 'stat', 'quote', 'result', 'lol', 'rumour'));
+
+-- Add generated_headline column to posts
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS generated_headline TEXT;
+
+-- silly_stats table — reward cards for milestones
+CREATE TABLE IF NOT EXISTS silly_stats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  stat_text TEXT NOT NULL,
+  source VARCHAR,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  used_count INTEGER DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS silly_stats_created_at_idx ON silly_stats(created_at DESC);
+
+-- Enable RLS on silly_stats
+ALTER TABLE silly_stats ENABLE ROW LEVEL SECURITY;
+
+-- Public can read silly_stats
+CREATE POLICY IF NOT EXISTS "Public read silly_stats" ON silly_stats
+  FOR SELECT
+  USING (true);
+
+-- Service role can do everything with silly_stats
+CREATE POLICY IF NOT EXISTS "Service role all silly_stats" ON silly_stats
+  FOR ALL
+  USING (auth.role() = 'service_role');
