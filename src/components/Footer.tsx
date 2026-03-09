@@ -1,5 +1,7 @@
 'use client'
 
+import { useCallback } from 'react'
+
 export default function Footer() {
   const links = [
     { href: '/about', label: 'About' },
@@ -7,6 +9,35 @@ export default function Footer() {
     { href: '/principles', label: 'Our Principles' },
     { href: '/contact', label: 'Contact' },
   ]
+
+  const handleBackToTop = useCallback(() => {
+    const startY = window.scrollY
+    const duration = 320
+    const startTime = Date.now()
+    const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t))
+
+    const animateScroll = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const easeProgress = easeOutExpo(progress)
+      const newScrollY = startY - startY * easeProgress
+
+      window.scrollTo(0, newScrollY)
+
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll)
+      } else {
+        // Animation complete, trigger bounce
+        const htmlElement = document.documentElement
+        htmlElement.classList.add('page-bounce')
+        setTimeout(() => {
+          htmlElement.classList.remove('page-bounce')
+        }, 400)
+      }
+    }
+
+    requestAnimationFrame(animateScroll)
+  }, [])
 
   return (
     <footer
@@ -148,18 +179,41 @@ export default function Footer() {
           </nav>
         </div>
 
-        {/* Tagline */}
-        <p
-          style={{
-            marginTop: '20px',
-            fontSize: '12px',
-            color: '#FAF5F0',
-            fontFamily: "'Sora', sans-serif",
-            margin: '20px 0 0',
-          }}
-        >
-          Drink up Trig, we&apos;re going.
-        </p>
+        {/* Back to top button */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
+          <button
+            onClick={handleBackToTop}
+            aria-label="Back to top"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: '1px solid rgba(250, 245, 240, 0.15)',
+              background: 'transparent',
+              color: 'rgba(250, 245, 240, 0.4)',
+              fontSize: '16px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              const btn = e.currentTarget as HTMLElement
+              btn.style.borderColor = 'rgba(58, 175, 169, 0.6)'
+              btn.style.color = '#3AAFA9'
+              btn.style.background = 'rgba(58, 175, 169, 0.08)'
+            }}
+            onMouseLeave={(e) => {
+              const btn = e.currentTarget as HTMLElement
+              btn.style.borderColor = 'rgba(250, 245, 240, 0.15)'
+              btn.style.color = 'rgba(250, 245, 240, 0.4)'
+              btn.style.background = 'transparent'
+            }}
+          >
+            ↑
+          </button>
+        </div>
       </div>
     </footer>
   )
