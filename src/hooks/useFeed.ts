@@ -11,6 +11,7 @@ import type { FeedPost, SortMode, FeedResponse } from '@/lib/types'
 
 interface UseFeedOptions {
   initialSort?: SortMode
+  sortMode?: SortMode
   club?: string | null
   limit?: number
 }
