@@ -58,7 +58,7 @@ export default function Navbar() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative',
       }}>
-        <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'flex-start', position: 'relative', padding: '14px 12px' }} aria-label="The Football Hub">
+        <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'flex-start', position: 'relative', padding: '16px 14px' }} aria-label="The Football Hub">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', top: 0, left: -2 }}>
             <path d="M2 14V2H14" stroke={PINK} strokeWidth="3.5" strokeLinecap="round" />
           </svg>
@@ -73,14 +73,6 @@ export default function Navbar() {
             <path d="M22 10V22H10" stroke={PINK} strokeWidth="3.5" strokeLinecap="round" />
           </svg>
         </a>
-
-        {caughtUp && (
-          <span style={{
-            position: 'absolute', right: '24px',
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', color: GOLD,
-          }}>CAUGHT UP · {label}</span>
-        )}
       </div>
 
       <div style={{ height: '3px', background: 'rgba(58,175,169,0.12)' }}>
@@ -90,6 +82,22 @@ export default function Navbar() {
           transition: 'width 0.4s ease-out, background 0.6s ease',
         }} />
       </div>
+
+      {caughtUp && (
+        <div style={{
+          textAlign: 'center',
+          padding: '3px 0',
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: '9px',
+          fontWeight: 700,
+          letterSpacing: '0.12em',
+          color: GOLD,
+          background: 'rgba(212,168,67,0.06)',
+          borderTop: '1px solid rgba(212,168,67,0.15)',
+        }}>
+          CAUGHT UP · {label}
+        </div>
+      )}
     </nav>
   );
 }
