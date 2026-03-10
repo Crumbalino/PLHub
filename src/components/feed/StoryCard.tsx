@@ -367,6 +367,10 @@ export default function StoryCard({
             fontSize: '16px', fontWeight: 600,
             color: WHITE, lineHeight: 1.35,
             marginBottom: '10px',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
           }}>
             {displayTitle}
           </h3>
