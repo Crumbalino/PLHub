@@ -27,7 +27,7 @@ export default function HomeContent({ clubSlug }: HomeContentProps) {
         </main>
 
         <aside className="tfh-snapshot">
-          <div style={{ position: 'sticky', top: '80px' }}>
+          <div style={{ position: 'sticky', top: '80px', maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' }}>
             {!clubSlug && <SnapshotContainer />}
           </div>
         </aside>
