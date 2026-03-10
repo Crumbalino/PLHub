@@ -238,22 +238,24 @@ export default function StoryCard({
     // Story / LOL — only if there is a real image (not broken)
     if ((cardType === 'story' || cardType === 'lol') && post.imageUrl && !imgError) {
       return (
-        <div style={{ position: 'relative', height: '200px', overflow: 'hidden' }}>
-          <img
-            src={post.imageUrl}
-            alt=""
-            onError={() => setImgError(true)}
-            style={{
+        <div style={{ padding: '12px 12px 0' }}>
+          <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%', overflow: 'hidden', borderRadius: '8px', border: '1px solid var(--plh-border)', marginBottom: '12px' }}>
+            <img
+              src={post.imageUrl}
+              alt=""
+              onError={() => setImgError(true)}
+              style={{
+                position: 'absolute', top: 0, left: 0,
+                width: '100%', height: '100%',
+                objectFit: 'cover', display: 'block',
+              }}
+            />
+            {/* Subtle gradient so headline text is readable if overlaid */}
+            <div style={{
               position: 'absolute', inset: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover', display: 'block',
-            }}
-          />
-          {/* Subtle gradient so headline text is readable if overlaid */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(to top, rgba(13,27,42,0.5) 0%, transparent 50%)',
-          }} />
+              background: 'linear-gradient(to top, rgba(13,27,42,0.5) 0%, transparent 50%)',
+            }} />
+          </div>
         </div>
       );
     }
@@ -455,6 +457,25 @@ export default function StoryCard({
           {/* EXPANDED — Hub Take + summary + footer */}
           {expanded && hasSummary && (
             <div>
+              {!isAiSummary && !summaryText && (
+                <div style={{ padding: '4px 0 8px' }}>
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: '11px', fontWeight: 700,
+                      color: TEAL, textDecoration: 'none',
+                      letterSpacing: '0.08em', textTransform: 'uppercase',
+                    }}
+                  >
+                    Read full story →
+                  </a>
+                </div>
+              )}
+
               {isAiSummary && (
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '6px',
@@ -532,7 +553,7 @@ export default function StoryCard({
             </div>
           )}
 
-          {/* Unified chevron — always bottom-right, rotates on expand */}
+          {/* Unified chevron — bottom-right, rotates on expand, only when there's summary */}
           {hasSummary && (
             <div style={{
               position: 'absolute', bottom: '12px', right: '12px',

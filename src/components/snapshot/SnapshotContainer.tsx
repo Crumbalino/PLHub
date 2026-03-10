@@ -67,6 +67,7 @@ interface SnapshotData {
 
 function ModuleGetCaughtUp({ stories }: { stories: SnapshotStory[] }) {
   const [selected, setSelected] = useState(0);
+  const [hovered, setHovered] = useState(false);
   if (!stories.length) return null;
   const story = stories[Math.min(selected, stories.length - 1)];
 
@@ -76,7 +77,7 @@ function ModuleGetCaughtUp({ stories }: { stories: SnapshotStory[] }) {
         Get Caught Up
       </div>
       <a href={story.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
-        <div style={{ background: 'rgba(58,175,169,0.06)', border: `1px solid rgba(58,175,169,0.2)`, borderLeft: `3px solid ${TEAL}`, borderRadius: '8px', padding: '12px 14px', cursor: 'pointer' }}>
+        <div style={{ background: hovered ? 'rgba(58,175,169,0.1)' : 'rgba(58,175,169,0.06)', border: `1px solid rgba(58,175,169,0.2)`, borderLeft: `3px solid ${TEAL}`, borderRadius: '8px', padding: '12px 14px', cursor: 'pointer', transition: 'background 0.15s ease' }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
           <p style={{ fontFamily: "'Sora', sans-serif", fontWeight: 600, fontSize: '14px', color: WHITE, margin: '0 0 6px 0', lineHeight: 1.35 }}>{story.headline}</p>
           {story.summary && (
             <p style={{ fontFamily: "'Sora', sans-serif", fontSize: '12px', color: W70, margin: '0 0 8px 0', lineHeight: 1.5 }}>{story.summary}</p>
@@ -108,7 +109,7 @@ function ModuleByTheNumbers({ tiles, matchday }: { tiles: Array<{ number: string
         <span>By The Numbers</span>
         <span>MD {matchday}</span>
       </div>
-      <div style={{ background: `rgba(232,64,128,0.08)`, border: `1px solid rgba(232,64,128,0.2)`, borderRadius: '8px', padding: '14px', marginBottom: supporting.length ? '8px' : 0 }}>
+      <div style={{ background: `rgba(232,64,128,0.08)`, border: `1px solid rgba(232,64,128,0.2)`, borderRadius: '8px', padding: '14px', marginBottom: supporting.length ? '8px' : 0, textAlign: 'center' }}>
         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: '40px', lineHeight: 1, color: WHITE, letterSpacing: '-2px', marginBottom: '4px' }}>{hero.number}</div>
         <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '12px', fontWeight: 600, color: WHITE, marginBottom: '4px' }}>{hero.label}</div>
         <div style={{ fontFamily: "'Sora', sans-serif", fontSize: '11px', color: W70, lineHeight: 1.5 }}>{hero.context}</div>
@@ -127,37 +128,13 @@ function ModuleByTheNumbers({ tiles, matchday }: { tiles: Array<{ number: string
   );
 }
 
-// ── Module: The Table ─────────────────────────────────────────────────────────
-
-function ModuleTable({ standings }: { standings: Array<{ position: number; club: string; points: number }> }) {
-  if (!standings?.length) return null;
-  const top6 = standings.slice(0, 6);
-  const bottom3 = standings.slice(-3);
-
-  const Row = ({ e }: { e: typeof standings[0] }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '5px 0', borderBottom: '1px solid rgba(248,249,251,0.05)' }}>
-      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', fontWeight: 700, color: e.position <= 4 ? TEAL : e.position >= 18 ? PINK : W40, width: '18px', textAlign: 'right', flexShrink: 0 }}>{e.position}</span>
-      <span style={{ fontFamily: "'Sora', sans-serif", fontSize: '12px', fontWeight: 500, color: WHITE, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.club}</span>
-      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', fontWeight: 700, color: WHITE, flexShrink: 0 }}>{e.points}</span>
-    </div>
-  );
-
-  return (
-    <div>
-      <div style={{ fontSize: '9px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: '0.12em', color: W40, textTransform: 'uppercase', marginBottom: '8px' }}>The Table</div>
-      {top6.map(e => <Row key={e.position} e={e} />)}
-      <div style={{ textAlign: 'center', padding: '4px 0', color: W40, fontSize: '11px', letterSpacing: '2px' }}>· · ·</div>
-      {bottom3.map(e => <Row key={e.position} e={e} />)}
-    </div>
-  );
-}
-
 // ── Module: Story row (Transfers, Beyond Big Six) ─────────────────────────────
 
 function ModuleStoryRow({ label, story }: { label: string; story: SnapshotStory }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <a href={story.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
-      <div style={{ background: 'var(--plh-card)', border: '1px solid var(--plh-border)', borderRadius: '8px', padding: '12px 14px', cursor: 'pointer' }}>
+      <div style={{ background: hovered ? 'rgba(248,249,251,0.06)' : 'var(--plh-card)', border: '1px solid var(--plh-border)', borderRadius: '8px', padding: '12px 14px', cursor: 'pointer', transition: 'background 0.15s ease' }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
         <div style={{ fontSize: '9px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: '0.12em', color: W40, textTransform: 'uppercase', marginBottom: '6px' }}>{label}</div>
         <p style={{ fontFamily: "'Sora', sans-serif", fontWeight: 600, fontSize: '13px', color: WHITE, margin: '0 0 4px 0', lineHeight: 1.35 }}>{story.headline}</p>
         <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', fontWeight: 700, color: TEAL, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{story.source.name} →</span>
@@ -240,10 +217,6 @@ export default function SnapshotContainer({ club = null }: { club?: string | nul
 
             {data.modules.transfers?.[0] && (
               <ModuleStoryRow label="Transfers & Contracts" story={data.modules.transfers[0]} />
-            )}
-
-            {data.modules.the_table?.standings?.length && (
-              <ModuleTable standings={data.modules.the_table.standings} />
             )}
 
             {data.modules.by_the_numbers?.tiles?.length && (
