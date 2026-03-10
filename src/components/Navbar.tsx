@@ -59,7 +59,7 @@ export default function Navbar() {
         position: 'relative',
       }}>
         <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'flex-start', position: 'relative', padding: '16px 14px' }} aria-label="The Football Hub">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', top: 0, left: -2 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', top: 0, left: 2 }}>
             <path d="M2 14V2H14" stroke={PINK} strokeWidth="3.5" strokeLinecap="round" />
           </svg>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -69,7 +69,7 @@ export default function Navbar() {
               <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300, fontSize: '26px', color: WHITE, letterSpacing: '1px', lineHeight: 1 }}>HUB</span>
             </div>
           </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', bottom: 0, right: -2 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', bottom: 0, right: 2 }}>
             <path d="M22 10V22H10" stroke={PINK} strokeWidth="3.5" strokeLinecap="round" />
           </svg>
         </a>
