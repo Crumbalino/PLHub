@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateSummary } from '@/lib/claude'
+import { scrapeArticle } from '@/lib/scraper'
 import { createServerClient } from '@/lib/supabase'
 import { logCronJob } from '@/lib/cron-logging'
 
@@ -7,14 +8,9 @@ export const maxDuration = 10
 
 /**
  * Backfill AI summaries for posts.
- * Uses rotation pattern: process only 2-3 posts per 15-min cron run.
- * Vercel Hobby plan = 10s limit. 1 Anthropic call ≈ 3-4s, so 2-3 posts is the safe limit.
- *
- * With 60+ unsummarized posts and a 15-min cron:
- * - 2 posts/run × 4 runs/hour = 8 posts/hour
- * - Complete backfill in ~8 hours
- *
- * Posts are processed newest first (recent posts get summaries faster).
+ * Scrapes the full article URL before calling generateSummary.
+ * If the article cannot be scraped or returns less than 300 chars, skip — do not generate from snippet.
+ * Processes 2 posts per run to stay within Vercel Hobby 10s limit.
  */
 export async function GET(req: NextRequest) {
   const startTime = Date.now()
@@ -28,15 +24,15 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = createServerClient()
 
-    // Fetch only 3 posts per run (strict limit for Hobby plan)
-    // Order by score DESC so highest-scored posts get summaries first
+    // Fetch 2 posts per run — scraping adds ~2-3s each, 2 is the safe limit
     const { data: posts, error: fetchError } = await supabase
       .from('posts')
-      .select('id, title, content, fetched_at')
+      .select('id, title, url')
       .is('summary', null)
-      .gte('published_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .not('url', 'is', null)
+      .gte('published_at', new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString())
       .order('score', { ascending: false })
-      .limit(3)
+      .limit(2)
 
     if (fetchError) {
       const executionTime = Date.now() - startTime
@@ -49,7 +45,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: fetchError.message }, { status: 500 })
     }
 
-    // No posts to process
     if (!posts || posts.length === 0) {
       return NextResponse.json({
         success: true,
@@ -60,37 +55,34 @@ export async function GET(req: NextRequest) {
     }
 
     let updated = 0
+    let skipped = 0
     let failed = 0
 
-    // Process each post sequentially
     for (const post of posts) {
       try {
-        let summary: string | null = null
-        let hook: string | null = null
-        let significance: number | null = null
-        try {
-          const result = await generateSummary(post.title, post.content)
-          summary = result.summary
-          hook = result.hook
-          significance = result.significance
-        } catch (summarizeErr) {
-          console.error(`[backfill-summaries] Anthropic API error for post ${post.id}:`, summarizeErr instanceof Error ? summarizeErr.message : String(summarizeErr))
-          failed++
+        // Scrape full article — no snippet fallback
+        const articleContent = await scrapeArticle(post.url)
+
+        if (!articleContent) {
+          console.log(`[backfill-summaries] Skipped post ${post.id} — article could not be scraped`)
+          skipped++
           continue
         }
 
-        if (!summary) {
-          failed++
+        const result = await generateSummary(post.title, articleContent)
+
+        if (!result.summary) {
+          console.log(`[backfill-summaries] Skipped post ${post.id} — summary generation returned null`)
+          skipped++
           continue
         }
 
-        // Build update object with all available fields
-        const updateData: Record<string, string | number | null> = { summary }
-        if (hook) {
-          updateData.summary_hook = hook
+        const updateData: Record<string, string | number | null> = {
+          summary: result.summary,
         }
-        if (significance !== null && significance !== undefined) {
-          updateData.score_significance = significance
+        if (result.hook) updateData.summary_hook = result.hook
+        if (result.significance !== null && result.significance !== undefined) {
+          updateData.score_significance = result.significance
         }
 
         const { error: updateError } = await supabase
@@ -105,12 +97,11 @@ export async function GET(req: NextRequest) {
           updated++
         }
       } catch (err) {
-        console.error(`[backfill-summaries] Unexpected error processing post ${post.id}:`, err)
+        console.error(`[backfill-summaries] Unexpected error on post ${post.id}:`, err)
         failed++
       }
     }
 
-    // Count remaining posts without summaries (don't let this fail the whole endpoint)
     let remaining = 0
     try {
       const { count } = await supabase
@@ -118,9 +109,8 @@ export async function GET(req: NextRequest) {
         .select('*', { count: 'exact', head: true })
         .is('summary', null)
       remaining = count ?? 0
-    } catch (countErr) {
-      console.error('[backfill-summaries] Failed to count remaining posts:', countErr)
-      // Don't fail the endpoint if we can't get the count
+    } catch {
+      // non-fatal
     }
 
     const executionTime = Date.now() - startTime
@@ -131,15 +121,15 @@ export async function GET(req: NextRequest) {
         storiesProcessed: updated,
         executionTimeMs: executionTime,
       })
-    } catch (logErr) {
-      console.error('[backfill-summaries] Failed to log cron job:', logErr)
-      // Don't fail the endpoint if logging fails
+    } catch {
+      // non-fatal
     }
 
     return NextResponse.json({
       success: true,
       processed: posts.length,
       updated,
+      skipped,
       failed,
       remaining,
     })
@@ -147,17 +137,12 @@ export async function GET(req: NextRequest) {
     const executionTime = Date.now() - startTime
     const errorMessage = err instanceof Error ? err.message : 'Unknown error'
     console.error('[backfill-summaries] Error:', err)
-
     await logCronJob({
       jobName: 'backfill_summaries',
       status: 'error',
       errorMessage,
       executionTimeMs: executionTime,
     })
-
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
