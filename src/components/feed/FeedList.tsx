@@ -55,7 +55,7 @@ export default function FeedList({ club = null }: { club?: string | null }) {
 
       {!isLoading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} key={`${sortMode}-${club}`}>
-          {posts.filter(post => post.generated_headline && (post.summary || post.summaryHook)).map((post, idx) => (
+          {posts.map((post, idx) => (
             <StoryCard key={post.id} post={post} index={idx} onExpand={() => trackExpand(post.id, posts.length)} />
           ))}
         </div>
