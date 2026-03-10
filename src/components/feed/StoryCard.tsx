@@ -486,14 +486,19 @@ export default function StoryCard({
                 </p>
               )}
 
-              <p className="tfh-summary" style={{
-                fontFamily: "'Sora', sans-serif",
-                fontSize: '14px', lineHeight: 1.72,
-                color: 'rgba(248,249,251,0.82)',
-                margin: '0 0 14px 0',
-              }}>
-                {summaryText}
-              </p>
+              <div className="tfh-summary" style={{ margin: '0 0 14px 0' }}>
+                {summaryText.split('\n').filter(p => p.trim()).map((para, i) => (
+                  <p key={i} style={{
+                    fontFamily: "'Sora', sans-serif",
+                    fontSize: '14px',
+                    lineHeight: 1.72,
+                    color: 'rgba(248,249,251,0.82)',
+                    margin: i === 0 ? '0 0 10px 0' : '0 0 10px 0',
+                  }}>
+                    {para.trim()}
+                  </p>
+                ))}
+              </div>
 
               <div style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
