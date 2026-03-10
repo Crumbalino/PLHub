@@ -62,6 +62,7 @@ export interface FeedPost {
   previewBlurb: string | null
   summary: string | null
   summaryHook: string | null
+  generated_headline?: string | null
   source: 'reddit' | 'rss' | 'youtube'
   sourceInfo: SourceInfo
   clubs: ClubBadge[]
