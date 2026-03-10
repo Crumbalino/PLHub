@@ -80,7 +80,7 @@ export default function StoryCard({
   const isBreaking   = post.title.toUpperCase().includes('BREAKING');
   const isPriority   = isLive || isBreaking;
   const displayTitle = post.generated_headline ?? post.title;
-  const summaryText  = post.summary ?? post.summaryHook ?? post.previewBlurb;
+  const summaryText  = post.summary ?? post.summaryHook ?? null;
   const isAiSummary  = !!(post.summary ?? post.summaryHook);
   const hasSummary   = !!summaryText;
   const teaserText   = summaryText ? (summaryText.length > 90 ? summaryText.slice(0, 90) + '…' : summaryText) : null;
@@ -473,30 +473,6 @@ export default function StoryCard({
                   >
                     Read full story →
                   </a>
-                </div>
-              )}
-
-              {isAiSummary && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  marginBottom: '10px',
-                }}>
-                  <div style={{
-                    width: '12px', height: '12px', borderRadius: '50%',
-                    background: TEAL,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '8px', color: NAVY, fontWeight: 700, flexShrink: 0,
-                  }}>
-                    ✦
-                  </div>
-                  <span style={{
-                    fontFamily: "'Sora', sans-serif",
-                    fontSize: '10px', fontWeight: 700,
-                    textTransform: 'uppercase', letterSpacing: '0.08em',
-                    color: TEAL,
-                  }}>
-                    The Hub Take
-                  </span>
                 </div>
               )}
 
