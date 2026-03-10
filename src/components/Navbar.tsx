@@ -50,6 +50,7 @@ export default function Navbar() {
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
       borderBottom: '1px solid rgba(58,175,169,0.15)',
+      overflow: 'visible',
     }}>
       <div style={{
         maxWidth: '1400px', margin: '0 auto',
