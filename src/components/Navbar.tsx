@@ -57,6 +57,7 @@ export default function Navbar() {
         height: '64px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative',
+        overflow: 'visible',
       }}>
         <a href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'flex-start', position: 'relative', padding: '16px 14px' }} aria-label="The Football Hub">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ position: 'absolute', top: 0, left: 2 }}>
