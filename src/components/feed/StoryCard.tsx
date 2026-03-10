@@ -371,6 +371,7 @@ export default function StoryCard({
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
+            textWrap: 'balance',
           }}>
             {displayTitle}
           </h3>
