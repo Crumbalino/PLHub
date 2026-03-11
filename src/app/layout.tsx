@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import { Sora, JetBrains_Mono } from 'next/font/google'
-import { themeInitScript } from '@/lib/theme-init'
+import { ThemeProvider } from '@/lib/theme-context'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -28,11 +28,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thefootballhub.uk'
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'The Football Hub — Football. Framed. Fast.',
+    default: 'The Football Hub',
     template: '%s | The Football Hub',
   },
   description:
-    'Football news from every angle. Results, transfers, analysis and debate from across Europe — ranked, filtered and always up to date.',
+    'Football. Framed. Fast.',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
@@ -83,20 +83,33 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        {/* Blocking script: reads localStorage before paint to prevent flash-of-wrong-theme */}
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* No-flash dark mode: applies .light class before paint if saved */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=localStorage.getItem('tfh-mode');if(m==='light')document.documentElement.classList.add('light');}catch(e){}})();`,
+          }}
+        />
+        {/* Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;600;700&display=swap"
+          rel="stylesheet"
+        />
         <JsonLd data={orgSchema} />
         <JsonLd data={webSchema} />
       </head>
       <body className={`${sora.variable} ${jetbrainsMono.variable} font-sora antialiased`}>
-        {gaMeasurementId && (
-          <GoogleAnalytics measurementId={gaMeasurementId} />
-        )}
+        <ThemeProvider>
+          {gaMeasurementId && (
+            <GoogleAnalytics measurementId={gaMeasurementId} />
+          )}
 
-        <Navbar />
-        <main>{children}</main>
-        <BackToTopButton />
-        <Footer />
+          <Navbar />
+          <main>{children}</main>
+          <BackToTopButton />
+          <Footer />
+        </ThemeProvider>
 
         {/* Google Analytics GA4 */}
         <Script

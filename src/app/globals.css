@@ -1,498 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ================================
-   PLHub Brand Tokens v2.2
-   Dark mode = default. Light mode via .light on <html>.
-   No grey hex codes. Opacity on base colour only.
-   ================================ */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;600;700&display=swap');
 
-/* Dark mode (default) */
-:root,
-.dark {
-  --plh-bg: #0D1B2A;
-  --plh-card: #172E48;
-  --plh-elevated: #162D45;
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-  --plh-text-base: 250, 245, 240;
-  --plh-text-100: #FAF5F0;
-  --plh-text-75: rgba(250, 245, 240, 0.75);
-  --plh-text-50: rgba(250, 245, 240, 0.5);
-  --plh-text-40: rgba(250, 245, 240, 0.4);
+/* ── Keyframe animations (web only — RN uses Animated API) ── */
 
-  --plh-pink: #E84080;
-  --plh-pink-hover: #D03670;
-  --plh-pink-active: #B82E60;
-  --plh-gold: #D4A843;
-  --plh-teal: #3AAFA9;
-  --plh-ice: #8AACCC;
-  --plh-violet: #C084FC;
-  --plh-orange: #F97316;
-
-  --plh-border: rgba(250, 245, 240, 0.09);
-  --plh-border-hover: rgba(250, 245, 240, 0.16);
-  --plh-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
-
-  /* v2.2 — Inline logo (monochrome on-site) */
-  --plh-logo-text: #FAF5F0;
-  --plh-logo-bracket-opacity: 0.2;
-
-  /* Legacy compat — mapped to navy system */
-  --background: #0D1B2A;
-  --foreground: #FAF5F0;
-  --brand-teal: #3AAFA9;
-  --brand-gold: #D4A843;
-  --card-bg: #112238;
-  --card-bg-hover: #162D45;
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.75); }
+  50%       { opacity: 1;   transform: scale(1.15); }
 }
 
-/* Light mode */
-.light {
-  --plh-bg: #F8F9FB;
-  --plh-card: #FFFFFF;
-  --plh-elevated: #F0F1F4;
-
-  --plh-text-base: 13, 27, 42;
-  --plh-text-100: #1A1D23;
-  --plh-text-75: rgba(13, 27, 42, 0.75);
-  --plh-text-50: rgba(13, 27, 42, 0.5);
-  --plh-text-40: rgba(13, 27, 42, 0.4);
-
-  --plh-pink: #E84080;
-  --plh-pink-hover: #D03670;
-  --plh-pink-active: #B82E60;
-  --plh-gold: #B8923A;
-  --plh-teal: #2A9490;
-  --plh-ice: #5A7F9F;
-  --plh-violet: #9B59B6;
-  --plh-orange: #D96A14;
-
-  --plh-border: rgba(13, 27, 42, 0.08);
-  --plh-border-hover: rgba(13, 27, 42, 0.12);
-  --plh-shadow: 0 2px 6px rgba(13, 27, 42, 0.05), 0 1px 2px rgba(13, 27, 42, 0.03);
-
-  /* v2.2 — Inline logo (monochrome on-site) */
-  --plh-logo-text: #1A1D23;
-  --plh-logo-bracket-opacity: 0.15;
-
-  /* Legacy compat — mapped to light system */
-  --background: #F8F9FB;
-  --foreground: #1A1D23;
-  --brand-teal: #2A9490;
-  --brand-gold: #B8923A;
-  --card-bg: #FFFFFF;
-  --card-bg-hover: #F0F1F4;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
 
-/* ================================
-   BASE STYLES
-   ================================ */
-
-html {
-  background-color: var(--plh-bg);
-  transition: background-color 300ms ease;
-  scroll-behavior: smooth;
-  font-size: 18px;
+@keyframes livePulse {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.4; }
 }
 
-body {
-  font-family: var(--font-sora), sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: var(--plh-text-100);
-  background-color: var(--plh-bg);
-  letter-spacing: 0.01em;
-  line-height: 1.65;
-  position: relative;
+/* ghostFloat: used by ghost number/? in cards (has absolute translateY centering) */
+@keyframes ghostFloat {
+  0%, 100% { transform: translateY(-50%); }
+  50%       { transform: translateY(calc(-50% - 6px)); }
 }
 
-/* Anchor targets clear the sticky navbar */
-article[id^="post-"] {
-  scroll-margin-top: 5rem;
+/* ghostFloatStatic: used by On This Day ghost year (no translateY centering) */
+@keyframes ghostFloatStatic {
+  0%, 100% { transform: translateX(0) translateY(0);  }
+  50%       { transform: translateX(0) translateY(-6px); }
 }
 
-/* ================================
-   REDUCED MOTION
-   ================================ */
+@keyframes emojiIn {
+  from { opacity: 0; transform: scale(0.7) translateY(6px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0);   }
+}
 
+/* ── Accessibility ── */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
 
-/* ================================
-   UTILITY: HIDE SCROLLBAR
-   ================================ */
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* ================================
-   FONT CLASS
-   ================================ */
-
-.font-sora {
-  font-family: var(--font-sora), sans-serif;
-}
-
-.summary-text {
-  font-family: var(--font-sora), sans-serif;
-  font-weight: 300;
-}
-
-/* ================================
-   SCROLLBAR (subtle, brand-matched)
-   ================================ */
-
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--plh-text-40);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--plh-text-50);
-}
-
-/* ============================================
-   CARD ENTER ANIMATION
-   ============================================ */
-
-@keyframes cardEnter {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-card-enter {
-  opacity: 0;
-  animation: cardEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Card glow on expand — uses brand gold */
-@keyframes cardGlow {
-  0% { box-shadow: 0 0 0 rgba(212,168,67,0); }
-  40% { box-shadow: 0 0 30px rgba(212,168,67,0.12); }
-  100% { box-shadow: 0 0 10px rgba(212,168,67,0.04); }
-}
-
-.animate-card-glow {
-  animation: cardGlow 600ms ease-out forwards;
-}
-
-/* Summary reveal inside card */
-@keyframes summaryReveal {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-summary-reveal {
-  animation: summaryReveal 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Score badge bounce */
-@keyframes badgePulse {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
-
-.animate-badge-pulse {
-  animation: badgePulse 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* Border pulse on card expand — uses brand gold */
-@keyframes borderPulse {
-  0% { border-color: rgba(212,168,67,0.3); }
-  100% { border-color: var(--plh-border); }
-}
-
-.animate-border-pulse {
-  animation: borderPulse 500ms ease-out forwards;
-}
-
-/* v2.2: LIVE pulse dot */
-@keyframes livePulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-/* Trending #1 heartbeat glow — uses brand gold */
-@keyframes trendingPulse {
-  0%, 100% { opacity: 1; filter: drop-shadow(0 0 0px var(--plh-gold)); }
-  50% { opacity: 0.8; filter: drop-shadow(0 0 8px var(--plh-gold)); }
-}
-
-.animate-trending-pulse {
-  animation: trendingPulse 2s ease-in-out infinite;
-}
-
-/* Sort tab content crossfade */
-@keyframes feedFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-feed-enter {
-  animation: feedFadeIn 0.3s ease-out forwards;
-}
-
-/* Generic fade in */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.25s ease-out forwards;
-}
-
-/* ============================================
-   TOP BOUNCE BAR (back-to-top)
-   ============================================ */
-@keyframes topBounce {
-  0%   { transform: scaleY(1);   opacity: 1; }
-  25%  { transform: scaleY(4);   opacity: 1; }
-  55%  { transform: scaleY(1.5); opacity: 0.8; }
-  75%  { transform: scaleY(2.5); opacity: 0.6; }
-  100% { transform: scaleY(0);   opacity: 0; }
-}
-
-/* ============================================
-   SKELETON SHIMMER
-   ============================================ */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(var(--plh-text-base), 0.03) 25%,
-    rgba(var(--plh-text-base), 0.06) 50%,
-    rgba(var(--plh-text-base), 0.03) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
-}
-
-/* ============================================
-   HEAT BADGES — uses brand gold
-   ============================================ */
-.heat-hot {
-  background: linear-gradient(135deg, var(--plh-gold) 0%, #E8C84A 100%);
-  color: var(--plh-bg);
-}
-
-.heat-warm {
-  background: color-mix(in srgb, var(--plh-gold) 15%, transparent);
-  color: var(--plh-gold);
-}
-
-.heat-rising {
-  background: rgba(var(--plh-text-base), 0.08);
-  color: var(--plh-text-70);
-}
-
-/* ============================================
-   CARD HOVER + PRESS STATES
-   ============================================ */
-.story-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-}
-
-.story-card:hover {
-  background-color: var(--card-bg-hover);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* Active/press state for mobile — subtle scale */
-@media (hover: none) {
-  .story-card:active {
-    transform: scale(0.985);
-  }
-}
-
-/* ============================================
-   TRENDING ITEM HOVER
-   ============================================ */
-.trending-item {
-  transition: transform 0.15s ease, background-color 0.15s ease;
-}
-
-.trending-item:hover {
-  transform: translateX(2px);
-}
-
-/* ============================================
-   SORT TAB INDICATOR
-   ============================================ */
-.sort-tab-indicator {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ============================================
-   LOAD MORE BUTTON — uses brand gold
-   ============================================ */
-.load-more-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-.load-more-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, transparent 0%, color-mix(in srgb, var(--plh-gold) 5%, transparent) 100%);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.load-more-btn:hover::after {
-  opacity: 1;
-}
-
-/* ============================================
-   MOBILE-FIRST SPACING
-   ============================================ */
-
-/* Tighter padding on small screens */
-@media (max-width: 640px) {
-  .feed-card-padding {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-/* Touch-friendly tap targets */
-@media (hover: none) {
-  button, a {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* But not inline links within text */
-  p a, span a, .summary-text a {
-    min-height: unset;
-    min-width: unset;
-  }
-}
-
-/* ============================================
-   UTILITY
-   ============================================ */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
-}
-
-/* Secondary text — 85% opacity for metadata and timestamps */
-.text-secondary {
-  color: rgba(250, 245, 240, 0.85);
-}
-
-/* Subtle divider line between sections */
-.section-divider {
-  border: none;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(var(--plh-text-base), 0.08) 50%, transparent 100%);
-}
-
-/* ============================================
-   MOBILE COLLAPSIBLE SECTIONS
-   ============================================ */
-details summary {
-  list-style: none;
-}
-
-details summary::-webkit-details-marker {
-  display: none;
-}
-
-details[open] summary {
-  border-bottom: 1px solid var(--plh-border);
-  margin-bottom: 0.5rem;
-}
-
-/* ============================================
-   CARD INTERACTION SYSTEM ANIMATIONS
-   ============================================ */
-
-/* Slide up + fade in for new cards and verdict reveals */
-@keyframes tfhSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Pulse effect for skeleton loaders */
-@keyframes tfhPulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.15; }
-}
-
-/* ============================================
-   FOCUS STYLES (accessibility) — uses brand pink
-   ============================================ */
+/* ── Focus ring — pink, 2px, offset 2px (all interactive elements) ── */
 :focus-visible {
-  outline: 2px solid var(--plh-pink);
+  outline: 2px solid #E84080;
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
-/* Remove focus ring for mouse users */
-:focus:not(:focus-visible) {
-  outline: none;
-}
+/* ── Minimum touch targets ── */
+button, a, [role="button"] { min-height: 44px; min-width: 44px; }

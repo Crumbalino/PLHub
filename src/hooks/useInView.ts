@@ -1,55 +1,31 @@
-import { useEffect, useRef, useState } from 'react';
+// ─────────────────────────────────────────────────────────────────
+// Web-only hook: fires once when element enters viewport.
+// RN replacement: use Animated with onLayout + scrollview offset,
+// or the react-native-intersection-observer library.
+// The component interface (inView: boolean) is identical either way.
+// ─────────────────────────────────────────────────────────────────
 
-interface UseInViewOptions {
-  threshold?: number | number[];
-  rootMargin?: string;
-  triggerOnce?: boolean;
-}
+import { useRef, useState, useEffect } from "react";
 
-/**
- * Hook to detect when an element enters the viewport using IntersectionObserver.
- * Useful for scroll-triggered animations and lazy loading.
- */
-export function useInView(options: UseInViewOptions = {}) {
-  const { threshold = 0.1, rootMargin = '0px', triggerOnce = false } = options;
+export function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(false);
-  const [hasTriggered, setHasTriggered] = useState(false);
+  const [inView, setInView] = useState(false);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsInView(true);
-          setHasTriggered(true);
-
-          // Disconnect if triggerOnce is true
-          if (triggerOnce) {
-            observer.disconnect();
-          }
-        } else if (!triggerOnce) {
-          // Allow resetting if not triggerOnce
-          setIsInView(false);
+          setInView(true);
+          obs.disconnect();
         }
       },
-      {
-        threshold,
-        rootMargin,
-      }
+      { threshold }
     );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
 
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [threshold, rootMargin, triggerOnce]);
-
-  return {
-    ref,
-    isInView,
-    hasTriggered,
-  };
+  return [ref, inView] as const;
 }

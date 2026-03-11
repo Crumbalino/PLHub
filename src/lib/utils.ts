@@ -1,120 +1,55 @@
-export function decodeHtmlEntities(text: string): string {
-  if (!text) return ''
-  return text
-    .replace(/&#8216;/g, '\u2018')
-    .replace(/&#8217;/g, '\u2019')
-    .replace(/&#8220;/g, '\u201C')
-    .replace(/&#8221;/g, '\u201D')
-    .replace(/&#8211;/g, '\u2013')
-    .replace(/&#8212;/g, '\u2014')
-    .replace(/&#8230;/g, '\u2026')
-    .replace(/&#39;/g, "'")
-    .replace(/&#039;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&ndash;/g, '\u2013')
-    .replace(/&mdash;/g, '\u2014')
-    .replace(/&lsquo;/g, '\u2018')
-    .replace(/&rsquo;/g, '\u2019')
-    .replace(/&ldquo;/g, '\u201C')
-    .replace(/&rdquo;/g, '\u201D')
-    .replace(/&hellip;/g, '\u2026')
-    .replace(/&#(\d+);/g, (_, num) => String.fromCharCode(parseInt(num, 10)))
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+// ─────────────────────────────────────────────────────────────────
+// Shared utility functions.
+// Pure functions — no DOM, no RN APIs. Import in both platforms.
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * Convert a 6-digit hex colour + alpha to rgba() string.
+ * Used everywhere YourVerdict renders with the card's accent colour.
+ * Works in web (CSS) and RN (StyleSheet values).
+ */
+export function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
-export function stripMarkdown(text: string): string {
-  if (!text) return ''
-  return text
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/__([^_]+)__/g, '$1')
-    .replace(/_([^_]+)_/g, '$1')
-    .replace(/#{1,6}\s?/g, '')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/^>\s?/gm, '')
-    .replace(/^[-*+]\s/gm, '')
-    .replace(/^\d+\.\s/gm, '')
-    .trim()
+/**
+ * Format a total reaction count for display.
+ * e.g. 8148 → "8,148 reactions"
+ */
+export function formatReactions(count: number): string {
+  return `${count.toLocaleString()} reactions`;
 }
 
-export function formatDistanceToNow(dateString: string): string {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-
-  const diffHours = Math.floor(diffMins / 60)
-  if (diffHours < 24) return `${diffHours}h ago`
-
-  const diffDays = Math.floor(diffHours / 24)
-  if (diffDays < 7) return `${diffDays}d ago`
-
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+/**
+ * Get the top N reactions sorted by vote count.
+ */
+export function getTopReactions(
+  votes: Record<number, number>,
+  reactions: readonly { id: number; emoji: string; label: string }[],
+  n = 5
+) {
+  return Object.entries(votes)
+    .map(([idx, count]) => ({ ...reactions[Number(idx)], count, idx: Number(idx) }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, n);
 }
 
-export function upgradeImageUrl(url: string | null | undefined): string | null | undefined {
-  if (!url) return url
-
-  // BBC: replace small crops with larger ones
-  if (url.includes('bbc.co.uk') || url.includes('bbci.co.uk')) {
-    url = url.replace(/\/\d+x\d+\.(jpg|png|webp)/i, '/976x549.$1')
-    url = url.replace(/\/\d+\/cpsprodpb/i, '/800/cpsprodpb')
-  }
-
-  // Sky Sports: request larger image
-  if (url.includes('skysports.com') || url.includes('skysports')) {
-    url = url.replace(/width=\d+/i, 'width=800')
-    url = url.replace(/height=\d+/i, 'height=450')
-  }
-
-  // Guardian: i.guim.co.uk — replace width parameter
-  if (url.includes('guim.co.uk')) {
-    url = url.replace(/width=\d+/i, 'width=800')
-    url = url.replace(/\/\d+\.jpg/i, '/800.jpg')
-  }
-
-  // talkSPORT / News UK: replace crop sizes
-  if (url.includes('talksport.com') || url.includes('talkSPORT')) {
-    url = url.replace(/-\d+x\d+\.(jpg|png|webp)/i, '.$1')
-  }
-
-  // Generic WordPress: remove -WIDTHxHEIGHT from filename
-  url = url.replace(/-\d{2,4}x\d{2,4}\.(jpg|jpeg|png|webp)/i, '.$1')
-
-  // Reddit: use preview.redd.it instead of thumbs
-  if (url.includes('thumbs.redd.it')) {
-    url = url.replace('thumbs.redd.it', 'preview.redd.it')
-  }
-  // Reddit external previews: request larger size
-  if (url.includes('preview.redd.it') && url.includes('width=')) {
-    url = url.replace(/width=\d+/i, 'width=800')
-  }
-
-  // Generic: if URL has ?w= or ?width= parameter, increase it
-  url = url.replace(/([?&])w=\d+/i, '$1w=800')
-  url = url.replace(/([?&])width=\d+/i, '$1width=800')
-  url = url.replace(/([?&])h=\d+/i, '$1h=450')
-  url = url.replace(/([?&])quality=\d+/i, '$1quality=85')
-
-  return url
-}
-
-export function formatSummaryForDisplay(text: string): string {
-  if (!text) return ''
-  const cleaned = stripMarkdown(decodeHtmlEntities(text))
-  const sentences = cleaned.split(/(?<=\.)\s+(?=[A-Z])/)
-  const chunks: string[] = []
-  for (let i = 0; i < sentences.length; i += 2) {
-    chunks.push(sentences.slice(i, i + 2).join(' '))
-  }
-  return chunks.join('\n\n')
-}
+/**
+ * Session storage wrapper — safe to call in SSR (no window crash).
+ * Returns null on server. Returns null if storage is unavailable.
+ * On RN: swap this for AsyncStorage.
+ */
+export const storage = {
+  get(key: string): string | null {
+    if (typeof window === "undefined") return null;
+    try { return sessionStorage.getItem(key); } catch { return null; }
+  },
+  set(key: string, value: string): void {
+    if (typeof window === "undefined") return;
+    try { sessionStorage.setItem(key, value); } catch {}
+  },
+};
