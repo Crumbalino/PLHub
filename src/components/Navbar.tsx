@@ -54,8 +54,10 @@ export default function Navbar() {
     }}>
       <div style={{
         maxWidth: '1400px', margin: '0 auto',
-        padding: '0 24px',
-        height: '64px',
+        paddingTop: '14px',
+        paddingBottom: '14px',
+        paddingLeft: '20px',
+        paddingRight: '20px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative',
         overflow: 'visible',
