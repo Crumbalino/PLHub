@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
       }
 
       // Detect card type using deterministic patterns
-      let detectedType = detectCardType(post.title, post.source)
+      let detectedType = detectCardType(post.title, post.url)
 
       // Try to get card_type_hint from Claude if we have sufficient content
       let summary: string | null = null

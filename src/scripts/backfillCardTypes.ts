@@ -12,7 +12,7 @@ const BATCH_SIZE = 50
 const BATCH_DELAY_MS = 200
 
 async function backfillCardTypes() {
-  console.log('[Backfill] Starting card type detection for posts without card_type...')
+  console.log('[Backfill] Starting card type detection for all posts...')
 
   const supabase = createServerClient()
   let offset = 0
@@ -29,11 +29,10 @@ async function backfillCardTypes() {
   try {
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      // Fetch batch of posts without card_type
+      // Fetch batch of all posts
       const { data: posts, error: fetchError } = await supabase
         .from('posts')
-        .select('id, title, source')
-        .is('card_type', null)
+        .select('id, title, url')
         .order('published_at', { ascending: false })
         .range(offset, offset + BATCH_SIZE - 1)
 
@@ -50,7 +49,7 @@ async function backfillCardTypes() {
       // Detect card type for each post
       const updates = posts.map(post => ({
         id: post.id,
-        card_type: detectCardType(post.title, post.source),
+        card_type: detectCardType(post.title, post.url || ''),
       }))
 
       // Update in batch

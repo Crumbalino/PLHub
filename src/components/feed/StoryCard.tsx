@@ -239,7 +239,7 @@ export default function StoryCard({
     if ((cardType === 'story' || cardType === 'lol') && post.imageUrl && !imgError) {
       return (
         <div style={{ padding: '12px 12px 0' }}>
-          <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%', overflow: 'hidden', borderRadius: '8px', border: '1px solid var(--plh-border)', marginBottom: '12px' }}>
+          <div style={{ position: 'relative', width: '100%', maxHeight: '192px', paddingBottom: '56.25%', overflow: 'hidden', borderRadius: '8px', border: '1px solid var(--plh-border)', marginBottom: '12px' }}>
             <img
               src={post.imageUrl}
               alt=""

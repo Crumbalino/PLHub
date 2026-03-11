@@ -6,10 +6,9 @@
 
 export type CardType = 'story' | 'stat' | 'quote' | 'result' | 'lol' | 'rumour';
 
-const RUMOUR_SOURCES = [
-  'the sun', 'daily mirror', 'mirror', 'daily mail', 'mail online',
-  'daily star', 'the star', 'calciomercato', 'fichajes', 'teamtalk',
-  'football insider', 'givemesport'
+const RUMOUR_DOMAINS = [
+  'thesun', 'mirror', 'dailymail', 'mailonline', 'dailystar',
+  'calciomercato', 'fichajes', 'teamtalk', 'footballinsider', 'givemesport',
 ];
 
 const STAT_PATTERNS = [
@@ -27,6 +26,8 @@ const RESULT_PATTERNS = [
   /\b\d+\s*[-–]\s*\d+\b/,
   /\b(win|wins|won|beat|beats|beaten|defeat|defeated|thrash|thrashed|hammer|hammered)\b/i,
   /\b(match report|player ratings|talking points|report:)\b/i,
+  /\b(draw|drew|held|held to|rescues|rescue)\b/i,
+  /\b(first.leg|second.leg|aggregate)\b/i,
 ];
 
 const LOL_PATTERNS = [
@@ -40,14 +41,18 @@ const RUMOUR_LANGUAGE = [
 ];
 
 /**
- * Detect card type from title and source using pure string matching.
+ * Detect card type from title and URL using pure string matching.
  * Fast, deterministic, no dependencies on external APIs.
  */
-export function detectCardType(title: string, source: string): CardType {
-  const sourceLower = source.toLowerCase();
+export function detectCardType(title: string, url: string): CardType {
+  // Extract domain from URL for rumour source detection
+  function extractDomain(url: string): string {
+    try { return new URL(url).hostname.replace('www.', '') } catch { return '' }
+  }
+  const domain = extractDomain(url);
 
-  // Rumour detection: check both source and language patterns
-  const isRumourSource = RUMOUR_SOURCES.some(s => sourceLower.includes(s));
+  // Rumour detection: check both domain and language patterns
+  const isRumourSource = RUMOUR_DOMAINS.some(d => domain.includes(d));
   const hasRumourLanguage = RUMOUR_LANGUAGE.some(p => p.test(title));
   if (isRumourSource || hasRumourLanguage) return 'rumour';
 
