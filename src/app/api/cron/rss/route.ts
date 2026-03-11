@@ -3,6 +3,8 @@ import { fetchSingleFeed, FEEDS } from "@/lib/rss"
 import { createServerClient } from '@/lib/supabase'
 import { upgradeImageUrl } from '@/lib/formatting'
 import { logCronJob } from '@/lib/cron-logging'
+import { detectCardType, type CardType } from '@/lib/detectCardType'
+import { generateSummary } from '@/lib/claude'
 import Anthropic from '@anthropic-ai/sdk'
 
 export const maxDuration = 10
@@ -126,13 +128,37 @@ export async function GET(req: NextRequest) {
         continue
       }
 
-      // Insert without summary — backfill-summaries cron will generate them
+      // Detect card type using deterministic patterns
+      let detectedType = detectCardType(post.title, post.source)
+
+      // Try to get card_type_hint from Claude if we have sufficient content
+      let summary: string | null = null
+      let generatedHeadline: string | null = null
+      const contentLength = (post.content ?? '').trim().length
+      if (contentLength >= 300) {
+        try {
+          const summaryData = await generateSummary(post.title, post.content)
+          summary = summaryData.summary
+          generatedHeadline = summaryData.hook
+
+          // Upgrade 'story' to 'lol' if Claude detects it
+          if (detectedType === 'story' && summaryData.cardTypeHint === 'lol') {
+            detectedType = 'lol'
+          }
+        } catch (err) {
+          console.error('[RSS ingest] generateSummary error:', err)
+          // Fall back to deterministic detection if Claude fails
+        }
+      }
+
+      // Insert with card_type and optionally generated summary/headline
       const { error } = await supabase.from('posts').insert({
         external_id: post.external_id,
         title: post.title,
         url: post.url,
         content: post.content,
-        summary: null,
+        summary,
+        summary_hook: generatedHeadline,
         source: post.source,
         club_slug: post.club_slug,
         author: post.author,
@@ -140,6 +166,8 @@ export async function GET(req: NextRequest) {
         subreddit: post.subreddit,
         image_url: upgradeImageUrl(post.image_url) || null,
         published_at: post.published_at,
+        card_type: detectedType,
+        generated_headline: generatedHeadline,
       })
 
       if (error) {

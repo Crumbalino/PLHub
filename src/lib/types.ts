@@ -34,6 +34,8 @@ export interface Post {
   image_url: string | null
   fetched_at: string
   published_at: string
+  card_type?: 'story' | 'stat' | 'trivia' | 'on-this-day' | 'quote' | 'fixture' | 'result' | 'lol' | 'rumour' | null
+  generated_headline?: string | null
   clubs?: Club
 }
 
@@ -63,6 +65,8 @@ export interface FeedPost {
   summary: string | null
   summaryHook: string | null
   generated_headline?: string | null
+  card_type?: 'story' | 'stat' | 'trivia' | 'on-this-day' | 'quote' | 'fixture' | 'result' | 'lol' | 'rumour' | null
+  card_data?: Record<string, unknown> | null
   source: 'reddit' | 'rss' | 'youtube'
   sourceInfo: SourceInfo
   clubs: ClubBadge[]

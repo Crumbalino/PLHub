@@ -2,7 +2,12 @@
 import { useState } from 'react';
 import { useFeed } from '@/hooks/useFeed';
 import StoryCard from './StoryCard';
-import type { SortMode } from '@/lib/types';
+import StatCard from './cards/StatCard';
+import TriviaCard from './cards/TriviaCard';
+import OnThisDayCard from './cards/OnThisDayCard';
+import QuoteCard from './cards/QuoteCard';
+import FixtureCard from './cards/FixtureCard';
+import type { SortMode, FeedPost } from '@/lib/types';
 
 const TEAL = '#3AAFA9';
 const WHITE = '#F8F9FB';
@@ -21,6 +26,89 @@ function trackExpand(postId: string, totalPosts: number) {
       window.dispatchEvent(new Event('tfh_progress_update'));
     }
   } catch {}
+}
+
+function renderCardByType(post: FeedPost, idx: number, onExpand: () => void) {
+  // If post has a card_type, render specialized card
+  if (post.card_type === 'stat' && post.card_data) {
+    const data = post.card_data as any;
+    return (
+      <StatCard
+        key={post.id}
+        id={post.id}
+        stat={data.stat || ''}
+        value={data.value || 0}
+        label={data.label || ''}
+        context={data.context}
+      />
+    );
+  }
+
+  if (post.card_type === 'trivia' && post.card_data) {
+    const data = post.card_data as any;
+    return (
+      <TriviaCard
+        key={post.id}
+        id={post.id}
+        fact={data.fact || ''}
+        title={data.title || ''}
+      />
+    );
+  }
+
+  if (post.card_type === 'on-this-day' && post.card_data) {
+    const data = post.card_data as any;
+    return (
+      <OnThisDayCard
+        key={post.id}
+        id={post.id}
+        date={data.date || ''}
+        event={data.event || ''}
+        teams={data.teams}
+        year={data.year}
+      />
+    );
+  }
+
+  if (post.card_type === 'quote' && post.card_data) {
+    const data = post.card_data as any;
+    return (
+      <QuoteCard
+        key={post.id}
+        id={post.id}
+        quote={data.quote || ''}
+        author={data.author || ''}
+        context={data.context}
+      />
+    );
+  }
+
+  if (post.card_type === 'fixture' && post.card_data) {
+    const data = post.card_data as any;
+    return (
+      <FixtureCard
+        key={post.id}
+        id={post.id}
+        homeTeam={data.homeTeam || ''}
+        awayTeam={data.awayTeam || ''}
+        date={data.date || ''}
+        time={data.time}
+        status={data.status || 'upcoming'}
+        homeScore={data.homeScore}
+        awayScore={data.awayScore}
+      />
+    );
+  }
+
+  // Default: render StoryCard
+  return (
+    <StoryCard
+      key={post.id}
+      post={post}
+      index={idx}
+      onExpand={onExpand}
+    />
+  );
 }
 
 export default function FeedList({ club = null }: { club?: string | null }) {
@@ -55,9 +143,9 @@ export default function FeedList({ club = null }: { club?: string | null }) {
 
       {!isLoading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }} key={`${sortMode}-${club}`}>
-          {posts.map((post, idx) => (
-            <StoryCard key={post.id} post={post} index={idx} onExpand={() => trackExpand(post.id, posts.length)} />
-          ))}
+          {posts.map((post, idx) =>
+            renderCardByType(post, idx, () => trackExpand(post.id, posts.length))
+          )}
         </div>
       )}
 

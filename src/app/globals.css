@@ -462,6 +462,28 @@ details[open] summary {
 }
 
 /* ============================================
+   CARD INTERACTION SYSTEM ANIMATIONS
+   ============================================ */
+
+/* Slide up + fade in for new cards and verdict reveals */
+@keyframes tfhSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulse effect for skeleton loaders */
+@keyframes tfhPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.15; }
+}
+
+/* ============================================
    FOCUS STYLES (accessibility) — uses brand pink
    ============================================ */
 :focus-visible {

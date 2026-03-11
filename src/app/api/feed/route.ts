@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('posts')
       .select(
-        'id, external_id, title, url, summary, summary_hook, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, score_significance, clubs(*)',
+        'id, external_id, title, url, summary, summary_hook, content, source, club_slug, author, score, subreddit, image_url, fetched_at, published_at, score_significance, card_type, generated_headline, clubs(*)',
         { count: 'exact' }
       )
 
