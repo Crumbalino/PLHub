@@ -88,13 +88,11 @@ export default function FeedPage() {
           setFeedItems(
             data.posts.map((p: any) => ({
               id: p.id,
-              pub: (p.source_name || "Unknown").toUpperCase(),
-              score: p.pulse_score ?? 50,
-              time: p.published_at
-                ? new Date(p.published_at).toLocaleString("en-GB")
-                : "",
-              img: p.image_url ?? `https://picsum.photos/seed/${p.id}/600/320`,
-              thumb: p.image_url ?? `https://picsum.photos/seed/${p.id}/120/80`,
+              pub: (p.sourceInfo?.name || "Unknown").toUpperCase(),
+              score: p.indexScore ?? 50,
+              time: p.timeDisplay || "",
+              img: p.imageUrl ?? `https://picsum.photos/seed/${p.id}/600/320`,
+              thumb: p.imageUrl ?? `https://picsum.photos/seed/${p.id}/120/80`,
               headline: p.title ?? "",
               summary: p.summary ?? null,
               url: p.url ?? null,

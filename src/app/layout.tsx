@@ -105,7 +105,6 @@ export default function RootLayout({
             <GoogleAnalytics measurementId={gaMeasurementId} />
           )}
 
-          <Navbar />
           <main>{children}</main>
           <BackToTopButton />
           <Footer />
