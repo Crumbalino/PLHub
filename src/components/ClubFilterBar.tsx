@@ -4,6 +4,16 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
+// ── Brand tokens (inline — CSS vars are not injected) ──
+const CARD    = '#112238'
+const BORDER  = 'rgba(250,245,240,0.06)'
+const TEAL    = '#3AAFA9'
+const PINK    = '#E84080'
+const WHITE   = '#F8F9FB'
+const W40     = 'rgba(248,249,251,0.40)'
+const GOLD    = '#D4A843'
+const ELEVATED = '#162D45'
+
 interface Club {
   id: number
   slug: string
@@ -61,17 +71,23 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
     <>
       {/* DESKTOP VERSION */}
       <div
-        className="hidden md:block rounded-[12px] border border-[var(--plh-border)] overflow-hidden"
-        style={{ background: 'var(--plh-card)' }}
+        className="hidden md:block rounded-[12px] overflow-hidden"
+        style={{
+          background: CARD,
+          border: `1px solid ${BORDER}`,
+        }}
       >
         {/* Header row */}
         <div
-          className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--plh-border)]"
-          style={{ background: 'color-mix(in srgb, var(--plh-teal) 6%, transparent)' }}
+          className="flex items-center justify-between px-4 py-2.5"
+          style={{
+            borderBottom: `1px solid ${BORDER}`,
+            background: `rgba(58,175,169,0.06)`,
+          }}
         >
           <span
             className="text-[11px] font-bold uppercase tracking-[1.5px]"
-            style={{ color: 'var(--plh-teal)' }}
+            style={{ color: TEAL }}
           >
             Filter by club
           </span>
@@ -79,9 +95,9 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
             <button
               onClick={handleClear}
               className="text-[11px] font-medium transition-colors duration-150"
-              style={{ color: '#FFFFFF' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-pink)' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#FFFFFF' }}
+              style={{ color: WHITE, background: 'none', border: 'none', cursor: 'pointer' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = PINK }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = WHITE }}
             >
               Clear ✕
             </button>
@@ -90,87 +106,84 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
 
         {/* Badge Grid — 10 per row, 2 rows */}
         <div className="p-3">
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(10, 1fr)',
-            gap: '12px 10px',
-            alignItems: 'center',
-            justifyItems: 'center',
-          }}
-        >
-          {CLUBS.map((club) => {
-            const isSelected = selectedClub === club.slug
-            const hasOtherSelected = !!selectedClub && selectedClub !== club.slug
-            const opacity = isSelected ? 1 : hasOtherSelected ? 0.4 : 0.7
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(10, 1fr)',
+              gap: '12px 10px',
+              alignItems: 'center',
+              justifyItems: 'center',
+            }}
+          >
+            {CLUBS.map((club) => {
+              const isSelected = selectedClub === club.slug
 
-            return (
-              <button
-                key={club.slug}
-                onClick={() => handleClubSelect(club.slug)}
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '50%',
-                  opacity: selectedClub && selectedClub !== club.slug ? 0.4 : 1,
-                  transform: selectedClub === club.slug ? 'scale(1.15)' : 'scale(1)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  border: '2px solid transparent',
-                  backgroundColor: 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 0,
-                  filter: selectedClub === club.slug ? 'drop-shadow(0 0 4px var(--plh-teal))' : 'none',
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.opacity = '1'
-                  if (!isSelected) {
-                    el.style.transform = 'scale(1.15)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.transform = selectedClub === club.slug ? 'scale(1.15)' : 'scale(1)'
-                  el.style.opacity = (selectedClub && selectedClub !== club.slug ? '0.4' : '1')
-                }}
-                title={club.name}
-              >
-                <Image
-                  src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
-                  alt={club.name}
-                  width={42}
-                  height={42}
-                  unoptimized
-                  className="w-full h-full object-contain"
-                />
-              </button>
-            )
-          })}
-        </div>
+              return (
+                <button
+                  key={club.slug}
+                  onClick={() => handleClubSelect(club.slug)}
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '50%',
+                    opacity: selectedClub && selectedClub !== club.slug ? 0.4 : 1,
+                    transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    border: '2px solid transparent',
+                    backgroundColor: 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
+                    filter: isSelected ? `drop-shadow(0 0 4px ${TEAL})` : 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.opacity = '1'
+                    if (!isSelected) el.style.transform = 'scale(1.15)'
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.transform = isSelected ? 'scale(1.15)' : 'scale(1)'
+                    el.style.opacity = (selectedClub && selectedClub !== club.slug ? '0.4' : '1')
+                  }}
+                  title={club.name}
+                >
+                  <Image
+                    src={`https://resources.premierleague.com/premierleague/badges/t${club.id}.png`}
+                    alt={club.name}
+                    width={42}
+                    height={42}
+                    unoptimized
+                    className="w-full h-full object-contain"
+                  />
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
 
-      {/* MOBILE VERSION — compact, subtle */}
+      {/* MOBILE VERSION */}
       <div className="md:hidden mt-3 mb-3">
         {/* Trigger */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="w-full rounded-[10px] transition-all"
+          className="w-full"
           style={{
-            background: 'var(--plh-card)',
+            background: CARD,
             padding: '10px 14px',
-            border: '1px solid var(--plh-border)',
+            border: `1px solid ${BORDER}`,
             borderRadius: mobileOpen ? '10px 10px 0 0' : '10px',
+            cursor: 'pointer',
           }}
         >
           <div className="flex items-center gap-2">
             {isAllActive ? (
               <>
                 <span className="text-base">⚽</span>
-                <span className="text-sm" style={{ color: 'var(--plh-text-100)' }}>All clubs</span>
+                <span className="text-sm" style={{ color: WHITE }}>All clubs</span>
               </>
             ) : (
               <>
@@ -182,13 +195,13 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                   unoptimized
                   className="w-[22px] h-[22px]"
                 />
-                <span className="text-sm" style={{ color: 'var(--plh-text-100)' }}>{selectedClubData?.name}</span>
+                <span className="text-sm" style={{ color: WHITE }}>{selectedClubData?.name}</span>
               </>
             )}
             <span
               className="ml-auto transition-transform text-xs"
               style={{
-                color: 'var(--plh-text-40)',
+                color: W40,
                 transform: mobileOpen ? 'rotate(180deg)' : 'rotate(0deg)',
               }}
             >
@@ -202,8 +215,8 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
           <div
             className="rounded-b-[10px] overflow-hidden"
             style={{
-              background: 'var(--plh-card)',
-              border: '1px solid var(--plh-border)',
+              background: CARD,
+              border: `1px solid ${BORDER}`,
               borderTop: 'none',
               animation: 'scaleDown 0.2s ease-out',
               transformOrigin: 'top',
@@ -217,7 +230,6 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
               }
             `}</style>
 
-            {/* Badge Grid - 5 per row, 4 rows */}
             <div
               style={{
                 display: 'grid',
@@ -238,10 +250,10 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
                       width: '42px',
                       height: '42px',
                       borderRadius: '50%',
-                      opacity: opacity,
+                      opacity,
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      border: isSelected ? '2px solid var(--plh-gold)' : '2px solid transparent',
+                      border: isSelected ? `2px solid ${GOLD}` : '2px solid transparent',
                       backgroundColor: 'transparent',
                       display: 'flex',
                       alignItems: 'center',
@@ -264,13 +276,12 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
               })}
             </div>
 
-            {/* Clear button */}
             {selectedClub && (
               <div style={{ textAlign: 'center', marginTop: '12px' }}>
                 <button
                   onClick={handleClear}
                   style={{
-                    color: 'var(--plh-gold)',
+                    color: GOLD,
                     fontSize: '12px',
                     cursor: 'pointer',
                     background: 'none',
