@@ -30,7 +30,8 @@ const PLACEHOLDER_FEED = [
     thumb: "https://picsum.photos/seed/tfh1/120/80",
     headline: "Gravenberch signs new long-term contract at Liverpool",
     summary: "Midfield signing of the season commits his future to Anfield. At this point Liverpool's squad feels deliberately assembled.",
-    url: null,
+    content: "Midfield signing of the season commits his future to Anfield.",
+    url: "https://bbc.com/sport/football/example1",
   },
   {
     id: "n1", pub: "SKY SPORTS", score: 91, time: "2h ago",
@@ -38,7 +39,8 @@ const PLACEHOLDER_FEED = [
     thumb: "https://picsum.photos/seed/tfh2/120/80",
     headline: "Atlético thrash Spurs 5–2 in Champions League first leg",
     summary: "Spurs were taken apart in Madrid. Solanke confirmed afterwards they have 'no more excuses', which is one way to put it.",
-    url: null,
+    content: "Spurs were taken apart in Madrid.",
+    url: "https://skysports.com/football/example2",
   },
   {
     id: "n2", pub: "THE GUARDIAN", score: 88, time: "3h ago",
@@ -46,7 +48,8 @@ const PLACEHOLDER_FEED = [
     thumb: "https://picsum.photos/seed/tfh3/120/80",
     headline: "Tudor's job under serious threat as Spurs consider replacements",
     summary: "The results have made the decision for them. The question now is timing.",
-    url: null,
+    content: "The results have made the decision for them.",
+    url: "https://theguardian.com/football/example3",
   },
   {
     id: "n3", pub: "ESPN", score: 85, time: "4h ago",
@@ -54,7 +57,8 @@ const PLACEHOLDER_FEED = [
     thumb: "https://picsum.photos/seed/tfh4/120/80",
     headline: "Edu asked to stay away from Nottingham Forest, sources say",
     summary: "Whatever is happening at the City Ground has the unmistakable energy of things that will become a documentary.",
-    url: null,
+    content: "Whatever is happening at the City Ground has the unmistakable energy of things that will become a documentary.",
+    url: "https://espn.com/football/example4",
   },
   {
     id: "n4", pub: "TALKSPORT", score: 82, time: "5h ago",
@@ -62,7 +66,8 @@ const PLACEHOLDER_FEED = [
     thumb: "https://picsum.photos/seed/tfh5/120/80",
     headline: "Haaland fitness doubt: Guardiola cautious ahead of Real Madrid",
     summary: "The words 'hopes' and 'we'll see' were both deployed. City fans refreshing injury trackers every 40 minutes know the drill.",
-    url: null,
+    content: "The words 'hopes' and 'we'll see' were both deployed.",
+    url: "https://talksport.com/football/example5",
   },
 ];
 
@@ -95,6 +100,7 @@ export default function FeedPage() {
               thumb: p.imageUrl ?? `https://picsum.photos/seed/${p.id}/120/80`,
               headline: p.title ?? "",
               summary: p.summary ?? null,
+              content: p.content ?? null,
               url: p.url ?? null,
             }))
           );
@@ -111,8 +117,8 @@ export default function FeedPage() {
     rank: i + 1,
     pub: item.pub,
     score: item.score,
-    thumb: item.thumb,
     headline: item.headline,
+    url: item.url,
   }));
 
   return (
@@ -125,13 +131,7 @@ export default function FeedPage() {
     >
       <Navbar />
 
-      <main
-        style={{
-          maxWidth: 430,
-          margin: "0 auto",
-          padding: "24px 16px 80px",
-        }}
-      >
+      <main className="tfh-page">
         {/* ── Page header ── */}
         <div
           style={{
@@ -217,6 +217,7 @@ export default function FeedPage() {
               publisher={item.pub}
               headline={item.headline}
               summary={item.summary}
+              content={item.content}
               score={item.score}
               time={item.time}
               imgSrc={item.img}
@@ -236,6 +237,7 @@ export default function FeedPage() {
               publisher={item.pub}
               headline={item.headline}
               summary={item.summary}
+              content={item.content}
               score={item.score}
               time={item.time}
               imgSrc={item.img}
@@ -258,6 +260,7 @@ export default function FeedPage() {
               publisher={item.pub}
               headline={item.headline}
               summary={item.summary}
+              content={item.content}
               score={item.score}
               time={item.time}
               imgSrc={item.img}

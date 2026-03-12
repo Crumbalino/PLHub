@@ -1,14 +1,13 @@
 // ─────────────────────────────────────────────────────────────────
 // The "Get Caught Up" module — top 5 stories by Hub Index score.
-// First element in the feed. Links down to the corresponding news card.
+// Numbered list (01-05) with scores, scrolls to feed cards on click.
 // ─────────────────────────────────────────────────────────────────
 
 "use client";
 
 import { useInView } from "@/hooks/useInView";
-import TypeLabel from "./TypeLabel";
 import { useTheme } from "@/lib/theme-context";
-import { getPublisherColor } from "@/lib/publisher-colors";
+import { getPublisherColor, getPublisherName } from "@/lib/publisher-colors";
 import { FONT, SIZE, WEIGHT, RADIUS, SPACE } from "@/lib/tokens";
 import { hexToRgba } from "@/lib/utils";
 
@@ -17,8 +16,8 @@ interface SnapshotStory {
   rank: number;
   pub: string;
   score: number;
-  thumb: string;
   headline: string;
+  url?: string;
 }
 
 interface SnapshotBlockProps {
@@ -46,139 +45,163 @@ export default function SnapshotBlock({
         borderRadius: RADIUS.xxl,
         overflow: "hidden",
         marginBottom: SPACE[4],
+        padding: "16px",
         opacity: inView ? 1 : 0,
         transform: inView ? "translateY(0)" : "translateY(12px)",
         transition: "opacity 0.5s ease, transform 0.5s ease",
       }}
     >
-      {/* Header row */}
+      {/* ── Snapshot Section Header ── */}
       <div
         style={{
-          padding: "12px 16px 11px",
-          borderBottom: `1px solid ${tokens.border}`,
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          background: hexToRgba(tokens.text100, 0.015),
+          alignItems: "baseline",
+          marginBottom: "12px",
+          paddingBottom: "8px",
+          borderBottom: `1px solid ${hexToRgba(tokens.teal, 0.25)}`,
         }}
       >
-        <TypeLabel label="Get Caught Up" color={tokens.teal} />
-        <div
+        <span
           style={{
-            fontFamily: FONT.mono,
-            fontSize: SIZE.label2xs,
-            color: hexToRgba(tokens.text100, 0.22),
-            letterSpacing: "1px",
+            fontFamily: FONT.sora,
+            fontWeight: WEIGHT.bold,
+            fontSize: "11px",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#FFFFFF",
           }}
         >
-          {gameweek} · TOP 5
-        </div>
+          The Snapshot
+        </span>
+        <span
+          style={{
+            fontFamily: FONT.mono,
+            fontSize: "10px",
+            color: tokens.teal,
+            opacity: 0.7,
+          }}
+        >
+          Top 5 · Today
+        </span>
       </div>
 
-      {/* Story rows */}
-      {stories.map((s, i) => {
-        const isTop = i === 0;
-        const pubColor = getPublisherColor(s.pub);
-        return (
-          <div
-            key={s.id}
-            onClick={() => scrollTo(s.id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={e => e.key === "Enter" && scrollTo(s.id)}
-            style={{
-              padding: "9px 14px",
-              borderBottom: i < 4 ? `1px solid ${hexToRgba(tokens.text100, 0.04)}` : "none",
-              display: "flex",
-              alignItems: "center",
-              gap: SPACE[2] + 2,
-              cursor: "pointer",
-              opacity: inView ? 1 : 0,
-              transform: inView ? "translateX(0)" : "translateX(-8px)",
-              transition: `opacity 0.4s ease ${0.1 + i * 0.06}s, transform 0.4s ease ${0.1 + i * 0.06}s, background 0.15s`,
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = hexToRgba(tokens.text100, 0.025))}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-          >
-            {/* Rank number */}
+      {/* ── Stories List ── */}
+      <div>
+        {stories.map((s, i) => {
+          const pubColor = getPublisherColor(s.pub);
+          const pubName = s.url ? getPublisherName(s.url) : s.pub;
+          return (
             <div
+              key={s.id}
+              onClick={() => scrollTo(s.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === "Enter" && scrollTo(s.id)}
               style={{
-                fontFamily: FONT.mono,
-                fontSize: SIZE.labelSm,
-                fontWeight: WEIGHT.bold,
-                color: isTop ? tokens.teal : hexToRgba(tokens.text100, 0.18),
-                minWidth: 14,
-                textAlign: "center",
-                flexShrink: 0,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "10px 0",
+                borderBottom:
+                  i < stories.length - 1
+                    ? `1px solid ${hexToRgba(tokens.text100, 0.07)}`
+                    : "none",
+                opacity: inView ? 1 : 0,
+                transform: inView ? "translateX(0)" : "translateX(-8px)",
+                transition: `opacity 0.4s ease ${0.1 + i * 0.06}s, transform 0.4s ease ${0.1 + i * 0.06}s, background 0.15s ease`,
               }}
+              onMouseEnter={e => (e.currentTarget.style.background = hexToRgba(tokens.text100, 0.03))}
+              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
             >
-              {s.rank}
-            </div>
-
-            {/* Publisher name in source colour */}
-            <div
-              style={{
-                fontFamily: FONT.mono,
-                fontSize: SIZE.label2xs,
-                fontWeight: WEIGHT.bold,
-                letterSpacing: "2px",
-                textTransform: "uppercase",
-                color: pubColor,
-                flexShrink: 0,
-              }}
-            >
-              {s.pub}
-            </div>
-
-            {/* Headline */}
-            <div
-              style={{
-                fontFamily: FONT.sora,
-                fontSize: SIZE.bodySm,
-                fontWeight: isTop ? WEIGHT.bold : WEIGHT.medium,
-                color: isTop
-                  ? hexToRgba(tokens.text100, 0.92)
-                  : hexToRgba(tokens.text100, 0.60),
-                flex: 1,
-                lineHeight: 1.3,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {s.headline}
-            </div>
-
-            {/* Thumbnail */}
-            <div
-              style={{
-                width: 48,
-                height: 34,
-                borderRadius: RADIUS.sm - 1,
-                overflow: "hidden",
-                flexShrink: 0,
-                background: tokens.elevated,
-                border: isTop
-                  ? `1px solid ${hexToRgba(tokens.teal, 0.3)}`
-                  : `1px solid ${tokens.borderCard}`,
-              }}
-            >
-              <img
-                src={s.thumb}
-                alt=""
+              {/* ── Rank Number (teal, large) ── */}
+              <span
                 style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: isTop
-                    ? "brightness(0.9) saturate(0.8)"
-                    : "brightness(0.7) saturate(0.8)",
+                  fontFamily: FONT.mono,
+                  fontWeight: WEIGHT.bold,
+                  fontSize: "28px",
+                  color: tokens.teal,
+                  lineHeight: 1,
+                  minWidth: "36px",
+                  opacity: 0.9,
                 }}
-              />
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+
+              {/* ── Headline + Publisher (middle) ── */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: FONT.sora,
+                    fontWeight: WEIGHT.semibold,
+                    fontSize: "14px",
+                    color: "#FFFFFF",
+                    lineHeight: 1.35,
+                    marginBottom: "4px",
+                    overflow: "hidden",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  {s.headline}
+                </div>
+                <span
+                  style={{
+                    fontFamily: FONT.sora,
+                    fontSize: "11px",
+                    color: pubColor,
+                    fontWeight: WEIGHT.semibold,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  {pubName}
+                </span>
+              </div>
+
+              {/* ── Score Badge (right) ── */}
+              {s.score > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "2px",
+                    flexShrink: 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: FONT.mono,
+                      fontWeight: WEIGHT.bold,
+                      fontSize: "18px",
+                      color: "#D4A843",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {s.score}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: FONT.mono,
+                      fontSize: "8px",
+                      color: "#D4A843",
+                      opacity: 0.6,
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    INDEX
+                  </span>
+                </div>
+              )}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

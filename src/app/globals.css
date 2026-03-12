@@ -60,3 +60,33 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 /* ── Minimum touch targets ── */
 button, a, [role="button"] { min-height: 44px; min-width: 44px; }
+
+/* ── Page layout: centred column ── */
+.tfh-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+}
+
+@media (min-width: 768px) {
+  .tfh-page {
+    padding: 32px 24px 80px;
+  }
+}
+
+/* ── Snapshot responsive grid ── */
+.snapshot-grid-mobile {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .snapshot-grid-mobile {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .snapshot-grid-mobile {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}

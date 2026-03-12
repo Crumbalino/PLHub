@@ -53,9 +53,10 @@ export const ALWAYS_HIDE = [
   'cameron trilogy', 'red bull chief', 'sprinkler pitch',
   'eric ramsay',
   'american football', 'champions league cash', 'world cup',
-  // Horse racing
-  'horse racing', 'racing tips', 'grand national', 'cheltenham',
+  // Horse racing (comprehensive filter)
+  'horse racing', 'racing tips', 'grand national', 'cheltenham', 'cheltenham festival',
   'horse race', 'jockey', 'flat racing', 'jump racing',
+  'nap of the day', 'each way', 'ante-post', 'ascot', 'goodwood', 'racing post',
   // Snooker
   'snooker', 'world snooker', 'crucible',
   // F1
