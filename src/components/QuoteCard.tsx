@@ -75,7 +75,7 @@ export default function QuoteCard({
             fontSize: SIZE.bodyLg,
             fontWeight: WEIGHT.medium,
             fontStyle: "italic",
-            color: hexToRgba(tokens.text100, 0.9),
+            color: '#FFFFFF',
             lineHeight: 1.6,
             margin: 0,
             padding: 0,

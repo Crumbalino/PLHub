@@ -14,9 +14,9 @@ const COLORS = {
   gold: '#D4A843',
   teal: '#3AAFA9',
   text: '#FAF5F0',
-  textMuted: 'rgba(250,245,240,0.6)',
-  textFaint: 'rgba(250,245,240,0.4)',
-  border: 'rgba(250,245,240,0.1)',
+  textMuted: '#FFFFFF',
+  textFaint: '#FFFFFF',
+  border: '#FFFFFF',
 }
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'

@@ -79,9 +79,9 @@ export default function ClubFilterBar({ currentClub }: { currentClub?: string })
             <button
               onClick={handleClear}
               className="text-[11px] font-medium transition-colors duration-150"
-              style={{ color: 'rgba(250,245,240,0.5)' }}
+              style={{ color: '#FFFFFF' }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--plh-pink)' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(250,245,240,0.5)' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#FFFFFF' }}
             >
               Clear ✕
             </button>

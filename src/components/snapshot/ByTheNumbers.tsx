@@ -356,7 +356,7 @@ export default function ByTheNumbers({ club = null }: ByTheNumbersProps) {
 
   if (isLoading) return (
     <div style={{ borderRadius: '12px', border: '1px solid rgba(250,245,240,0.06)', background: 'var(--plh-card)', padding: '20px', opacity: 0.5 }}>
-      <div style={{ height: '120px', background: 'rgba(250,245,240,0.04)', borderRadius: '8px', animation: 'pulse 2s infinite' }} />
+      <div style={{ height: '120px', background: '#FFFFFF', borderRadius: '8px', animation: 'pulse 2s infinite' }} />
     </div>
   )
 

@@ -131,7 +131,7 @@ function Principle({
             style={{
               fontSize: '16px',
               lineHeight: 1.75,
-              color: 'rgba(250,245,240,0.8)',
+              color: '#FFFFFF',
               margin: 0,
               fontWeight: 300,
               fontFamily: "'Sora', sans-serif",

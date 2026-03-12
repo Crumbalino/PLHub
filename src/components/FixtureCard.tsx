@@ -98,7 +98,7 @@ export default function FixtureCard({
               fontFamily: FONT.sora,
               fontSize: SIZE.headSm,
               fontWeight: WEIGHT.bold,
-              color: hexToRgba(tokens.text100, 0.95),
+              color: '#FFFFFF',
             }}
           >
             {homeTeam}
@@ -107,7 +107,7 @@ export default function FixtureCard({
             style={{
               fontFamily: FONT.mono,
               fontSize: SIZE.label2xs,
-              color: hexToRgba(tokens.text100, 0.28),
+              color: '#FFFFFF',
               letterSpacing: "1.5px",
               marginTop: 3,
             }}
@@ -137,7 +137,7 @@ export default function FixtureCard({
               fontFamily: FONT.sora,
               fontSize: SIZE.headSm,
               fontWeight: WEIGHT.bold,
-              color: hexToRgba(tokens.text100, 0.95),
+              color: '#FFFFFF',
             }}
           >
             {awayTeam}
@@ -146,7 +146,7 @@ export default function FixtureCard({
             style={{
               fontFamily: FONT.mono,
               fontSize: SIZE.label2xs,
-              color: hexToRgba(tokens.text100, 0.28),
+              color: '#FFFFFF',
               letterSpacing: "1.5px",
               marginTop: 3,
             }}
@@ -160,7 +160,7 @@ export default function FixtureCard({
         style={{
           fontFamily: FONT.sora,
           fontSize: SIZE.bodySm,
-          color: hexToRgba(tokens.text100, 0.42),
+          color: '#FFFFFF',
           lineHeight: 1.5,
           marginBottom: SPACE[2],
         }}
@@ -183,7 +183,7 @@ export default function FixtureCard({
             marginTop: 5,
             fontFamily: FONT.sora,
             fontSize: SIZE.bodySm,
-            color: hexToRgba(tokens.text100, 0.58),
+            color: '#FFFFFF',
             lineHeight: 1.65,
           }}
         >

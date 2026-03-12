@@ -79,7 +79,7 @@ export default function Navbar() {
             border: "none",
             cursor: "pointer",
             fontSize: SIZE.headLg,
-            color: hexToRgba(tokens.text100, 0.4),
+            color: '#FFFFFF',
             lineHeight: 1,
             padding: 8,
             borderRadius: RADIUS.sm,
@@ -91,7 +91,7 @@ export default function Navbar() {
             justifyContent: "center",
           }}
           onMouseEnter={e => (e.currentTarget.style.color = tokens.teal)}
-          onMouseLeave={e => (e.currentTarget.style.color = hexToRgba(tokens.text100, 0.4))}
+          onMouseLeave={e => (e.currentTarget.style.color = '#FFFFFF')}
         >
           {mode === "light" ? "☾" : "☀"}
         </button>

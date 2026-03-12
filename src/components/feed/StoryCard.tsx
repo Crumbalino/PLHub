@@ -160,7 +160,7 @@ export default function StoryCard({
           <div style={{
             fontFamily: "'Sora', sans-serif", fontWeight: 700,
             fontSize: '64px', lineHeight: 0.8,
-            color: WHITE, opacity: 0.35,
+            color: WHITE,
             marginBottom: '8px', userSelect: 'none',
           }}>
             "
@@ -205,7 +205,7 @@ export default function StoryCard({
                 {home}
               </span>
             )}
-            {home && <span style={{ color: WHITE, opacity: 0.4 }}>·</span>}
+            {home && <span style={{ color: WHITE }}>·</span>}
             <span style={{
               fontFamily: "'JetBrains Mono', monospace",
               fontWeight: 700, fontSize: '40px', lineHeight: 1,
@@ -213,7 +213,7 @@ export default function StoryCard({
             }}>
               {score}
             </span>
-            {away && <span style={{ color: WHITE, opacity: 0.4 }}>·</span>}
+            {away && <span style={{ color: WHITE }}>·</span>}
             {away && (
               <span style={{
                 fontFamily: "'Sora', sans-serif",
@@ -227,7 +227,7 @@ export default function StoryCard({
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: '9px', fontWeight: 700,
             textTransform: 'uppercase', letterSpacing: '0.15em',
-            color: WHITE, opacity: 0.5,
+            color: WHITE,
           }}>
             FULL TIME
           </span>

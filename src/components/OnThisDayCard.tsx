@@ -99,7 +99,7 @@ export default function OnThisDayCard({
           fontFamily: FONT.sora,
           fontSize: SIZE.bodyLg,
           fontWeight: WEIGHT.semibold,
-          color: hexToRgba(tokens.text100, 0.93),
+          color: '#FFFFFF',
           lineHeight: 1.45,
           margin: "13px 0 0",
           maxWidth: "80%",
@@ -123,7 +123,7 @@ export default function OnThisDayCard({
             paddingTop: 11,
             fontFamily: FONT.sora,
             fontSize: SIZE.bodySm,
-            color: hexToRgba(tokens.text100, 0.58),
+            color: '#FFFFFF',
             lineHeight: 1.65,
           }}
         >

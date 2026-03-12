@@ -140,7 +140,7 @@ export default function FeedPage() {
             alignItems: "flex-end",
             marginBottom: SPACE[5],
             paddingBottom: 14,
-            borderBottom: `1px solid ${hexToRgba(tokens.text100, 0.05)}`,
+            borderBottom: `1px solid ${'#FFFFFF'}`,
           }}
         >
           <div>
@@ -161,7 +161,7 @@ export default function FeedPage() {
                 fontFamily: FONT.sora,
                 fontSize: SIZE.headXl,
                 fontWeight: WEIGHT.extrabold,
-                color: hexToRgba(tokens.text100, 0.97),
+                color: '#FFFFFF',
                 letterSpacing: "-0.5px",
               }}
             >
@@ -172,7 +172,7 @@ export default function FeedPage() {
             style={{
               fontFamily: FONT.mono,
               fontSize: SIZE.labelXs,
-              color: hexToRgba(tokens.text100, 0.22),
+              color: '#FFFFFF',
               letterSpacing: "1px",
             }}
           >
@@ -192,19 +192,19 @@ export default function FeedPage() {
             marginBottom: 14,
           }}
         >
-          <div style={{ flex: 1, height: 1, background: hexToRgba(tokens.text100, 0.04) }} />
+          <div style={{ flex: 1, height: 1, background: '#FFFFFF' }} />
           <div
             style={{
               fontFamily: FONT.mono,
               fontSize: SIZE.label2xs,
               letterSpacing: "2px",
               textTransform: "uppercase",
-              color: hexToRgba(tokens.text100, 0.18),
+              color: '#FFFFFF',
             }}
           >
             The Feed
           </div>
-          <div style={{ flex: 1, height: 1, background: hexToRgba(tokens.text100, 0.04) }} />
+          <div style={{ flex: 1, height: 1, background: '#FFFFFF' }} />
         </div>
 
         {/* ── Feed cards ── */}

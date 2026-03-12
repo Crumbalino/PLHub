@@ -148,7 +148,7 @@ function ModuleStoryRow({ label, story }: { label: string; story: SnapshotStory 
 function ModuleQuote({ quote, attribution, context }: { quote: string; attribution: string; context: string | null }) {
   return (
     <div style={{ background: 'rgba(232,64,128,0.07)', border: '1px solid rgba(232,64,128,0.2)', borderRadius: '8px', padding: '14px' }}>
-      <div style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '36px', lineHeight: 0.8, color: PINK, opacity: 0.35, marginBottom: '8px', userSelect: 'none' }}>"</div>
+      <div style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '36px', lineHeight: 0.8, color: PINK, marginBottom: '8px', userSelect: 'none' }}>"</div>
       <p style={{ fontFamily: "'Sora', sans-serif", fontStyle: 'italic', fontSize: '13px', color: WHITE, lineHeight: 1.55, margin: '0 0 8px 0', fontWeight: 500 }}>{quote}</p>
       <p style={{ fontFamily: "'Sora', sans-serif", fontSize: '11px', color: W70, margin: 0 }}>
         — {attribution}{context && <span style={{ color: W40 }}> · {context}</span>}

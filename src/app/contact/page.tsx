@@ -89,7 +89,7 @@ export default function ContactPage() {
         <p
           style={{
             fontSize: '15px',
-            color: 'rgba(250,245,240,0.6)',
+            color: '#FFFFFF',
             fontWeight: 300,
             fontFamily: "'Sora', sans-serif",
             margin: 0,
@@ -134,7 +134,7 @@ function Section({ title, body }: { title: string; body: string }) {
         style={{
           fontSize: '16px',
           lineHeight: 1.75,
-          color: 'rgba(250,245,240,0.8)',
+          color: '#FFFFFF',
           fontWeight: 300,
           margin: 0,
           fontFamily: "'Sora', sans-serif",

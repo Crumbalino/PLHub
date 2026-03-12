@@ -87,11 +87,11 @@ export default function NewsCard({
           gap: "12px",
           alignItems: "flex-start",
           cursor: "pointer",
-          background: hexToRgba(tokens.text100, 0.01),
+          background: '#FFFFFF',
           transition: `background ${DURATION.fast}ms ease`,
         }}
-        onMouseEnter={e => (e.currentTarget.style.background = hexToRgba(tokens.text100, 0.025))}
-        onMouseLeave={e => (e.currentTarget.style.background = hexToRgba(tokens.text100, 0.01))}
+        onMouseEnter={e => (e.currentTarget.style.background = '#FFFFFF')}
+        onMouseLeave={e => (e.currentTarget.style.background = '#FFFFFF')}
       >
         {/* Left: text content */}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -214,7 +214,7 @@ export default function NewsCard({
         <div
           style={{
             padding: "0 16px 13px",
-            borderTop: `1px solid ${hexToRgba(tokens.text100, 0.04)}`,
+            borderTop: `1px solid ${'#FFFFFF'}`,
           }}
         >
           {/* Summary or first sentence */}
@@ -267,7 +267,7 @@ export default function NewsCard({
             style={{
               fontFamily: FONT.mono,
               fontSize: SIZE.labelXs,
-              color: hexToRgba(tokens.text100, 0.20),
+              color: '#FFFFFF',
               letterSpacing: "1px",
               marginTop: SPACE[2],
             }}

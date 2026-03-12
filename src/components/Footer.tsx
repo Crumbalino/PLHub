@@ -101,7 +101,7 @@ export default function Footer() {
               borderRadius: '50%',
               border: '1px solid rgba(250,245,240,0.15)',
               background: 'transparent',
-              color: 'rgba(250,245,240,0.4)',
+              color: '#FFFFFF',
               fontSize: '16px',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
@@ -114,8 +114,8 @@ export default function Footer() {
             }}
             onMouseLeave={(e) => {
               const btn = e.currentTarget as HTMLElement;
-              btn.style.borderColor = 'rgba(250,245,240,0.15)';
-              btn.style.color = 'rgba(250,245,240,0.4)';
+              btn.style.borderColor = '#FFFFFF';
+              btn.style.color = '#FFFFFF';
               btn.style.background = 'transparent';
             }}
           >

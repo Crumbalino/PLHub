@@ -106,13 +106,13 @@ export default function SnapshotBlock({
                 padding: "10px 0",
                 borderBottom:
                   i < stories.length - 1
-                    ? `1px solid ${hexToRgba(tokens.text100, 0.07)}`
+                    ? `1px solid ${'#FFFFFF'}`
                     : "none",
                 opacity: inView ? 1 : 0,
                 transform: inView ? "translateX(0)" : "translateX(-8px)",
                 transition: `opacity 0.4s ease ${0.1 + i * 0.06}s, transform 0.4s ease ${0.1 + i * 0.06}s, background 0.15s ease`,
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = hexToRgba(tokens.text100, 0.03))}
+              onMouseEnter={e => (e.currentTarget.style.background = '#FFFFFF')}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
             >
               {/* ── Rank Number (teal, large) ── */}

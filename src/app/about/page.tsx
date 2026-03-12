@@ -103,7 +103,7 @@ function P({
       style={{
         fontSize: '17px',
         lineHeight: 1.75,
-        color: strong ? 'var(--plh-text-100)' : 'rgba(250,245,240,0.8)',
+        color: strong ? 'var(--plh-text-100)' : '#FFFFFF',
         fontWeight: strong ? 600 : 300,
         fontFamily: "'Sora', sans-serif",
         margin: 0,

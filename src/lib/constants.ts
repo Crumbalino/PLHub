@@ -9,17 +9,17 @@ export const COLORS = {
   bgPage: '#0D1B2A',
   bgCard: '#112238',
   bgCardHover: '#162D45',
-  bgCardExpanded: 'rgba(250,245,240,0.03)',
+  bgCardExpanded: '#FFFFFF',
   brandPink: '#E84080',
   brandGold: '#D4A843',
   brandGoldMuted: 'rgba(212,168,67,0.5)',
   brandTeal: '#3AAFA9',
   textPrimary: '#FAF5F0',
-  textSecondary: 'rgba(250,245,240,0.7)',
-  textMuted: 'rgba(250,245,240,0.5)',
-  textGhost: 'rgba(250,245,240,0.4)',
-  border: 'rgba(250,245,240,0.05)',
-  borderSubtle: 'rgba(250,245,240,0.1)',
+  textSecondary: '#FFFFFF',
+  textMuted: '#FFFFFF',
+  textGhost: '#FFFFFF',
+  border: '#FFFFFF',
+  borderSubtle: '#FFFFFF',
 } as const
 
 // --- Source Colours (v2.2 editorial palette) ---

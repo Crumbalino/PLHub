@@ -15,7 +15,7 @@ export default function PageLayout({ headline, subheading, children }: PageLayou
           {headline}
         </h1>
         {subheading && (
-          <p style={{ fontSize: '18px', color: 'rgba(250,245,240,0.7)', lineHeight: 1.6, fontFamily: "'Sora', sans-serif", fontWeight: 300 }}>
+          <p style={{ fontSize: '18px', color: '#FFFFFF', lineHeight: 1.6, fontFamily: "'Sora', sans-serif", fontWeight: 300 }}>
             {subheading}
           </p>
         )}

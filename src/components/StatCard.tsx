@@ -119,7 +119,7 @@ export default function StatCard({
               fontFamily: FONT.sora,
               fontSize: SIZE.bodySm,
               fontWeight: WEIGHT.semibold,
-              color: hexToRgba(tokens.text100, 0.85),
+              color: '#FFFFFF',
               lineHeight: 1.3,
             }}
           >
@@ -132,7 +132,7 @@ export default function StatCard({
         style={{
           fontFamily: FONT.sora,
           fontSize: SIZE.labelSm,
-          color: hexToRgba(tokens.text100, 0.28),
+          color: '#FFFFFF',
           marginBottom: revealed ? 14 : 0,
         }}
       >
@@ -154,7 +154,7 @@ export default function StatCard({
             marginTop: 2,
             fontFamily: FONT.sora,
             fontSize: SIZE.bodySm,
-            color: hexToRgba(tokens.text100, 0.62),
+            color: '#FFFFFF',
             lineHeight: 1.65,
           }}
         >

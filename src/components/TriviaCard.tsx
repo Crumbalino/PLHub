@@ -81,7 +81,7 @@ export default function TriviaCard({
           fontFamily: FONT.sora,
           fontSize: SIZE.bodyLg,
           fontWeight: WEIGHT.semibold,
-          color: hexToRgba(tokens.text100, 0.93),
+          color: '#FFFFFF',
           lineHeight: 1.45,
           margin: "13px 0 15px",
           maxWidth: "78%",
@@ -165,7 +165,7 @@ export default function TriviaCard({
             style={{
               fontFamily: FONT.sora,
               fontSize: SIZE.bodySm,
-              color: hexToRgba(tokens.text100, 0.58),
+              color: '#FFFFFF',
               lineHeight: 1.65,
             }}
           >

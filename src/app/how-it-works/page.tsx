@@ -118,7 +118,7 @@ function P({ children }: { children: React.ReactNode }) {
         fontSize: '17px',
         lineHeight: 1.75,
         margin: 0,
-        color: 'rgba(250,245,240,0.8)',
+        color: '#FFFFFF',
         fontWeight: 300,
         fontFamily: "'Sora', sans-serif",
       }}
@@ -156,7 +156,7 @@ function IndexFactors() {
           <span
             style={{
               fontSize: '16px',
-              color: 'rgba(250,245,240,0.8)',
+              color: '#FFFFFF',
               fontFamily: "'Sora', sans-serif",
               lineHeight: 1.6,
             }}
@@ -201,7 +201,7 @@ function DoNots() {
           <span
             style={{
               fontSize: '16px',
-              color: 'rgba(250,245,240,0.8)',
+              color: '#FFFFFF',
               fontFamily: "'Sora', sans-serif",
               lineHeight: 1.6,
             }}
