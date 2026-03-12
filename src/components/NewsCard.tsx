@@ -87,11 +87,11 @@ export default function NewsCard({
           gap: "12px",
           alignItems: "flex-start",
           cursor: "pointer",
-          background: '#FFFFFF',
+          background: hexToRgba(tokens.text100, 0.01),
           transition: `background ${DURATION.fast}ms ease`,
         }}
-        onMouseEnter={e => (e.currentTarget.style.background = '#FFFFFF')}
-        onMouseLeave={e => (e.currentTarget.style.background = '#FFFFFF')}
+        onMouseEnter={e => (e.currentTarget.style.background = hexToRgba(tokens.text100, 0.025))}
+        onMouseLeave={e => (e.currentTarget.style.background = hexToRgba(tokens.text100, 0.01))}
       >
         {/* Left: text content */}
         <div style={{ flex: 1, minWidth: 0 }}>

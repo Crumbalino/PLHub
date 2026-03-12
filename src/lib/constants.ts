@@ -9,7 +9,7 @@ export const COLORS = {
   bgPage: '#0D1B2A',
   bgCard: '#112238',
   bgCardHover: '#162D45',
-  bgCardExpanded: '#FFFFFF',
+  bgCardExpanded: 'rgba(250,245,240,0.03)',
   brandPink: '#E84080',
   brandGold: '#D4A843',
   brandGoldMuted: 'rgba(212,168,67,0.5)',
@@ -18,8 +18,8 @@ export const COLORS = {
   textSecondary: '#FFFFFF',
   textMuted: '#FFFFFF',
   textGhost: '#FFFFFF',
-  border: '#FFFFFF',
-  borderSubtle: '#FFFFFF',
+  border: 'rgba(250,245,240,0.05)',
+  borderSubtle: 'rgba(250,245,240,0.1)',
 } as const
 
 // --- Source Colours (v2.2 editorial palette) ---

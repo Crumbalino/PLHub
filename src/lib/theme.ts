@@ -130,8 +130,8 @@ export const transitions = {
 // ──────────────────────────────────────────
 
 export const borders = {
-  dark: '#FFFFFF',
-  darkHover: '#FFFFFF',
+  dark: 'rgba(250,245,240,0.05)',
+  darkHover: 'rgba(250,245,240,0.1)',
   light: 'rgba(13,27,42,0.08)',
   lightHover: 'rgba(13,27,42,0.12)',
 } as const;
