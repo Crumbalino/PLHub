@@ -2,6 +2,15 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 
+// ── Brand tokens (inline — CSS vars are not injected) ──
+const CARD    = '#112238'
+const BORDER  = 'rgba(250,245,240,0.06)'
+const SHADOW  = '0 2px 6px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1)'
+const TEAL    = '#3AAFA9'
+const PINK    = '#E84080'
+const WHITE   = '#F8F9FB'
+const ROW_SEP = 'rgba(250,245,240,0.04)'
+
 interface TableEntry {
   position: number
   name: string
@@ -58,10 +67,9 @@ function FormDots({ form, hoveredRow, rowIndex }: { form?: Array<'W' | 'D' | 'L'
     >
       {formArray.map((result, i) => {
         let bgColor = 'rgba(255,255,255,0.15)'
-
-        if (result === 'W') bgColor = '#3AAFA9'
+        if (result === 'W') bgColor = TEAL
         else if (result === 'D') bgColor = '#D4A843'
-        else if (result === 'L') bgColor = '#E84080'
+        else if (result === 'L') bgColor = PINK
 
         return (
           <div
@@ -92,36 +100,27 @@ function PtsCounter({ targetPts, rowIndex }: { targetPts: number; rowIndex: numb
       const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime
         const rawProgress = Math.min(elapsed / DURATION, 1)
-
-        // Cubic ease-out: t = 1 - (1-t)^3
         const progress = 1 - Math.pow(1 - rawProgress, 3)
-
         const currentValue = Math.round(progress * targetPts)
         setDisplayValue(currentValue)
-
         if (rawProgress < 1) {
           animationRef.current = requestAnimationFrame(animate)
         }
       }
-
       animationRef.current = requestAnimationFrame(animate)
     }, STAGGER_DELAY)
 
     return () => {
       clearTimeout(startDelay)
-      if (animationRef.current !== null) {
-        cancelAnimationFrame(animationRef.current)
-      }
+      if (animationRef.current !== null) cancelAnimationFrame(animationRef.current)
     }
   }, [targetPts, rowIndex])
 
   const isAnimating = displayValue < targetPts
-  const color = isAnimating ? '#3AAFA9' : '#F8F9FB'
+  const color = isAnimating ? TEAL : WHITE
 
   return (
-    <span
-      style={{ fontSize: '14px', fontWeight: 700, textAlign: 'center', color, fontFamily: "'JetBrains Mono', 'Consolas', monospace" }}
-    >
+    <span style={{ fontSize: '14px', fontWeight: 700, textAlign: 'center', color, fontFamily: "'JetBrains Mono', 'Consolas', monospace" }}>
       {displayValue}
     </span>
   )
@@ -136,21 +135,21 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
     <div
       className="relative rounded-[10px]"
       style={{
-        background: 'var(--plh-card)',
-        border: '1px solid var(--plh-border)',
-        boxShadow: 'var(--plh-shadow)',
+        background: CARD,
+        border: `1px solid ${BORDER}`,
+        boxShadow: SHADOW,
         overflow: 'visible',
       }}
     >
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-2.5 rounded-t-[10px]"
-        style={{ borderBottom: '1px solid var(--plh-border)' }}
+        style={{ borderBottom: `1px solid ${BORDER}` }}
       >
-        <span style={{ fontSize: '16px', fontWeight: 700, color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>
+        <span style={{ fontSize: '16px', fontWeight: 700, color: WHITE, fontFamily: "'Sora', sans-serif" }}>
           Premier League
         </span>
-        <span style={{ fontSize: '12px', fontWeight: 500, color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>
+        <span style={{ fontSize: '12px', fontWeight: 500, color: WHITE, fontFamily: "'Sora', sans-serif" }}>
           2024/25
         </span>
       </div>
@@ -164,13 +163,13 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
           style={{
             gridTemplateColumns: '24px 42px 1fr 44px 24px 28px',
             gap: '12px',
-            borderBottom: '1px solid color-mix(in srgb, var(--plh-text-100) 3%, transparent)',
+            borderBottom: `1px solid ${ROW_SEP}`,
             background: 'transparent',
             borderLeftColor:
-              entry.position <= 3
-                ? 'var(--plh-teal)'
+              entry.position <= 4
+                ? TEAL
                 : entry.position >= 18
-                ? '#ef4444'
+                ? PINK
                 : 'transparent',
           }}
           onMouseEnter={() => setHoveredRow(rowIndex)}
@@ -182,7 +181,7 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
               fontSize: '14px',
               fontWeight: 700,
               textAlign: 'center',
-              color: entry.position <= 3 ? '#3AAFA9' : '#F8F9FB',
+              color: entry.position <= 4 ? TEAL : WHITE,
               fontFamily: "'JetBrains Mono', 'Consolas', monospace",
             }}
           >
@@ -203,13 +202,11 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
           </div>
 
           {/* Played */}
-          <span
-            style={{ fontSize: '14px', fontWeight: 700, textAlign: 'center', color: '#F8F9FB', fontFamily: "'JetBrains Mono', 'Consolas', monospace" }}
-          >
+          <span style={{ fontSize: '14px', fontWeight: 700, textAlign: 'center', color: WHITE, fontFamily: "'JetBrains Mono', 'Consolas', monospace" }}>
             {entry.played}
           </span>
 
-          {/* Points with Counter Animation */}
+          {/* Points */}
           <PtsCounter targetPts={entry.pts} rowIndex={rowIndex} />
         </Link>
       ))}
@@ -219,8 +216,8 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
         onClick={() => setExpanded(!expanded)}
         className="w-full py-2 text-center transition-opacity rounded-b-[10px]"
         style={{
-          borderTop: '1px solid var(--plh-border)',
-          color: '#F8F9FB',
+          borderTop: `1px solid ${BORDER}`,
+          color: WHITE,
           fontFamily: "'Sora', sans-serif",
           fontSize: '13px',
         }}
@@ -233,10 +230,10 @@ export default function PLTableClient({ entries }: { entries: TableEntry[] }) {
       {/* Legend */}
       <div
         className="flex gap-3 px-3 py-1.5"
-        style={{ borderTop: '1px solid var(--plh-border)' }}
+        style={{ borderTop: `1px solid ${BORDER}` }}
       >
-        <span style={{ fontSize: '12px', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>■ UCL</span>
-        <span style={{ fontSize: '12px', color: '#F8F9FB', fontFamily: "'Sora', sans-serif" }}>■ Relegation</span>
+        <span style={{ fontSize: '12px', color: TEAL, fontFamily: "'Sora', sans-serif" }}>■ UCL</span>
+        <span style={{ fontSize: '12px', color: PINK, fontFamily: "'Sora', sans-serif" }}>■ Relegation</span>
       </div>
     </div>
   )

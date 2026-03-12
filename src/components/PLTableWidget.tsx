@@ -1,99 +1,39 @@
-'use client'
+import { getStandingsTable } from '@/lib/api-football/standings'
+import PLTableClient from './PLTableClient'
 
-import Link from 'next/link'
-
-const badgeToSlug: Record<string, string> = {
-  't14': 'liverpool',
-  't3': 'arsenal',
-  't17': 'nottingham-forest',
-  't43': 'manchester-city',
-  't8': 'chelsea',
-  't7': 'aston-villa',
-  't36': 'brighton',
-  't91': 'bournemouth',
-  't4': 'newcastle',
-  't54': 'fulham',
-  't94': 'brentford',
-  't1': 'manchester-united',
-  't21': 'west-ham',
-  't6': 'tottenham',
-  't11': 'everton',
-  't31': 'crystal-palace',
-  't39': 'wolverhampton',
-  't13': 'leicester',
-  't40': 'ipswich',
-  't20': 'southampton',
+function parseForm(formStr: string): Array<'W' | 'D' | 'L'> {
+  return Array.from(formStr)
+    .filter((c): c is 'W' | 'D' | 'L' => c === 'W' || c === 'D' || c === 'L')
+    .slice(0, 5)
 }
 
-const standings = [
-  { pos: 1, name: "Liverpool", short: "Liverpool", badge: "t14", p: 28, w: 22, d: 4, l: 2, pts: 70 },
-  { pos: 2, name: "Arsenal", short: "Arsenal", badge: "t3", p: 28, w: 19, d: 5, l: 4, pts: 62 },
-  { pos: 3, name: "Nott'm Forest", short: "Forest", badge: "t17", p: 28, w: 17, d: 6, l: 5, pts: 57 },
-  { pos: 4, name: "Man City", short: "Man City", badge: "t43", p: 28, w: 16, d: 5, l: 7, pts: 53 },
-  { pos: 5, name: "Chelsea", short: "Chelsea", badge: "t8", p: 28, w: 15, d: 7, l: 6, pts: 52 },
-  { pos: 6, name: "Aston Villa", short: "Aston Villa", badge: "t7", p: 28, w: 15, d: 5, l: 8, pts: 50 },
-  { pos: 7, name: "Brighton", short: "Brighton", badge: "t36", p: 28, w: 14, d: 7, l: 7, pts: 49 },
-  { pos: 8, name: "Bournemouth", short: "Bournemouth", badge: "t91", p: 28, w: 14, d: 6, l: 8, pts: 48 },
-  { pos: 9, name: "Newcastle", short: "Newcastle", badge: "t4", p: 28, w: 13, d: 7, l: 8, pts: 46 },
-  { pos: 10, name: "Fulham", short: "Fulham", badge: "t54", p: 28, w: 12, d: 8, l: 8, pts: 44 },
-  { pos: 11, name: "Brentford", short: "Brentford", badge: "t94", p: 28, w: 12, d: 5, l: 11, pts: 41 },
-  { pos: 12, name: "Man Utd", short: "Man Utd", badge: "t1", p: 28, w: 10, d: 7, l: 11, pts: 37 },
-  { pos: 13, name: "West Ham", short: "West Ham", badge: "t21", p: 28, w: 10, d: 6, l: 12, pts: 36 },
-  { pos: 14, name: "Spurs", short: "Spurs", badge: "t6", p: 28, w: 10, d: 4, l: 14, pts: 34 },
-  { pos: 15, name: "Everton", short: "Everton", badge: "t11", p: 28, w: 8, d: 9, l: 11, pts: 33 },
-  { pos: 16, name: "Crystal Palace", short: "Palace", badge: "t31", p: 28, w: 7, d: 9, l: 12, pts: 30 },
-  { pos: 17, name: "Wolves", short: "Wolves", badge: "t39", p: 28, w: 7, d: 7, l: 14, pts: 28 },
-  { pos: 18, name: "Leicester", short: "Leicester", badge: "t13", p: 28, w: 6, d: 6, l: 16, pts: 24 },
-  { pos: 19, name: "Ipswich", short: "Ipswich", badge: "t40", p: 28, w: 4, d: 8, l: 16, pts: 20 },
-  { pos: 20, name: "Southampton", short: "Southampton", badge: "t20", p: 28, w: 3, d: 5, l: 20, pts: 14 },
-]
+export default async function PLTableWidget() {
+  let entries: Array<{
+    position: number
+    name: string
+    crest: string
+    played: number
+    gd: number
+    pts: number
+    form: Array<'W' | 'D' | 'L'>
+  }> = []
 
-export default function PLTableWidget() {
-  return (
-    <div className="rounded-xl bg-[var(--plh-card)] border border-[var(--plh-border)] overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--plh-border)]">
-        <div>
-          <span className="text-base font-semibold text-[var(--plh-gold)]">Premier League</span>
-          <span className="text-[10px] text-[var(--plh-text-50)] ml-2">2025/26</span>
-        </div>
-      </div>
+  try {
+    const standings = await getStandingsTable()
+    entries = standings.map(s => ({
+      position: s.rank,
+      name: s.team.name,
+      crest: s.team.logo,
+      played: s.played,
+      gd: s.goalsDiff,
+      pts: s.points,
+      form: s.form ? parseForm(s.form) : [],
+    }))
+  } catch (err) {
+    console.error('[PLTableWidget] Failed to fetch standings:', err)
+  }
 
-      <div className="divide-y divide-[var(--plh-border)]">
-        {standings.map((entry) => {
-          const clubSlug = badgeToSlug[entry.badge] || ''
-          return (
-            <Link
-              key={entry.pos}
-              href={clubSlug ? `/?club=${clubSlug}` : '#'}
-              className="grid grid-cols-[20px_1fr_20px_20px_28px] gap-2 px-4 py-2 hover:bg-[var(--plh-elevated)] transition-colors items-center border-l-2"
-              style={{
-                borderLeftColor: entry.pos <= 4 ? '#22c55e' : entry.pos >= 18 ? '#ef4444' : 'transparent',
-              }}
-            >
-            <span className="tabular-nums text-sm text-[var(--plh-text-50)]">{entry.pos}</span>
+  if (!entries.length) return null
 
-            <div className="flex items-center gap-2 min-w-0">
-              <img
-                src={`https://resources.premierleague.com/premierleague/badges/${entry.badge}.png`}
-                alt=""
-                className="w-4 h-4 object-contain shrink-0"
-              />
-              <span className="text-sm text-[var(--plh-text-100)] truncate">{entry.short}</span>
-            </div>
-
-            <span className="text-sm text-[var(--plh-text-70)] tabular-nums text-center">{entry.p}</span>
-            <span className="text-sm text-[var(--plh-text-70)] tabular-nums text-center">{entry.w}</span>
-            <span className="text-sm font-semibold text-[var(--plh-text-100)] tabular-nums text-center">{entry.pts}</span>
-            </Link>
-          )
-        })}
-      </div>
-
-      <div className="flex gap-3 px-4 py-2 border-t border-[var(--plh-border)] text-[10px]">
-        <span className="text-green-400/70">■ UCL</span>
-        <span className="text-red-400/70">■ Relegation</span>
-      </div>
-      <p className="text-xs text-[var(--plh-text-50)] mt-2 text-center pb-2">Correct as of 26 Feb 2026</p>
-    </div>
-  )
+  return <PLTableClient entries={entries} />
 }
