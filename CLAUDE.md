@@ -60,27 +60,37 @@ Work in this order. Do not jump ahead.
 
 ## Ingest
 
-**RSS + Reddit. That is the whole ingest surface.**
+**Intended surface: RSS + Reddit.**
 
 **Scraping is dead. Do not reintroduce it.**
+
+> ⚠️ **Actual current state: RSS is the only thing running.** `/api/cron/rss` is
+> the sole enabled scheduled job. Reddit ingest has been **disabled since 3 Mar**
+> and YouTube ingest is **dormant, not live**. Anything you read below about
+> Reddit or YouTube describes code that exists, not a pipeline that runs. See
+> Cron Jobs for the full picture before assuming any data is arriving.
 
 - RSS: 9 feeds in `src/lib/rss.ts` (`FEEDS`) — BBC Sport, Sky Sports, The
   Guardian, Goal.com, 90min, Football365, The Independent, ESPN FC, FourFourTwo.
   One feed per run, rotated — each feed polled every 135 min (2h15m) at the
   live 15-minute cadence. See Known Debt #1 before touching the rotation.
-- Reddit: `src/lib/reddit.ts`, public JSON endpoints per subreddit.
-- `posts.source` is `'rss' | 'reddit' | 'youtube'`.
+  **This is the only live ingest path.**
+- Reddit: `src/lib/reddit.ts`, public JSON endpoints per subreddit. **Code
+  present, cron disabled since 3 Mar — no Reddit posts are arriving.**
+- `posts.source` is `'rss' | 'reddit' | 'youtube'`. Only `'rss'` is currently
+  being written.
 
 **Known exceptions to the no-scraping rule** (documented so the doc matches a
 grep — both should go):
 
-- `src/lib/scraper.ts` still exists and `/api/cron/backfill-summaries` still
-  calls `scrapeArticle()` to fetch article bodies before summarising. This is
-  live on every run of that cron. Slated for removal; do not build on it.
-- A YouTube ingest cron (`/api/cron/youtube`) still exists and still writes
-  `source: 'youtube'` posts when invoked, despite ingest being nominally RSS +
-  Reddit. Whether anything currently schedules it is unconfirmed — it is
-  declared in `vercel.json`, which never registered. See Cron Jobs.
+- `src/lib/scraper.ts` still exists and `/api/cron/backfill-summaries` calls
+  `scrapeArticle()` to fetch article bodies before summarising — it is a hard
+  requirement there, with no snippet fallback. **That cron is disabled, so no
+  scraping is currently happening** and `scraper.ts` is effectively dead code
+  reachable only from a dormant route. Delete rather than revive.
+- A YouTube ingest cron (`/api/cron/youtube`) still exists and would write
+  `source: 'youtube'` posts if invoked, but it is **disabled since 3 Mar —
+  dormant, not live.**
 
 ---
 
@@ -109,9 +119,12 @@ curl http://localhost:3000/api/health
 
 ### Data Pipeline
 
-1. **Ingest** → RSS + Reddit, on a schedule driven by cron-job.org (see Cron Jobs)
+1. **Ingest** → RSS only in practice (Reddit disabled). cron-job.org drives it.
 2. **Store** → Supabase Postgres (`posts`)
-3. **Enrich** → club detection, AI summary, significance scoring
+3. **Enrich** → partly running. Summaries and significance are generated
+   **inline during RSS ingest**, but only for posts arriving with ≥300 chars of
+   feed content. Club/cluster detection (`source-detection`) is **disabled**, and
+   the summary **backfill** path is disabled. See Claude API Usage.
 4. **Serve** → `/api/feed`, `/api/snapshot`, `/api/trending`
 5. **Render** → server components, with client components for interaction
 
@@ -134,13 +147,30 @@ curl http://localhost:3000/api/health
 
 Calls live in `src/lib/claude.ts` and `src/app/api/cron/rss/route.ts`.
 
-| Where | Model | Purpose |
-|---|---|---|
-| `src/lib/claude.ts:69` | `claude-sonnet-4-6` | `generateSummary()` — summary, hook, significance 0–25 |
-| `src/app/api/cron/rss/route.ts:20` | `claude-haiku-4-5-20251001` | `isRelevantToPL()` headline filter |
-| `src/lib/prompts/by-the-numbers.ts:64` | `claude-haiku-4-5-20251001` | By The Numbers tile |
+| Where | Model | Purpose | Live? |
+|---|---|---|---|
+| `src/lib/claude.ts:69` | `claude-sonnet-4-6` | `generateSummary()` — summary, hook, significance 0–25 | ✅ via RSS ingest |
+| `src/app/api/cron/rss/route.ts:20` | `claude-haiku-4-5-20251001` | `isRelevantToPL()` headline filter | ✅ |
+| `src/lib/prompts/by-the-numbers.ts:64` | `claude-haiku-4-5-20251001` | By The Numbers tile | on request |
 
 Failures degrade gracefully — summaries return null and the cron continues.
+
+### Which summaries actually get written
+
+There are two paths to a summary, and only one of them runs:
+
+1. **Inline at ingest** — `/api/cron/rss` calls `generateSummary()` directly for
+   any post whose feed `content` is **≥300 chars**. This is enabled and running
+   every 15 minutes, so these summaries *are* being written.
+2. **Backfill** — `/api/cron/backfill-summaries` handles posts that arrived with
+   too little content, by scraping the article first. Scraping is a **hard
+   requirement** there: `if (!articleContent) skip`, with no snippet fallback.
+   **This cron is disabled on every host, so this path never runs.**
+
+**Consequence:** a post arriving with <300 chars of feed content will never get a
+summary, because the only path that would fill it is dead. Expect permanent gaps
+in `summary` / `summary_hook` / `score_significance` correlated with which feeds
+publish short RSS descriptions — not with story importance.
 
 ---
 
@@ -152,26 +182,34 @@ protected by `CRON_SECRET` regardless of who calls them.
 `vercel.json` declares 5 cron jobs, but Hobby caps the number that actually
 register, so those schedules **never took effect**. Do not trust `vercel.json`
 as a description of what runs — treat it as dead configuration until it is
-either pruned or the plan changes. The live cadence lives in the cron-job.org
-dashboard.
+either pruned or the plan changes.
 
-| Route | Real schedule | Notes |
+> ⚠️ **Exactly one scheduled job is enabled: `/api/cron/rss`.** Everything else
+> is disabled. The system is ingesting RSS and doing essentially nothing else.
+
+State below is from the cron-job.org dashboard.
+
+| Route | State | Cadence |
 |---|---|---|
-| `/api/cron/rss` | **every 15 min** (cron-job.org, confirmed) | `maxDuration = 60`; 96 runs/day |
-| `/api/cron/reddit` | unconfirmed | `vercel.json` says `0 1 * * *`, which never registered |
-| `/api/cron/youtube` | unconfirmed | See ingest exceptions |
-| `/api/cron/backfill-summaries` | unconfirmed | Still scrapes; 2 posts/run |
-| `/api/cron/digest` | unconfirmed | **Currently fails — see Email** |
+| `/api/cron/rss` | ✅ **ENABLED** | every 15 min — 96 runs/day, `maxDuration = 60` |
+| `/api/cron/reddit` | ❌ disabled since 3 Mar | — |
+| `/api/cron/youtube` | ❌ disabled since 3 Mar | — |
+| `/api/cron/backfill-summaries` | ❌ disabled since 3 Mar, last run **failed** | — |
+| `/api/cron/source-detection` | ❌ disabled since 2 Mar, last run **failed** | — |
+| `/api/cron/digest` | ⛔ **not present in cron-job.org at all** | never scheduled |
 
-Only the `/api/cron/rss` cadence has been verified against the cron-job.org
-dashboard. The other four are declared in `vercel.json` but that never
-registered, so they are either configured in cron-job.org at some other cadence
-or not running at all. **Check the dashboard before reasoning about their
-timing** — and before assuming any of them run.
+**The digest has never fired from cron-job.org.** It is not merely
+misconfigured — no scheduler has ever invoked it. Combined with the missing
+Resend config (see Email), the digest has never worked.
 
-Present and callable but not known to be scheduled anywhere:
-`fixtures-refresh`, `stats-refresh`, `post-match-stats`, `source-detection`,
-`run-migration`, plus `/api/cleanup`.
+A second enabled cron-job.org job used to hit `/api/cron/backfill-summaries` on
+the `plhub-lovat.vercel.app` host. That Vercel project has been deleted, so that
+job now hits a dead host. **Summary backfill has no working scheduler on any
+host.** If backfill is wanted again, re-point that job at
+`pl-hub-webapp12.vercel.app` and re-enable it.
+
+Present and callable but not scheduled anywhere: `fixtures-refresh`,
+`stats-refresh`, `post-match-stats`, `run-migration`, plus `/api/cleanup`.
 
 **Auth convention** — every cron route uses, and must keep using:
 
@@ -260,14 +298,19 @@ Subscribers were designed to live in a **Resend Audience**, not in Postgres.
 **This is currently broken.** `RESEND_API_KEY`, `RESEND_AUDIENCE_ID` and
 `RESEND_FROM_EMAIL` are not set in any Vercel environment, so:
 
-- `listContacts()` throws → the digest cron 500s and sends nothing on every
-  invocation. (Its schedule is unconfirmed: the `0 7 * * *` in `vercel.json`
-  never registered, so how often this fires depends on cron-job.org.)
+- `listContacts()` throws → the digest cron 500s and sends nothing whenever it
+  is invoked.
 - `addContact()` throws → `/api/subscribe` 500s on every signup, so no one has
   ever been captured.
 
 There are no subscribers anywhere, because no audience is configured to hold
-them. Configure the three vars before treating the digest as functional.
+them.
+
+**And nothing invokes it.** `/api/cron/digest` is not present in cron-job.org at
+all, and `vercel.json`'s `0 7 * * *` never registered. So the digest has **never
+fired** — this is not a broken feature, it is an unlaunched one. Making it work
+needs all three of: the Resend vars set, a scheduler entry created, and at least
+one subscriber to exist.
 
 ---
 
@@ -367,20 +410,35 @@ Real, verified, and deliberately not yet fixed. Don't rediscover these.
    feed twice and skip its neighbour. **If the cadence is ever changed, this
    bucket width must change with it**, or the rotation stops matching the
    schedule.
-2. **`backfill-summaries` caps at 2 posts/run** citing a 10s Hobby timeout that
-   does not exist. Raise it. (Its real cadence is unconfirmed — see Cron Jobs.)
-3. **`backfill-summaries` still scrapes** via `src/lib/scraper.ts`.
-4. **Hardcoded `pl-hub-webapp12.vercel.app`** in `sitemap.ts`, `JsonLd.tsx`,
+2. **Summary backfill is dead on every host.** `/api/cron/backfill-summaries` is
+   disabled in cron-job.org (since 3 Mar, last run failed), and the second job
+   that hit it on `plhub-lovat.vercel.app` points at a now-deleted project. Posts
+   arriving with <300 chars of feed content will therefore never get a summary.
+   To revive: re-point the job at `pl-hub-webapp12.vercel.app` and re-enable.
+   Its 2-posts-per-run cap also cites a 10s Hobby timeout that does not exist,
+   so raise that at the same time.
+3. **`backfill-summaries` still scrapes** via `src/lib/scraper.ts` — a hard
+   requirement with no snippet fallback. Since that cron is disabled, no scraping
+   is currently happening and `scraper.ts` is reachable only from a dormant
+   route.
+4. **Club/cluster detection is disabled.** `/api/cron/source-detection` has been
+   off since 2 Mar with a failed last run, so `detected_clubs`, `source_count`
+   and `story_cluster` are not being maintained. Multi-source bonuses in the
+   score will be stale or absent.
+5. **Reddit and YouTube ingest are dormant.** Both crons disabled since 3 Mar.
+   The Reddit half of the stated RSS + Reddit ingest surface is not running.
+6. **Hardcoded `pl-hub-webapp12.vercel.app`** in `sitemap.ts`, `JsonLd.tsx`,
    `Breadcrumb.tsx`, `clubs/[slug]/page.tsx`.
-5. **`NEXT_PUBLIC_SITE_URL` is the old domain**, and five pages share one fixed
+7. **`NEXT_PUBLIC_SITE_URL` is the old domain**, and five pages share one fixed
    canonical. See SEO.
-6. **`/api/cron/rss` does 13 sequential `DELETE ... ILIKE '%kw%'`** full scans on
+8. **`/api/cron/rss` does 13 sequential `DELETE ... ILIKE '%kw%'`** full scans on
    `posts` every run as a keyword cleanup. At 96 runs/day that is roughly
    **1,250 full-table scans per day**, all to delete rows matching a hardcoded
    keyword list.
-7. **`vercel.json` declares 5 crons that never registered.** It reads as the
+9. **`vercel.json` declares 5 crons that never registered.** It reads as the
    schedule and is not one. Prune it or move the real cadences into it.
-8. **Email digest is non-functional** — no Resend config. See Email.
+10. **The digest has never fired.** No Resend config *and* no scheduler entry.
+    See Email.
 
 ---
 
@@ -406,8 +464,10 @@ Real, verified, and deliberately not yet fixed. Don't rediscover these.
    ceiling is 300s, not 10s.
    **Cron not firing at all** → check the cron-job.org dashboard, not the Vercel
    Cron dashboard. `vercel.json`'s schedules never registered.
-3. **Summaries missing** → `backfill-summaries` skips anything it can't scrape to
-   300+ chars.
+3. **Summaries missing** → expected for any post that arrived with <300 chars of
+   feed content. Inline generation at ingest is the only live path;
+   `backfill-summaries` is disabled everywhere. Not a bug to chase — a dead
+   scheduler entry to revive.
 4. **Digest not arriving** → it isn't configured at all. See Email.
 5. **noindex not applying** → check `SITE_NOINDEX` is exactly `true`, that the
    project was **redeployed** since, and that no `public/robots.txt` exists.
