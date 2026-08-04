@@ -173,6 +173,67 @@ grep — both should go):
   `source: 'youtube'` posts if invoked, but it is **disabled since 3 Mar —
   dormant, not live.**
 
+### Feed health — measured 4 Aug 2026
+
+Every feed fetched through the real `fetchSingleFeed()` path. `raw` = items in
+the feed, `kept` = survivors of `isGamblingContent` + `isPremierLeagueContent`,
+`medLen` = median length of the field the 300-char summary check reads, `≥300` =
+kept items clearing that threshold.
+
+| # | Feed | HTTP | raw | kept | medLen | ≥300 | State |
+|---|---|---|---|---|---|---|---|
+| 0 | BBC Sport | 200 | 76 | 60 | 126 | 0 | ok |
+| 1 | Sky Sports | 200 | 20 | 8 | 131 | 0 | ok |
+| 2 | The Guardian | 200 | 62 | 32 | 679 | **26** | ok |
+| 3 | Goal.com | **404** | 0 | 0 | — | 0 | **dead** |
+| 4 | 90min | 200 | 90 | 80 | 143 | 0 | ok |
+| 5 | Football365 | **404** | 0 | 0 | — | 0 | **dead** |
+| 6 | The Independent | 200 | **0** | 0 | — | 0 | **empty** |
+| 7 | ESPN FC | 200 | 21 | 12 | 141 | 0 | ok |
+| 8 | FourFourTwo | 200 | 50 | 41 | 107 | 0 | ok |
+
+**Three of nine feeds contribute nothing.**
+
+- **Goal.com** and **Football365** return `404` with `text/html`. `fetchFeed`
+  catches the throw and returns `[]` (`rss.ts:198`), so these fail **silently** —
+  a `console.error` nobody reads, and the cron still reports `success` with a
+  `cron_logs` row to match. Two of nine rotation slots are burnt on nothing.
+- **The Independent** returns HTTP `200` with structurally valid RSS — correct
+  `<channel>`, fresh `pubDate` — and **zero `<item>` elements**. Nothing in the
+  code can tell that apart from "no new stories", so it will never surface as an
+  error. This is the failure mode to watch for when adding feeds.
+
+**Only The Guardian can produce a summary.** `content` is
+`item.contentSnippet ?? item.content` (`rss.ts:186`), and the route only calls
+`generateSummary()` when that field is ≥300 chars (`rss/route.ts:142`). The
+Guardian clears it on 26 of 32 kept items; **every other feed scores zero**, with
+medians of 107–143 chars — not marginal, an order of magnitude short.
+
+So **five of the six working feeds produce permanently summary-less posts.** The
+backfill path that would have rescued them is the disabled cron above, so this is
+not a lag that catches up. Summary coverage is ~100% Guardian and ~0% everything
+else: the gaps correlate with **which feed published**, not with story
+importance. Any UI or scoring that treats a missing summary as a signal about the
+story is reading feed formatting instead.
+
+### Coverage gap: no red tops, no regional club desks
+
+`FEEDS` is broadsheets and aggregators only. It contains **no red tops** (Sun,
+Mirror, Mail, Star) and **no regional club desks** (football.london, Manchester
+Evening News, Liverpool Echo, Chronicle Live).
+
+**The ledger requires them.** Transfer rumours originate disproportionately in
+exactly those outlets, and the ledger's core fields — byline, verbatim hedging
+language, attributed origin — are most meaningful where the hedging actually
+happens. A rumour accountability ledger fed only by broadsheets systematically
+misses the claims most in need of accountability, and will score a source pool
+that is not the one driving the rumour cycle.
+
+Note `SOURCE_COLORS` in `src/lib/constants.ts:41` already carries entries for
+`Mirror`, `football.london`, `Manchester Evening News`, `Liverpool Echo`,
+`Chronicle Live`, `The Telegraph` and `The Athletic`, labelled "legacy
+fallbacks" — the colour map already anticipates outlets `FEEDS` does not fetch.
+
 ---
 
 ## Common Commands
@@ -520,6 +581,20 @@ Real, verified, and deliberately not yet fixed. Don't rediscover these.
    schedule and is not one. Prune it or move the real cadences into it.
 10. **The digest has never fired.** No Resend config *and* no scheduler entry.
     See Email.
+11. **Three of nine RSS feeds are dead.** Goal.com and Football365 404 silently;
+    The Independent serves valid RSS with zero items. Two rotation slots per
+    cycle fetch nothing and the cron still logs `success`. See Feed health.
+12. **Only The Guardian clears the 300-char summary threshold.** Five of six
+    working feeds produce permanently summary-less posts, because their
+    descriptions run 107–143 chars and the backfill rescue path is disabled.
+    Summary coverage tracks the publishing feed, not story importance. See Feed
+    health.
+13. **No red tops or regional club desks in `FEEDS`.** Broadsheets and
+    aggregators only, which omits where transfer rumours actually originate —
+    a structural gap for the ledger, not a nice-to-have. See Coverage gap.
+14. **Feed failures are unobservable.** `fetchFeed` swallows errors and returns
+    `[]`, so a 404, an empty feed and a genuinely quiet news hour are
+    indistinguishable in `cron_logs`. Nothing alerts.
 
 ---
 
@@ -540,7 +615,10 @@ Real, verified, and deliberately not yet fixed. Don't rediscover these.
 
 ## Debugging
 
-1. **Feed empty** → check `posts` in Supabase, then `cron_logs` for failures.
+1. **Feed empty or thin** → check `posts` in Supabase, then `cron_logs`. Note
+   `cron_logs` will say `success` even when the feed 404s, because `fetchFeed`
+   swallows the error. To test a feed directly, `curl` its URL and count
+   `<item>` elements — three of the nine currently return none. See Feed health.
 2. **Cron timing out** → read `execution_time_ms` in `cron_logs`. Remember the
    ceiling is 300s, not 10s.
    **Cron not firing at all** → check the cron-job.org dashboard, not the Vercel
