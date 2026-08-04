@@ -66,7 +66,8 @@ Work in this order. Do not jump ahead.
 
 - RSS: 9 feeds in `src/lib/rss.ts` (`FEEDS`) — BBC Sport, Sky Sports, The
   Guardian, Goal.com, 90min, Football365, The Independent, ESPN FC, FourFourTwo.
-  One feed per run, rotated.
+  One feed per run, rotated — each feed polled every 135 min (2h15m) at the
+  live 15-minute cadence. See Known Debt #1 before touching the rotation.
 - Reddit: `src/lib/reddit.ts`, public JSON endpoints per subreddit.
 - `posts.source` is `'rss' | 'reddit' | 'youtube'`.
 
@@ -76,9 +77,10 @@ grep — both should go):
 - `src/lib/scraper.ts` still exists and `/api/cron/backfill-summaries` still
   calls `scrapeArticle()` to fetch article bodies before summarising. This is
   live on every run of that cron. Slated for removal; do not build on it.
-- A YouTube ingest cron (`/api/cron/youtube`) is still scheduled in
-  `vercel.json` and still writes `source: 'youtube'` posts, despite ingest being
-  nominally RSS + Reddit.
+- A YouTube ingest cron (`/api/cron/youtube`) still exists and still writes
+  `source: 'youtube'` posts when invoked, despite ingest being nominally RSS +
+  Reddit. Whether anything currently schedules it is unconfirmed — it is
+  declared in `vercel.json`, which never registered. See Cron Jobs.
 
 ---
 
@@ -107,7 +109,7 @@ curl http://localhost:3000/api/health
 
 ### Data Pipeline
 
-1. **Ingest** → RSS + Reddit via Vercel Cron
+1. **Ingest** → RSS + Reddit, on a schedule driven by cron-job.org (see Cron Jobs)
 2. **Store** → Supabase Postgres (`posts`)
 3. **Enrich** → club detection, AI summary, significance scoring
 4. **Serve** → `/api/feed`, `/api/snapshot`, `/api/trending`
@@ -144,18 +146,32 @@ Failures degrade gracefully — summaries return null and the cron continues.
 
 ## Cron Jobs
 
-Scheduled in `vercel.json`, all protected by `CRON_SECRET`.
+**The real scheduler is cron-job.org, not Vercel Cron.** All routes are
+protected by `CRON_SECRET` regardless of who calls them.
 
-| Route | Schedule | Notes |
+`vercel.json` declares 5 cron jobs, but Hobby caps the number that actually
+register, so those schedules **never took effect**. Do not trust `vercel.json`
+as a description of what runs — treat it as dead configuration until it is
+either pruned or the plan changes. The live cadence lives in the cron-job.org
+dashboard.
+
+| Route | Real schedule | Notes |
 |---|---|---|
-| `/api/cron/rss` | `0 0 * * *` | `maxDuration = 60` |
-| `/api/cron/reddit` | `0 1 * * *` | |
-| `/api/cron/youtube` | `0 2 * * *` | See ingest exceptions |
-| `/api/cron/backfill-summaries` | `0 3 * * *` | Still scrapes; 2 posts/run |
-| `/api/cron/digest` | `0 7 * * *` | **Currently fails — see Email** |
+| `/api/cron/rss` | **every 15 min** (cron-job.org, confirmed) | `maxDuration = 60`; 96 runs/day |
+| `/api/cron/reddit` | unconfirmed | `vercel.json` says `0 1 * * *`, which never registered |
+| `/api/cron/youtube` | unconfirmed | See ingest exceptions |
+| `/api/cron/backfill-summaries` | unconfirmed | Still scrapes; 2 posts/run |
+| `/api/cron/digest` | unconfirmed | **Currently fails — see Email** |
 
-Not scheduled, but present and callable: `fixtures-refresh`, `stats-refresh`,
-`post-match-stats`, `source-detection`, `run-migration`, plus `/api/cleanup`.
+Only the `/api/cron/rss` cadence has been verified against the cron-job.org
+dashboard. The other four are declared in `vercel.json` but that never
+registered, so they are either configured in cron-job.org at some other cadence
+or not running at all. **Check the dashboard before reasoning about their
+timing** — and before assuming any of them run.
+
+Present and callable but not known to be scheduled anywhere:
+`fixtures-refresh`, `stats-refresh`, `post-match-stats`, `source-detection`,
+`run-migration`, plus `/api/cleanup`.
 
 **Auth convention** — every cron route uses, and must keep using:
 
@@ -244,7 +260,9 @@ Subscribers were designed to live in a **Resend Audience**, not in Postgres.
 **This is currently broken.** `RESEND_API_KEY`, `RESEND_AUDIENCE_ID` and
 `RESEND_FROM_EMAIL` are not set in any Vercel environment, so:
 
-- `listContacts()` throws → the 07:00 digest cron 500s daily and sends nothing.
+- `listContacts()` throws → the digest cron 500s and sends nothing on every
+  invocation. (Its schedule is unconfirmed: the `0 7 * * *` in `vercel.json`
+  never registered, so how often this fires depends on cron-job.org.)
 - `addContact()` throws → `/api/subscribe` 500s on every signup, so no one has
   ever been captured.
 
@@ -324,19 +342,45 @@ YOUTUBE_API_KEY=
 
 Real, verified, and deliberately not yet fixed. Don't rediscover these.
 
-1. **RSS rotation math is broken.** `rss/route.ts` buckets `runIndex` by 15
-   minutes and its comment assumes 5 feeds on a 15-minute cron. There are **9**
-   feeds and the cron is **daily**, so each feed is polled roughly every 9 days.
+1. **RSS feed rotation works — only its comment is stale.** Not a bug; recorded
+   so it isn't "fixed" by mistake.
+
+   ```ts
+   const runIndex  = Math.floor(Date.now() / (15 * 60 * 1000))  // 15-min buckets
+   const feedIndex = runIndex % FEEDS.length                    // FEEDS.length === 9
+   ```
+
+   The bucket width (15 min) equals the real cron-job.org cadence (15 min), so
+   `runIndex` advances by exactly 1 per run and the modulo cycles cleanly through
+   all 9 feeds. **Each feed is polled every 135 minutes (2h15m)**, about 10.7
+   times per day across 96 runs.
+
+   The code comment still says "With 5 feeds on a 15-min cron, each feed is
+   checked every ~75 minutes." That was correct at 5 feeds; at 9 it should read
+   **~135 minutes**. The mechanism is sound — only the numbers are outdated.
+
+   Two properties worth knowing before changing it: `runIndex` is derived from
+   wall-clock time rather than a stored counter, so it is stateless and survives
+   cold starts and redeploys — but there is no catch-up, so a missed run simply
+   skips that feed until the next cycle. And because the cadence exactly equals
+   the bucket width, jitter across a bucket boundary can occasionally poll one
+   feed twice and skip its neighbour. **If the cadence is ever changed, this
+   bucket width must change with it**, or the rotation stops matching the
+   schedule.
 2. **`backfill-summaries` caps at 2 posts/run** citing a 10s Hobby timeout that
-   does not exist. Raise it.
+   does not exist. Raise it. (Its real cadence is unconfirmed — see Cron Jobs.)
 3. **`backfill-summaries` still scrapes** via `src/lib/scraper.ts`.
 4. **Hardcoded `pl-hub-webapp12.vercel.app`** in `sitemap.ts`, `JsonLd.tsx`,
    `Breadcrumb.tsx`, `clubs/[slug]/page.tsx`.
 5. **`NEXT_PUBLIC_SITE_URL` is the old domain**, and five pages share one fixed
    canonical. See SEO.
 6. **`/api/cron/rss` does 13 sequential `DELETE ... ILIKE '%kw%'`** full scans on
-   `posts` every run as a keyword cleanup.
-7. **Email digest is non-functional** — no Resend config. See Email.
+   `posts` every run as a keyword cleanup. At 96 runs/day that is roughly
+   **1,250 full-table scans per day**, all to delete rows matching a hardcoded
+   keyword list.
+7. **`vercel.json` declares 5 crons that never registered.** It reads as the
+   schedule and is not one. Prune it or move the real cadences into it.
+8. **Email digest is non-functional** — no Resend config. See Email.
 
 ---
 
@@ -360,6 +404,8 @@ Real, verified, and deliberately not yet fixed. Don't rediscover these.
 1. **Feed empty** → check `posts` in Supabase, then `cron_logs` for failures.
 2. **Cron timing out** → read `execution_time_ms` in `cron_logs`. Remember the
    ceiling is 300s, not 10s.
+   **Cron not firing at all** → check the cron-job.org dashboard, not the Vercel
+   Cron dashboard. `vercel.json`'s schedules never registered.
 3. **Summaries missing** → `backfill-summaries` skips anything it can't scrape to
    300+ chars.
 4. **Digest not arriving** → it isn't configured at all. See Email.
