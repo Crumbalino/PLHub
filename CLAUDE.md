@@ -58,6 +58,87 @@ Work in this order. Do not jump ahead.
 
 ---
 
+## Editorial Principles
+
+These are product rules, not implementation details. They outrank convenience and
+they outrank coverage numbers.
+
+### Relevance and classification are separate decisions
+
+Two distinct questions, decided by different logic, with deliberately opposite
+biases:
+
+| Decision | Question | Bias |
+|---|---|---|
+| **Relevance** | Does this story appear on the site at all? | **Permissive** — when unsure, let it through |
+| **Classification** | Which club does this story belong to? | **Strict** — when unsure, refuse to say |
+
+Conflating the two is the mistake to avoid. Using "mentions a club" as a
+relevance test, or treating a relevance keyword hit as an attribution, collapses
+two different risk profiles into one.
+
+**Mislabelled content on a club page costs more trust than missing content
+does.** A thin club page is a gap. A club page carrying another club's story is
+a reason to stop believing the ledger — and the ledger's entire value is being
+believed.
+
+### Club classification must never guess
+
+**Ambiguous abbreviations are banned as match tokens.** Never classify on:
+
+`AFC` · `Saints` · `Reds` · `City` · `United`
+
+`AFC` alone resolves to Arsenal, Bournemouth, or AFC Wimbledon. `City` and
+`United` are worse. A token that maps to more than one club is not evidence, and
+no amount of surrounding heuristics makes it evidence.
+
+**Require two independent signals** before attributing a story to a club. Any two
+of:
+
+1. **Full club name** in the title or description
+2. **Club in the source URL slug**
+3. **Player name** matched against a squad list for that club
+4. **Manager name**
+5. **Stadium name**
+
+Independent means genuinely separate — the same club name appearing in both title
+and description is **one** signal, not two.
+
+**Below two signals the story is `unclassified`.** Unclassified is a valid,
+expected state, not a failure:
+
+- It **still appears** in the general feed.
+- It **never appears** on a club page.
+
+Do not add a fallback that assigns a "best guess" club to unclassified stories.
+Do not let a club page fill space by relaxing the threshold. If a club page is
+sparse, the answer is better signals, not a lower bar.
+
+### Current code does not comply
+
+Recorded so the gap is visible rather than assumed handled:
+
+- `isPremierLeagueContent()` (`src/lib/rss.ts:44`) makes relevance and
+  classification the same decision — it uses a `PL_CLUBS` substring match as the
+  relevance test.
+- Its blocklist contains exactly the tokens this principle bans, including
+  `'AFC'`, `'Saints'`, `'Giants'`, `'Cardinals'` and `'Championship'`. An item
+  survives only if it names a club by substring or trips no keyword at all.
+- Matching is single-signal substring matching throughout. There is no
+  two-signal rule, no squad list, no URL-slug check, and no `unclassified` state.
+- `isRelevantToPL()` (`src/app/api/cron/rss/route.ts:16`) — the Claude relevance
+  filter, and the one piece of code that *does* separate relevance from
+  classification — is **defined but never called**. `grep` finds it only at its
+  declaration and in its own error handler.
+- `posts.club_slug` and `posts.detected_clubs` are the fields this would govern.
+  The cron that maintains `detected_clubs` (`source-detection`) is currently
+  disabled — see Cron Jobs.
+
+Treat the claim-schema work (Ship Order step 2) as where this gets implemented
+properly.
+
+---
+
 ## Ingest
 
 **Intended surface: RSS + Reddit.**
