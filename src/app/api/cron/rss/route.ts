@@ -7,7 +7,11 @@ import { detectCardType, type CardType } from '@/lib/detectCardType'
 import { generateSummary } from '@/lib/claude'
 import Anthropic from '@anthropic-ai/sdk'
 
-export const maxDuration = 10
+// Hobby plan permits up to 300s (fluid compute; project default is 300s).
+// 60s is well above what this route needs while still capping a runaway run:
+// the handler does 13 sequential cleanup DELETEs, a feed fetch, and one
+// Claude generateSummary() call per post with >=300 chars of content.
+export const maxDuration = 60
 
 async function isRelevantToPL(title: string): Promise<boolean> {
   try {
