@@ -1,191 +1,285 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code (claude.ai/code) when working in this repository.
 
 ## Project Overview
 
-**PLHub** is a Premier League news aggregator that surfaces editorial content from multiple sources (BBC Sport, Sky Sports, The Guardian, Reddit, YouTube) and enriches it with AI analysis, fixture data, and standings. The platform uses Claude AI for summarization, scoring, and content synthesis.
+**The Football Hub** — `thefootballhub.uk`
 
-**Tech Stack**: Next.js 14 + React 18 + TypeScript + Tailwind CSS + Supabase + Claude API + Football Data APIs
+A **transfer rumour accountability ledger**. The product is not a news feed; it is a
+record that holds sources to account for what they claimed and when.
+
+Every claim is logged with:
+
+| Field | Notes |
+|---|---|
+| Entities | Player, clubs (from/to), agent, competition |
+| Claim type | e.g. bid made, medical booked, personal terms agreed, deal off |
+| Verbatim hedging language | Quoted exactly as published — "understood to", "closing in on", "expected to" |
+| Outlet | Publication |
+| Byline | Named journalist |
+| Attributed origin | Who the outlet says it heard from, when it isn't the byline |
+| Source URL | Canonical link to the claim |
+
+Claims are **resolved later** against what actually happened, and sources are then
+scored on:
+
+- **Hit rate** — how often their claims resolve true
+- **Volume** — how much they publish (a high hit rate on two claims is not a record)
+- **Originality** — did they break it, or echo someone who did
+- **Specificity** — "a Premier League club" is not a prediction; a named fee and date is
+
+The verbatim hedging language matters as much as the outcome. An outlet that
+hedges everything and is technically never wrong is a different failure than one
+that commits and misses.
+
+**Annual awards**: **The Balloon Door Awards**, published **early October**.
+
+**Byline**: **"by G"**. *Not* "by Adhdad" — that byline is superseded, do not
+reintroduce it anywhere.
+
+**Channel**: **GVsEverything**.
+
+**Tech Stack**: Next.js 14 (App Router) + React 18 + TypeScript + Tailwind +
+Supabase (Postgres) + Claude API + football data APIs.
+
+---
+
+## Ship Order
+
+Work in this order. Do not jump ahead.
+
+1. **Security + live domain** — cron auth fail-closed, no unauthenticated
+   endpoints, `thefootballhub.uk` serving.
+2. **Claim schema** — the ledger tables. Everything else depends on this shape.
+3. **Backfill 12–18 months of resolved claims** — the ledger has no value empty;
+   credibility comes from history that already resolved.
+4. **Source + outlet pages** — with `Person` / `Organization` structured data.
+
+---
+
+## Ingest
+
+**RSS + Reddit. That is the whole ingest surface.**
+
+**Scraping is dead. Do not reintroduce it.**
+
+- RSS: 9 feeds in `src/lib/rss.ts` (`FEEDS`) — BBC Sport, Sky Sports, The
+  Guardian, Goal.com, 90min, Football365, The Independent, ESPN FC, FourFourTwo.
+  One feed per run, rotated.
+- Reddit: `src/lib/reddit.ts`, public JSON endpoints per subreddit.
+- `posts.source` is `'rss' | 'reddit' | 'youtube'`.
+
+**Known exceptions to the no-scraping rule** (documented so the doc matches a
+grep — both should go):
+
+- `src/lib/scraper.ts` still exists and `/api/cron/backfill-summaries` still
+  calls `scrapeArticle()` to fetch article bodies before summarising. This is
+  live on every run of that cron. Slated for removal; do not build on it.
+- A YouTube ingest cron (`/api/cron/youtube`) is still scheduled in
+  `vercel.json` and still writes `source: 'youtube'` posts, despite ingest being
+  nominally RSS + Reddit.
 
 ---
 
 ## Common Commands
 
 ```bash
-# Development
-npm run dev                    # Start dev server (localhost:3000)
-npm run build                  # Production build (must pass before deploy)
-npm run lint                   # Run ESLint
+npm run dev            # Dev server (localhost:3000)
+npm run build          # Production build — must pass before deploy
 
-# Database & Migrations
-CRON_SECRET=<secret> curl http://localhost:3000/api/cron/run-migration
-                              # Check/run pending migrations
+# npm run lint is NOT usable: there is no ESLint config in the repo, so
+# `next lint` drops into an interactive "configure ESLint?" prompt and
+# exits. Treat `npm run build` as the gate until a config is added.
 
-# Health & Monitoring
+# Manual cron trigger (all cron routes require the secret; no route fails open)
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/rss
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/reddit
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/backfill-summaries
+
+# Health
 curl http://localhost:3000/api/health
-                              # Check system health (5 metrics, returns 200/503)
-
-# Manual Data Refresh (bypass cron schedule)
-CRON_SECRET=<secret> curl http://localhost:3000/api/cron/fixtures-refresh
-CRON_SECRET=<secret> curl http://localhost:3000/api/cron/reddit
-CRON_SECRET=<secret> curl http://localhost:3000/api/cron/rss
-CRON_SECRET=<secret> curl http://localhost:3000/api/cron/backfill-summaries
 ```
 
 ---
 
-## Architecture Overview
+## Architecture
 
-### **Data Pipeline**
+### Data Pipeline
 
-1. **Ingestion** → Reddit, RSS feeds, YouTube via cron jobs
-2. **Storage** → Supabase PostgreSQL (posts table)
-3. **Enrichment** → Club detection, AI summarization, significance scoring
-4. **API Layer** → `/api/feed`, `/api/snapshot`, `/api/trending`
-5. **UI** → Server-rendered or client-side hydrated React components
+1. **Ingest** → RSS + Reddit via Vercel Cron
+2. **Store** → Supabase Postgres (`posts`)
+3. **Enrich** → club detection, AI summary, significance scoring
+4. **Serve** → `/api/feed`, `/api/snapshot`, `/api/trending`
+5. **Render** → server components, with client components for interaction
 
-### **Key Directories**
+### Key Directories
 
 | Path | Purpose |
-|------|---------|
-| `/src/lib` | Type defs, utilities, Supabase client, Football API wrapper |
-| `/src/lib/api-football` | Football Data API client (standings, fixtures, stats) |
-| `/src/lib/prompts` | Claude prompt templates (summaries, index scoring, snapshot) |
-| `/src/components` | React components (feed cards, snapshot modules, navigation) |
-| `/src/components/snapshot` | The Snapshot briefing (hero grid, by-the-numbers, quotes, cards) |
-| `/src/app/api` | API routes (feed, snapshot, trending, cron jobs) |
-| `/src/app/api/cron` | Background jobs (reddit, rss, fixtures, stats refresh) |
-| `/src/app/page.tsx` | Homepage (feed + snapshot layout) |
-| `/src/app/clubs/[slug]/page.tsx` | Club detail page (club-filtered snapshot) |
-
-### **Design System**
-
-- **CSS Variables** (in `globals.css`): `--plh-bg`, `--plh-card`, `--plh-pink`, `--plh-gold`, `--plh-teal`, `--plh-text-100`, `--plh-text-50`, `--plh-border`, etc.
-- **Colors** defined in `/src/lib/constants.ts` (COLORS, SOURCE_COLORS)
-- **Font**: Sora (brand) + Consolas (monospace for data)
-- **Light/Dark Mode**: CSS custom properties respond to `.light` class on `<html>`
-- **Opacity Floor**: All text has minimum 50% opacity (no text below --plh-text-50)
+|---|---|
+| `src/lib` | Types, utilities, Supabase client, scoring |
+| `src/lib/api-football` | Football data client (standings, fixtures, stats) |
+| `src/lib/prompts` | Claude prompt templates |
+| `src/lib/email` | Resend client, digest content + template |
+| `src/lib/seo.ts` | Sitewide indexing switch (see SEO below) |
+| `src/components` | React components |
+| `src/app/api` | Route handlers |
+| `src/app/api/cron` | Scheduled jobs |
 
 ---
 
-## Critical Concepts
+## Claude API Usage
 
-### **PLHub Index (4-Pillar Scoring)**
+Calls live in `src/lib/claude.ts` and `src/app/api/cron/rss/route.ts`.
 
-Every post gets a score from 0–100 composed of:
-- **Credibility** (0–25): Source trust level
-- **Recency** (0–25): Time decay (fresher = higher)
-- **Engagement** (0–25): Reddit upvotes, YouTube views, RSS comments
-- **Significance** (0–25): AI-rated importance (stored in DB as `score_significance`)
-- **Multi-Source Bonus** (0–8): +2 per additional source mentioning same story
+| Where | Model | Purpose |
+|---|---|---|
+| `src/lib/claude.ts:69` | `claude-sonnet-4-6` | `generateSummary()` — summary, hook, significance 0–25 |
+| `src/app/api/cron/rss/route.ts:20` | `claude-haiku-4-5-20251001` | `isRelevantToPL()` headline filter |
+| `src/lib/prompts/by-the-numbers.ts:64` | `claude-haiku-4-5-20251001` | By The Numbers tile |
 
-Heat labels (Hot/Warm/Rising) and index badge derive from total score.
-
-### **The Snapshot**
-
-A dynamic briefing module that assembles:
-- **Hero Grid**: Top 5 stories of the day
-- **By The Numbers**: Key stat (AI-generated or evergreen fallback) + 3 supporting stats
-- **Fixture Focus**: Next match or recent results
-- **Transfers/FPL**: Editorial stories from sources
-- **Quote Strip**: Topical quote from source
-- **And Finally**: Fun/surprise story
-
-Endpoint: `GET /api/snapshot?club=arsenal` — returns full snapshot data structure.
-
-### **By The Numbers Fallback**
-
-When AI module returns null, render evergreen stats (priority order):
-1. Total goals scored this matchday (+ highest-scoring match)
-2. League leader points (+ gap to 2nd place)
-3. Relegation gap (17th vs 18th place)
-
-### **Club Detection**
-
-AI extracts club mentions from post text using Claude. Detected clubs are stored in `detected_clubs` and rendered as badges on feed cards. Multiple clubs per post allowed.
-
-### **Cron Jobs**
-
-Scheduled via Vercel Cron, protected by `CRON_SECRET` env var:
-- `/api/cron/reddit` — Fetch new Reddit posts
-- `/api/cron/rss` — Fetch RSS feeds (handles multiple feeds, logs execution time)
-- `/api/cron/youtube` — Fetch YouTube videos
-- `/api/cron/fixtures-refresh` — Update match data from Football Data API
-- `/api/cron/stats-refresh` — Update standings, scorers, etc.
-- `/api/cron/backfill-summaries` — Generate missing summaries via Claude (limited to 2 posts/run)
-- `/api/cron/source-detection` — Re-run club detection on old posts
-- `/api/cron/run-migration` — Check/apply pending DB migrations
-- `/api/cron/post-match-stats` — Post-match analysis (unused currently)
-
-**Backfill Summaries Note**: Limited to 2 posts per 15-min run due to Vercel Hobby plan 10s timeout. Each Anthropic call ≈3-4s, so 2 posts safely fits. Processes newest posts first (via `created_at DESC`), enabling ~8 posts/hour backfill completion.
+Failures degrade gracefully — summaries return null and the cron continues.
 
 ---
 
-## Monitoring & Health Checks
+## Cron Jobs
 
-### **Health Endpoint** (`GET /api/health`)
+Scheduled in `vercel.json`, all protected by `CRON_SECRET`.
 
-Real-time system health check (returns HTTP 200 ok or 503 error). Evaluates 5 metrics:
+| Route | Schedule | Notes |
+|---|---|---|
+| `/api/cron/rss` | `0 0 * * *` | `maxDuration = 60` |
+| `/api/cron/reddit` | `0 1 * * *` | |
+| `/api/cron/youtube` | `0 2 * * *` | See ingest exceptions |
+| `/api/cron/backfill-summaries` | `0 3 * * *` | Still scrapes; 2 posts/run |
+| `/api/cron/digest` | `0 7 * * *` | **Currently fails — see Email** |
 
-| Metric | Failure Threshold | Purpose |
-|--------|-------------------|---------|
-| Latest story age | > 2 hours | Data freshness |
-| Story count (24h) | < 10 stories | Feed volume |
-| AI summaries (24h) | < 50% coverage | Enrichment quality |
-| Table data age | > 24 hours | Database staleness |
-| Fixtures data age | > 24 hours | Match data freshness |
+Not scheduled, but present and callable: `fixtures-refresh`, `stats-refresh`,
+`post-match-stats`, `source-detection`, `run-migration`, plus `/api/cleanup`.
 
-**Response format**: `{ status: 'ok'|'error', checks: { ... }, timestamp }`
-Each check includes: `status` (ok|warning|error), `message`, and metric-specific fields.
+**Auth convention** — every cron route uses, and must keep using:
 
-### **Cron Logging** (`cron_logs` table)
+```ts
+const cronSecret = process.env.CRON_SECRET
+if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+}
+```
 
-Every cron job logs execution details for monitoring:
-- `job_name` — cron route name (e.g., 'backfill_summaries')
-- `status` — success|error
-- `stories_processed` — items processed (null for fixtures/migration)
-- `error_message` — null on success, error text on failure
-- `execution_time_ms` — wall-clock time (critical for Vercel timeout budgeting)
-- `created_at` — log timestamp (auto-purged after 7 days by pg_cron)
-
-**Why this matters**: Track which cron jobs fail, how long they take, and catch data drift before it becomes user-visible.
-
-### **Frontend Stale Data Banner** (`StaleDataBanner.tsx`)
-
-Component integrated into `SnapshotContainer.tsx` that:
-- Checks health endpoint every 5 minutes
-- Shows purple warning banner if latest story > 2 hours old
-- Helps users understand when data is stale
+A **missing** secret must 401. Never `if (cronSecret && ...)` — that fails open.
+Never read `CRON_SECRET` at module scope — an unset value turns the comparison
+into `"Bearer undefined"`, which is guessable. Guard before doing any work, and
+guard *every* exported handler, including `GET` preview handlers.
 
 ---
 
-## Database Schema (Key Tables)
+## SEO
+
+### Sitewide noindex
+
+Single control point: `src/lib/seo.ts` exports `NOINDEX`, read from
+`SITE_NOINDEX`. Two consumers, which are the only places that speak to indexing:
+
+- `src/app/layout.tsx` → `metadata.robots`. No page overrides `robots`, so the
+  root value governs every route, club pages included.
+- `src/app/robots.ts` → `/robots.txt`.
+
+Turn on: set `SITE_NOINDEX=true` and redeploy. Turn off: remove it (or set
+anything else) and redeploy. **Build-time, not runtime** — both consumers are
+statically generated, so a flip always needs a redeploy.
+
+Do **not** add `public/robots.txt`. A static file there shadows the generated
+route and silently disables the switch.
+
+### Canonicals — currently wrong
+
+- `NEXT_PUBLIC_SITE_URL` is `https://plhub.co.uk`, the superseded domain. It
+  feeds `metadataBase`, the canonical, and the `robots.txt` sitemap line.
+- `layout.tsx` sets a **fixed** `alternates.canonical`, so `/`, `/about`,
+  `/contact`, `/how-it-works` and `/principles` all canonical to the *same* URL,
+  declaring themselves duplicates of each other.
+- `/clubs/[slug]` overrides correctly but to a hardcoded
+  `pl-hub-webapp12.vercel.app`.
+- `sitemap.ts`, `JsonLd.tsx` and `Breadcrumb.tsx` also hardcode that
+  `.vercel.app` host.
+
+Net effect: three hostnames across the SEO surface and no page canonicalising to
+`thefootballhub.uk`. Fix before letting crawlers in.
+
+---
+
+## Database
+
+Supabase project `bgshqmpnqfmtsdvzbetm`. Use `createServerClient()`
+(`src/lib/supabase.ts`) in route handlers and server components. RLS is on;
+service role has full access.
+
+Tables actually in use: `posts`, `cron_logs`, `api_cache`,
+`by_the_numbers_tiles`. Also defined: `clubs`, `silly_stats`.
 
 ### `posts`
 ```
 id, external_id, title, url, content, summary, summary_hook,
-source (reddit|rss|youtube), club_slug, author, score, num_comments,
-subreddit, image_url, detected_clubs (JSONB),
+source (rss|reddit|youtube), club_slug, author, score, num_comments,
+subreddit, image_url, detected_clubs (JSONB), card_type, generated_headline,
 score_credibility, score_recency, score_engagement, score_significance,
 fetched_at, published_at
 ```
 
-### `clubs`
+### `cron_logs`
 ```
-slug, name, shortName, subreddit, primaryColor, secondaryColor,
-badgeEmoji, badgeUrl
-```
-
-### `by_the_numbers_tiles`
-```
-cache_key, data (JSONB), created_at, expires_at
+id, job_name, status (success|error), stories_processed,
+error_message, execution_time_ms, created_at
 ```
 
-### `cron_logs` (monitoring)
-```
-id, job_name, status (success|error), stories_processed, error_message, execution_time_ms, created_at
-```
+**There is no subscribers table.** See Email.
+
+---
+
+## Email Digest
+
+Subscribers were designed to live in a **Resend Audience**, not in Postgres.
+`src/lib/email/resend.ts` is the only consumer.
+
+**This is currently broken.** `RESEND_API_KEY`, `RESEND_AUDIENCE_ID` and
+`RESEND_FROM_EMAIL` are not set in any Vercel environment, so:
+
+- `listContacts()` throws → the 07:00 digest cron 500s daily and sends nothing.
+- `addContact()` throws → `/api/subscribe` 500s on every signup, so no one has
+  ever been captured.
+
+There are no subscribers anywhere, because no audience is configured to hold
+them. Configure the three vars before treating the digest as functional.
+
+---
+
+## Deployment
+
+**Vercel Hobby**, project `pl-hub-webapp12` (team `crumbalinos-projects`),
+auto-deploying `main` from `Crumbalino/PLHub`.
+
+### Function duration
+
+Fluid compute is enabled; the project default timeout is **300s**.
+
+| Plan | Default | Max |
+|---|---|---|
+| Hobby | 300s | **300s** |
+| Pro / Enterprise | 300s | 800s (1800s beta) |
+
+**Hobby is not limited to 10s.** That was the pre-fluid-compute limit and it is
+the reason several routes carry `maxDuration = 10` and artificially small batch
+sizes. Those caps are unnecessary.
+
+### Domain
+
+`thefootballhub.uk` is attached to the project and ownership-verified, but DNS
+still points at the registrar. To finish, either set `A @ → 76.76.21.21` or move
+nameservers to `ns1/ns2.vercel-dns.com`.
+
+A second Vercel project (`plhub`) previously deployed the same repo with the same
+env and the same five crons, double-running every job against one database. It
+has been deleted. **Do not recreate a second project for this repo.**
 
 ---
 
@@ -193,140 +287,82 @@ id, job_name, status (success|error), stories_processed, error_message, executio
 
 ```bash
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
 # Anthropic
-ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_API_KEY=
 
-# Football Data API
-FOOTBALL_DATA_API_KEY=...
+# Football data
+FOOTBALL_DATA_API_KEY=
 
-# External
-CRON_SECRET=<random 32-byte hex>
-NEXT_PUBLIC_SITE_URL=https://plhub.co.uk
-GA_MEASUREMENT_ID=G-... (optional)
+# Cron auth (openssl rand -hex 32)
+CRON_SECRET=
+
+# Site
+NEXT_PUBLIC_SITE_URL=https://thefootballhub.uk
+SITE_NOINDEX=false            # "true" noindexes the whole site; build-time
+
+# Email digest — NOT CURRENTLY SET, digest and signup are broken without them
+RESEND_API_KEY=
+RESEND_AUDIENCE_ID=
+RESEND_FROM_EMAIL=
+
+# Optional
+GA_MEASUREMENT_ID=
+YOUTUBE_API_KEY=
 ```
 
-See `.env.local.example` for full template.
+**Set in Vercel but read by no code** — `ENABLE_BTN`, `ENABLE_AI_SUMMARIES`
+(no reader anywhere in `src/`), and `API_FOOTBALL_KEY` (everything uses
+`FOOTBALL_DATA_API_KEY`).
 
 ---
 
-## Important Notes
+## Known Debt
 
-### **LEAGUE_ID Convention**
+Real, verified, and deliberately not yet fixed. Don't rediscover these.
 
-Football Data API uses different league IDs:
-- **2021**: Premier League (correct — used in all fixtures/standings/stats endpoints)
-- **39**: Championship (incorrect — sometimes mistakenly hardcoded)
-
-Always verify league ID is **2021** when modifying `/src/lib/api-football/*` files.
-
-### **Text Readability System**
-
-Component text follows opacity hierarchy (set via CSS variables or inline rgba):
-- **100%** (`--plh-text-100` or `#FAF5F0`): Primary labels, numbers, team names
-- **85%** (`rgba(250, 245, 240, 0.85)`): Secondary metadata (times, sources, subtitles)
-- **50%** (`--plh-text-50`): Context text, disabled states
-- **25-35%** (`rgba(250, 245, 240, 0.25–0.35)`): Hints, fine print
-
-Monospace (`Consolas`, `Courier New`) used for all numeric data.
-
-### **Error Handling in API Routes**
-
-Many endpoints gracefully degrade on error (e.g., snapshot API returns partial data on failure). Always log errors with context (`console.error('[Module Name] Error:', err)`) but don't crash the request. Return fallback data when possible.
-
-### **Component Patterns**
-
-- **Client Components**: Use `'use client'` at top for interactive features (state, events)
-- **Server Components**: Default for static content and data fetching (faster, no JS)
-- **Snapshot Modules**: Each is a client component that may fetch/manage internal state
-- **Cards**: Use inline styles for CSS variables (Tailwind can't interpolate `var()`)
-
-### **Claude API Usage**
-
-All Claude calls are in `/src/lib/claude.ts` using Anthropic SDK (`@anthropic-ai/sdk`):
-- **Model**: `claude-opus-4-6` (latest, most capable)
-- **Key functions**:
-  - `generateSummary()` — Returns summary (2-3 sentences) + hook (4-6 word teaser) + significance score (0-25)
-  - Used by `/api/cron/backfill-summaries` and feed enrichment
-- **Prompt strategy**: Persona-based (Guardian's Fiver voice), structured output parsing (HOOK: / SIGNIFICANCE: / SUMMARY:)
-- **Error handling**: Returns `{ summary: null, hook: null, significance: null }` on failure; cron continues gracefully
-- **Cost optimization**: Only calls API for posts missing summaries; backfill limited to 2 posts/run to stay within Vercel timeout
+1. **RSS rotation math is broken.** `rss/route.ts` buckets `runIndex` by 15
+   minutes and its comment assumes 5 feeds on a 15-minute cron. There are **9**
+   feeds and the cron is **daily**, so each feed is polled roughly every 9 days.
+2. **`backfill-summaries` caps at 2 posts/run** citing a 10s Hobby timeout that
+   does not exist. Raise it.
+3. **`backfill-summaries` still scrapes** via `src/lib/scraper.ts`.
+4. **Hardcoded `pl-hub-webapp12.vercel.app`** in `sitemap.ts`, `JsonLd.tsx`,
+   `Breadcrumb.tsx`, `clubs/[slug]/page.tsx`.
+5. **`NEXT_PUBLIC_SITE_URL` is the old domain**, and five pages share one fixed
+   canonical. See SEO.
+6. **`/api/cron/rss` does 13 sequential `DELETE ... ILIKE '%kw%'`** full scans on
+   `posts` every run as a keyword cleanup.
+7. **Email digest is non-functional** — no Resend config. See Email.
 
 ---
 
-## Build & Deploy
+## Conventions
 
-**Before pushing:**
-```bash
-npm run build        # Must pass
-npm run lint         # Should pass (warnings ok)
-```
-
-**Vercel Integration:**
-- Auto-deploys on `main` branch
-- Cron jobs run on schedule
-- Edge runtime on select routes (check logs if static gen fails)
-
-**Post-Deploy Verification:**
-- Hit `/api/health` endpoint to verify all 5 metrics pass (or at least no errors)
-- Check Vercel Cron dashboard to ensure scheduled jobs are executing
-- Verify `cron_logs` table has recent successful entries
-- Optional: Set up UptimeRobot or similar to monitor `/api/health` at 5-min intervals
+- **Server client**: `createServerClient()` in all route handlers and server
+  components.
+- **Cron auth**: fail closed, per-request read, guard every handler. See above.
+- **Error handling**: degrade gracefully — log with context
+  (`console.error('[Module] Error:', err)`) and return partial data rather than
+  500 where a partial answer is useful.
+- **Types**: defined in `src/lib/types.ts`; export and reuse. Avoid `any`.
+- **Components**: `'use client'` only where interaction requires it.
+- **Football league ID is `2021`** (Premier League). `39` is the Championship —
+  verify when touching `src/lib/api-football/*`.
 
 ---
 
-## Debugging Tips
+## Debugging
 
-1. **Snapshot data missing**: Check `/api/snapshot` response for null modules. Look for errors in API logs.
-2. **Feed empty**: Check Supabase `posts` table. Verify cron jobs are running (check Vercel dashboard). Query `cron_logs` table for recent failures.
-3. **AI module returning null**: Check Claude API logs and token usage. Verify prompt in `/src/lib/prompts/`. Backfill summaries cron may be behind if queue is large.
-4. **Club badges not showing**: Verify club slugs match database. Check `detected_clubs` JSONB field. Ensure source-detection cron has run.
-5. **Build fails**: Clear `.next/`, check TypeScript errors, verify all imports resolve.
-6. **Data appears stale**: Hit `/api/health` endpoint to check all 5 metrics. Banner on UI shows if latest story > 2 hours old. Check `cron_logs` for recent job failures.
-7. **Cron timeout on Vercel**: Check execution time in `cron_logs`. Vercel Hobby has 10s timeout; scale down batch sizes if needed. Backfill summaries already limited to 2 posts/run.
-
----
-
-## Key Patterns & Conventions
-
-### **Supabase & Server Code**
-
-- **Server Client**: Use `createServerClient()` (defined in `/src/lib/supabase.ts`) in all API routes and server components
-- **Cron Jobs**: Always validate `CRON_SECRET` header before processing; use `createServerClient()` with service role key
-- **RLS Policies**: Tables have Row Level Security enabled. Service role has full access; public role can read most tables
-- **Error Handling**: Many endpoints gracefully degrade on DB errors (return partial data, cache fallback) rather than 500
-
-### **API Response Patterns**
-
-- **Success**: `{ status: 'ok', data: ..., timestamp }` or `{ success: true, ... }`
-- **Error**: `{ error: 'message' }` with appropriate HTTP status (404, 500, 503)
-- **Snapshot/Feed endpoints**: Return partial data if one module fails (e.g., hero grid works even if "And Finally" errors)
-- **Health check**: Returns HTTP 200 (ok) or 503 (error); never 400-level responses
-
-### **TypeScript Conventions**
-
-- Types defined in `/src/lib/types.ts`; export and reuse rather than defining inline
-- API responses should have clear status/error unions to catch missing error handling at compile time
-- Avoid `any`; use `unknown` if type is truly unknown, then narrow with type guards
-
----
-
-## Quick Reference
-
-**Key Files to Know:**
-- Types: `/src/lib/types.ts`
-- Constants: `/src/lib/constants.ts`
-- Supabase Client: `/src/lib/supabase.ts`
-- Main Feed: `/src/components/feed/`
-- Snapshot: `/src/components/snapshot/`
-- Styles: `/src/app/globals.css`
-- Config: `next.config.mjs`, `tailwind.config.js`
-
-**Commonly Modified:**
-- API route logic: `/src/app/api/*/route.ts`
-- Component styling: `/src/components/**` (inline styles + globals.css)
-- Prompt engineering: `/src/lib/prompts/`
-- Club mappings: `/src/lib/clubs.ts`
+1. **Feed empty** → check `posts` in Supabase, then `cron_logs` for failures.
+2. **Cron timing out** → read `execution_time_ms` in `cron_logs`. Remember the
+   ceiling is 300s, not 10s.
+3. **Summaries missing** → `backfill-summaries` skips anything it can't scrape to
+   300+ chars.
+4. **Digest not arriving** → it isn't configured at all. See Email.
+5. **noindex not applying** → check `SITE_NOINDEX` is exactly `true`, that the
+   project was **redeployed** since, and that no `public/robots.txt` exists.
+6. **Build fails** → clear `.next/`, check TS errors and import resolution.
