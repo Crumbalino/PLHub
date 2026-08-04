@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const authHeader = request.headers.get('authorization')
     const cronSecret = process.env.CRON_SECRET
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -104,8 +104,15 @@ export async function POST(request: Request) {
   }
 }
 
-/* GET handler for manual testing */
+/* GET handler for manual testing — same auth as POST */
 export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
+
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   // For testing: generate content and return preview without sending
   try {
     const content = await generateDigestContent()

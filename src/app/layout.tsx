@@ -6,6 +6,7 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { JsonLd, websiteSchema, organizationSchema } from '@/components/JsonLd'
+import { NOINDEX } from '@/lib/seo'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import BackToTopButton from '@/components/BackToTopButton'
 
@@ -55,10 +56,9 @@ export const metadata: Metadata = {
     card: 'summary',
     site: '@thefootballhub',
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: NOINDEX
+    ? { index: false, follow: false }
+    : { index: true, follow: true },
   alternates: {
     canonical: siteUrl,
   },

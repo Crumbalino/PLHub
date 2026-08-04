@@ -9,12 +9,13 @@ import { detectClusters, extractClubs, extractKeywords, type StoryFingerprint } 
 
 export const maxDuration = 10
 
-// Verify cron secret
-const CRON_SECRET = process.env.CRON_SECRET
-
 async function handleRequest(request: NextRequest) {
+  // Verify cron secret. Read per-request, not at module scope: an unset
+  // secret must 401 rather than compare against the string "Bearer undefined".
   const authHeader = request.headers.get('authorization')
-  if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET
+
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
