@@ -11,7 +11,9 @@
 --   clubs  PK = slug (character varying), 20 rows
 --   posts  PK = id (uuid), 21 columns
 --   outlets / sources / players / claims do not exist
---   RLS is enabled on existing tables; service_role bypasses it
+--   RLS is enabled on posts, clubs, cron_logs, silly_stats -- but NOT on
+--     card_reactions, on_this_day, quotes or trivia (see issue #22).
+--     service_role bypasses RLS everywhere.
 --
 -- Idempotent throughout: safe to re-run. No CREATE POLICY IF NOT EXISTS.
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -258,8 +260,11 @@ CREATE INDEX IF NOT EXISTS claims_scored_idx        ON claims (in_scope, state)
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- 4. ROW LEVEL SECURITY
---    Existing tables have RLS on. Without it these are readable AND writable
---    through PostgREST with the anon key. service_role bypasses RLS, so the
+--    Without RLS a table is readable AND writable through PostgREST with the
+--    anon key, which ships in the client bundle. Four pre-existing tables are
+--    in exactly that state right now -- card_reactions, on_this_day, quotes,
+--    trivia (issue #22) -- so this is enabled explicitly here rather than
+--    assumed from the surrounding schema. service_role bypasses RLS, so the
 --    ingest path is unaffected. Public gets SELECT only; no write policies.
 -- ─────────────────────────────────────────────────────────────────────────
 
