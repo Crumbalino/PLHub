@@ -13,8 +13,7 @@ Known defects: **[GitHub Issues](https://github.com/Crumbalino/PLHub/issues)** �
 ## Claim record
 
 Each claim stores: entities (player, clubs from/to, agent), claim type, verbatim
-hedging language, outlet, byline, attributed origin, source URL. Resolved later;
-sources scored per PRINCIPLES.md.
+hedging language, outlet, byline, attributed origin, source URL. Resolved later.
 
 ## Ship order
 
@@ -23,11 +22,15 @@ sources scored per PRINCIPLES.md.
 ## Commands
 
 ```bash
+vercel env pull  # REQUIRED FIRST — dev and build both throw without NEXT_PUBLIC_SITE_URL
 npm run dev      # localhost:3000
 npm run build    # the only working gate — `npm run lint` has no ESLint config and prompts interactively
 curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/rss
 curl http://localhost:3000/api/health
 ```
+
+`src/lib/site.ts` has no fallback: a missing `NEXT_PUBLIC_SITE_URL` fails the
+build with `Refusing to build with a guessed domain`. Intended, not a broken repo.
 
 ## Ingest
 
@@ -37,13 +40,12 @@ RSS + Reddit is the intended surface. **Scraping is dead — do not reintroduce 
 - Reddit: `src/lib/reddit.ts`. Cron disabled — nothing arriving.
 - `posts.source` is `rss|reddit|youtube`; only `rss` is written.
 
-**Only RSS runs.** 3 of 9 feeds return nothing; only The Guardian's descriptions
-reach the 300-char summary threshold.
+**Only RSS runs.** 3 of 9 feeds return nothing; only The Guardian clears 300 chars.
 
 ## Cron
 
-**cron-job.org is the scheduler, not Vercel Cron.** `vercel.json`'s `crons` block
-never registered (Hobby cap) — dead config, not a schedule.
+**cron-job.org is the scheduler, not Vercel Cron.** There is no `vercel.json` —
+it declared 5 crons that never registered (Hobby cap). Do not recreate it.
 
 - `rss` — **enabled, every 15 min** (96 runs/day, `maxDuration = 60`)
 - `reddit`, `youtube`, `backfill-summaries`, `source-detection` — disabled
@@ -70,9 +72,8 @@ A missing secret must 401. Never `if (cronSecret && …)` — fails open. Never 
 | `src/lib/prompts/by-the-numbers.ts:64` | `claude-haiku-4-5-20251001` | By The Numbers tile |
 | `src/app/api/cron/rss/route.ts:16` | `claude-haiku-4-5-20251001` | `isRelevantToPL()` — **defined but never called** |
 
-Summaries are written **inline at ingest**, only when feed `content` is ≥300
-chars. The backfill path is disabled, so shorter posts never get one. Failures
-return null and the cron continues.
+Summaries are written **inline at ingest**, only when feed `content` is ≥300 chars;
+backfill is disabled, so shorter posts never get one. Failures return null.
 
 ## SEO
 
@@ -84,16 +85,17 @@ needs a redeploy.** Currently `true` on Production and Preview.
 **Never add `public/robots.txt`** — a static file there shadows the generated
 route and silently disables the switch.
 
-Canonicals are wrong: one fixed canonical covers five pages, and four files
-hardcode `pl-hub-webapp12.vercel.app`. Fix before lifting noindex.
+**Every route sets its own `alternates.canonical`**, relative to `metadataBase`;
+both derive from `SITE_URL`. The root canonical is the *homepage's* (`page.tsx`
+is a client component). A route omitting `alternates` inherits `/` and declares
+itself a duplicate — always set it.
 
 ## Database
 
 Supabase `bgshqmpnqfmtsdvzbetm`. RLS on; service role has full access.
 
-In use: `posts`, `cron_logs`, `api_cache`, `by_the_numbers_tiles`. Defined but
-unused: `clubs`, `silly_stats`. **No subscribers table** — subscribers were
-designed for a Resend Audience that does not exist.
+In use: `posts`, `cron_logs`, `api_cache`, `by_the_numbers_tiles`. Unused: `clubs`,
+`silly_stats`. **No subscribers table** — a Resend Audience that does not exist.
 
 ```
 posts: id, external_id, title, url, content, summary, summary_hook, source,
@@ -109,12 +111,10 @@ cron_logs: id, job_name, status, stories_processed, error_message,
 ## Deployment
 
 **Vercel Hobby**, project `pl-hub-webapp12`, team `crumbalinos-projects`,
-auto-deploys `main` from `Crumbalino/PLHub`. **Do not create a second Vercel
-project for this repo.** Fluid compute is on, project default **300s**; Hobby max
-is **300s, not 10s** — any `maxDuration = 10` reflects a stale assumption.
+auto-deploys `main`. **Do not create a second Vercel project for this repo.** Fluid
+compute on; Hobby max is **300s, not 10s** — any `maxDuration = 10` is stale.
 
-`thefootballhub.uk` is attached and ownership-verified. **DNS not cut over**: set
-`A @ → 76.76.21.21` or move nameservers to `ns1/ns2.vercel-dns.com`.
+`thefootballhub.uk` is live over HTTPS (`A` → 76.76.21.21); `www` 308s to apex.
 
 ## Environment variables
 
