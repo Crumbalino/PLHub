@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { getClub, getAllClubSlugs } from '@/config/clubs'
 import FeedList from '@/components/feed/FeedList'
 import { JsonLd, sportsTeamSchema } from '@/components/JsonLd'
+import { getFeed, emptyFeed } from '@/lib/feed'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,6 +59,18 @@ export default async function ClubPage({
   if (!club) notFound()
 
   const baseUrl = SITE_URL
+
+  // Page 1 is fetched HERE, on the server, so the posts are in the HTML a
+  // crawler receives. getFeed() is called directly rather than through
+  // /api/feed: a server component fetching its own API route is a second
+  // request back into the same deployment, slower and able to fail on its own.
+  // A database blip degrades to the empty state, which renders as real text.
+  const initial = await getFeed({ club: params.slug, sort: 'pulse', page: 1, limit: 20 }).catch(
+    (err) => {
+      console.error(`[clubs/${params.slug}] feed failed:`, err)
+      return emptyFeed()
+    },
+  )
 
   /* JSON-LD structured data for this club */
   const clubSchema = sportsTeamSchema(
@@ -113,7 +126,11 @@ export default async function ClubPage({
           </header>
 
           {/* Feed — filtered by club */}
-          <FeedList club={params.slug} />
+          <FeedList
+            club={params.slug}
+            initialPosts={initial.posts}
+            initialHasMore={initial.hasMore}
+          />
         </div>
       </div>
     </>

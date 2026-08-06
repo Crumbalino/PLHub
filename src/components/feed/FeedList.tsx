@@ -111,10 +111,24 @@ function renderCardByType(post: FeedPost, idx: number, onExpand: () => void) {
   );
 }
 
-export default function FeedList({ club = null }: { club?: string | null }) {
+export default function FeedList({
+  club = null,
+  initialPosts,
+  initialHasMore,
+}: {
+  club?: string | null;
+  /** Page 1, fetched on the server so it appears in the HTML a crawler sees. */
+  initialPosts?: FeedPost[];
+  initialHasMore?: boolean;
+}) {
   const [sortMode, setSortMode] = useState<SortMode>('pulse');
   const [fading, setFading] = useState(false);
-  const { posts, isLoading, isLoadingMore, loadMore, hasMore } = useFeed({ club, sortMode });
+  const { posts, isLoading, isLoadingMore, loadMore, hasMore } = useFeed({
+    club,
+    sortMode,
+    initialPosts,
+    initialHasMore,
+  });
 
   function toggleSort() {
     setFading(true);
