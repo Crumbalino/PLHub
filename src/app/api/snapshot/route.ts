@@ -16,7 +16,7 @@ import { filterPLContent } from '@/lib/content-filter'
 import { BY_THE_NUMBERS_SYSTEM_PROMPT, BY_THE_NUMBERS_API_CONFIG, type ByTheNumbersResponse } from '@/lib/prompts/by-the-numbers'
 import type { Post, FeedPost } from '@/lib/types'
 
-const BIG_SIX = ['arsenal', 'chelsea', 'liverpool', 'man-city', 'man-united', 'tottenham']
+const BIG_SIX = ['arsenal', 'chelsea', 'liverpool', 'man-city', 'man-utd', 'tottenham']
 
 // Team name mappings from football-data.org to club slugs (2025/26 PL season)
 const FOOTBALL_DATA_TO_SLUG: Record<string, string> = {
@@ -32,7 +32,7 @@ const FOOTBALL_DATA_TO_SLUG: Record<string, string> = {
   'Ipswich Town': 'ipswich',
   'Liverpool': 'liverpool',
   'Manchester City': 'man-city',
-  'Manchester United': 'man-united',
+  'Manchester United': 'man-utd',
   'Newcastle United': 'newcastle',
   'Nottingham Forest': 'nottingham-forest',
   'Southampton': 'southampton',

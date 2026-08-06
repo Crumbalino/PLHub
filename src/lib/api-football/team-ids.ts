@@ -18,7 +18,7 @@ export const TEAM_IDS: Record<string, number> = {
   'leicester': 46,
   'liverpool': 40,
   'man-city': 50,
-  'man-united': 33,
+  'man-utd': 33,
   'newcastle': 34,
   'nottingham-forest': 65,
   'southampton': 41,

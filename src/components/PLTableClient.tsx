@@ -24,8 +24,8 @@ interface TableEntry {
 const toSlug = (name: string) =>
   name
     .toLowerCase()
-    .replace('manchester united', 'manchester-united')
-    .replace('man united', 'man-united')
+    .replace('manchester united', 'man-utd')
+    .replace('man united', 'man-utd')
     .replace('manchester city', 'manchester-city')
     .replace('man city', 'man-city')
     .replace("nott'm forest", 'nottingham-forest')
