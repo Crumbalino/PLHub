@@ -37,16 +37,42 @@ export const CLUB_ALIASES: { alias: string; club_slug: string }[] = [
   { alias: 'PSG',               club_slug: 'psg' },
 ]
 
-export const PLAYER_ALIASES: { alias: string; player_slug: string }[] = [
-  { alias: 'Vinícius Júnior',   player_slug: 'vinicius-junior' },
-  { alias: 'Vinicius Jr.',      player_slug: 'vinicius-junior' },
-  { alias: 'Vinicius',          player_slug: 'vinicius-junior' },
-  { alias: 'Bruno Guimaraes',   player_slug: 'bruno-guimaraes' },
-  { alias: 'Bruno Guimarães',   player_slug: 'bruno-guimaraes' },
-  { alias: 'Antonee Robinson',  player_slug: 'antonee-robinson' },
-  { alias: 'Yan Diomandé',      player_slug: 'yan-diomande' },
-  { alias: 'Yan Diomande',      player_slug: 'yan-diomande' },
-  { alias: 'Ferran Torres',     player_slug: 'ferran-torres' },
-  { alias: 'Raul Jimenez',      player_slug: 'raul-jimenez' },
-  { alias: 'Rodri',             player_slug: 'rodri' },
+// player_aliases keys on player_id (uuid FK to players.id), not on a slug --
+// players.slug could not dedupe 'zubimendi' from 'martin-zubimendi', and that
+// split corrupts the hit rate. The values are opaque to the matcher, which
+// only compares them for equality.
+export const PLAYER_IDS = {
+  viniciusJunior:  '0f4a1c2e-1111-4a00-9c01-000000000001',
+  brunoGuimaraes:  '0f4a1c2e-1111-4a00-9c01-000000000002',
+  antoneeRobinson: '0f4a1c2e-1111-4a00-9c01-000000000003',
+  yanDiomande:     '0f4a1c2e-1111-4a00-9c01-000000000004',
+  ferranTorres:    '0f4a1c2e-1111-4a00-9c01-000000000005',
+  raulJimenez:     '0f4a1c2e-1111-4a00-9c01-000000000006',
+  rodri:           '0f4a1c2e-1111-4a00-9c01-000000000007',
+  bernardoSilva:   '0f4a1c2e-1111-4a00-9c01-000000000008',
+  thiagoSilva:     '0f4a1c2e-1111-4a00-9c01-000000000009',
+} as const
+
+export const PLAYER_ALIASES: { alias: string; player_id: string }[] = [
+  { alias: 'Vinícius Júnior',   player_id: PLAYER_IDS.viniciusJunior },
+  { alias: 'Vinicius Jr.',      player_id: PLAYER_IDS.viniciusJunior },
+  { alias: 'Vinicius',          player_id: PLAYER_IDS.viniciusJunior },
+  { alias: 'Bruno Guimaraes',   player_id: PLAYER_IDS.brunoGuimaraes },
+  { alias: 'Bruno Guimarães',   player_id: PLAYER_IDS.brunoGuimaraes },
+  { alias: 'Antonee Robinson',  player_id: PLAYER_IDS.antoneeRobinson },
+  { alias: 'Yan Diomandé',      player_id: PLAYER_IDS.yanDiomande },
+  { alias: 'Yan Diomande',      player_id: PLAYER_IDS.yanDiomande },
+  { alias: 'Ferran Torres',     player_id: PLAYER_IDS.ferranTorres },
+  { alias: 'Raul Jimenez',      player_id: PLAYER_IDS.raulJimenez },
+  { alias: 'Rodri',             player_id: PLAYER_IDS.rodri },
+
+  // THE AMBIGUOUS CASE. 'Silva' names two people, which the table now permits
+  // and the old global UNIQUE forbade. Each also has an unambiguous short form,
+  // which is the only thing allowed to corroborate one of them specifically.
+  { alias: 'Bernardo Silva',    player_id: PLAYER_IDS.bernardoSilva },
+  { alias: 'Silva',             player_id: PLAYER_IDS.bernardoSilva },
+  { alias: 'Bernardo',          player_id: PLAYER_IDS.bernardoSilva },
+  { alias: 'Thiago Silva',      player_id: PLAYER_IDS.thiagoSilva },
+  { alias: 'Silva',             player_id: PLAYER_IDS.thiagoSilva },
+  { alias: 'Thiago',            player_id: PLAYER_IDS.thiagoSilva },
 ]

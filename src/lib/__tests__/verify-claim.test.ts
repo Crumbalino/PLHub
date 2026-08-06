@@ -2,11 +2,12 @@ import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   verifyClaim, verifyClaims, appearsIn, normalise, buildAliasIndex, emptyAliasIndex,
+  appearsViaAlias,
 } from '@/lib/verify-claim'
 import type { RawClaim } from '@/lib/extract-claims'
 import { SAMPLE_24 } from '@/lib/__fixtures__/sample-24'
 import { LIVE_EXTRACTION } from '@/lib/__fixtures__/live-extraction'
-import { CLUB_ALIASES, PLAYER_ALIASES } from '@/lib/__fixtures__/aliases'
+import { CLUB_ALIASES, PLAYER_ALIASES, PLAYER_IDS } from '@/lib/__fixtures__/aliases'
 
 /** Production runs with the alias tables loaded; tests must mirror that. */
 const ALIASES = buildAliasIndex(PLAYER_ALIASES, CLUB_ALIASES)
@@ -90,14 +91,68 @@ describe('player verification', () => {
 
   test('accepts a player present only under an alias', () => {
     const aliases = buildAliasIndex(
-      [{ alias: 'Bruno Guimaraes', player_slug: 'bruno-guimaraes' },
-       { alias: 'Bruno G', player_slug: 'bruno-guimaraes' }],
+      [{ alias: 'Bruno Guimaraes', player_id: PLAYER_IDS.brunoGuimaraes },
+       { alias: 'Bruno G', player_id: PLAYER_IDS.brunoGuimaraes }],
       CLUB_ALIASES,
     )
     // Source says "Bruno Guimaraes"; the model returned the short alias.
     const a = article(21)
     const r = verifyClaim(stub({ player_name: 'Bruno G' }), a.title, a.content, aliases)
     assert.equal(r.rejected, false, 'alias resolution must accept a known variant')
+  })
+})
+
+describe('ambiguous aliases — two players, one shared short form', () => {
+  // player_aliases.alias is not globally unique: 'Silva' names two people.
+  // A Map<string, string> index would keep only whichever row loaded last, so
+  // every future 'Silva' would resolve to that one — the bug dropping the DB
+  // constraint removes, reappearing in the index built from it.
+  const named = (who: string) =>
+    `Arsenal are close to signing ${who} from Manchester City.`
+
+  test('the index keeps BOTH owners of a shared alias', () => {
+    const owners = ALIASES.players.get('silva')
+    assert.equal(owners?.length, 2, 'a shared alias must not be overwritten')
+    assert.ok(owners!.includes(PLAYER_IDS.bernardoSilva))
+    assert.ok(owners!.includes(PLAYER_IDS.thiagoSilva))
+  })
+
+  test('an unambiguous second alias resolves to the right player', () => {
+    // Text names Bernardo only. The model returned the full name.
+    const r = verifyClaim(
+      stub({ player_name: 'Bernardo Silva', to_club: 'Arsenal' }),
+      named('Bernardo'), null, ALIASES,
+    )
+    assert.equal(r.rejected, false, '"Bernardo" is unambiguous and corroborates')
+  })
+
+  test('and does NOT silently pick the other one', () => {
+    // Same text. Thiago is not in it, and must not inherit Bernardo's evidence.
+    const r = verifyClaim(
+      stub({ player_name: 'Thiago Silva', to_club: 'Arsenal' }),
+      named('Bernardo'), null, ALIASES,
+    )
+    assert.equal(r.rejected, true)
+    assert.equal(r.rejectReason, 'player_not_in_text')
+  })
+
+  test('a shared alias alone corroborates neither', () => {
+    // "Silva" proves a Silva is discussed, not which. Attributing it to one of
+    // them is a coin flip, and a wrong attribution corrupts that player's
+    // ledger. Rejecting is the safe direction; the resolver can revisit.
+    for (const who of ['Bernardo Silva', 'Thiago Silva']) {
+      const r = verifyClaim(
+        stub({ player_name: who, to_club: 'Arsenal' }),
+        named('Silva'), null, ALIASES,
+      )
+      assert.equal(r.rejected, true, `${who} must not be confirmed by "Silva" alone`)
+      assert.equal(r.rejectReason, 'player_not_in_text')
+    }
+  })
+
+  test('a full name written out still matches directly', () => {
+    assert.ok(appearsViaAlias('Thiago Silva', named('Thiago Silva'), ALIASES.players))
+    assert.ok(!appearsViaAlias('Bernardo Silva', named('Thiago'), ALIASES.players))
   })
 })
 

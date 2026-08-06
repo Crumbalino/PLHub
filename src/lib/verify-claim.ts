@@ -18,14 +18,25 @@
 import type { RawClaim } from '@/lib/extract-claims'
 
 /**
- * Alias lookup, keyed by NORMALISED alias.
+ * Alias lookup, keyed by NORMALISED alias, valued by the entities it names.
  *
- * In production, built from the player_aliases and club_aliases tables. In
- * tests, built inline. Values are the canonical slug.
+ * A LIST, not a single owner. player_aliases.alias is deliberately not unique:
+ * a global UNIQUE meant the first player to claim "Silva" owned that string
+ * permanently and every later claim naming it resolved to the wrong person,
+ * which is worse than not resolving at all. Modelling the value as one owner
+ * reintroduces exactly that bug one layer up — the last row loaded silently
+ * wins — so the index has to be able to say "this alias names two people".
+ *
+ * Club aliases carry the same shape for one matching function, though
+ * club_aliases.alias IS globally unique, so those lists are always length 1.
  */
+export type AliasMap = Map<string, string[]>
+
 export interface AliasIndex {
-  players: Map<string, string>
-  clubs: Map<string, string>
+  /** normalised alias -> player_aliases.player_id (UUIDs), possibly several */
+  players: AliasMap
+  /** normalised alias -> club_aliases.club_slug, DB-unique so always one */
+  clubs: AliasMap
 }
 
 export const emptyAliasIndex = (): AliasIndex => ({ players: new Map(), clubs: new Map() })
@@ -63,19 +74,30 @@ export function appearsIn(value: string, text: string): boolean {
  * used a nickname ("Tottenham" for "Spurs"), or a nickname when the text used
  * the canonical name. Both are legitimate; only an entity absent from the text
  * entirely is a fabrication.
+ *
+ * AMBIGUOUS ALIASES CANNOT CORROBORATE. If "Silva" names two players, finding
+ * "Silva" in the text proves a Silva is discussed, not which one — so it is
+ * not allowed to confirm either. The claim is rejected instead of attributed
+ * to a coin flip. Misattributing one outlet's claim to the wrong player
+ * corrupts the hit rate; leaving it unresolved does not, and the resolution
+ * pass can revisit it later. Only an alias naming exactly one entity is
+ * evidence about that entity.
  */
 export function appearsViaAlias(
   value: string,
   text: string,
-  index: Map<string, string>,
+  index: AliasMap,
 ): boolean {
   if (appearsIn(value, text)) return true
 
-  const slug = index.get(normalise(value))
-  if (!slug) return false
+  const owners = index.get(normalise(value))
+  if (!owners || owners.length === 0) return false
 
-  for (const [alias, aliasSlug] of index) {
-    if (aliasSlug === slug && normalise(text).includes(alias)) return true
+  const haystack = normalise(text)
+  for (const [alias, aliasOwners] of index) {
+    if (aliasOwners.length !== 1) continue
+    if (!owners.includes(aliasOwners[0])) continue
+    if (haystack.includes(alias)) return true
   }
   return false
 }
@@ -202,14 +224,29 @@ export function verifyClaims(
   return { accepted, rejected, nulledFieldCount, verifiedAt }
 }
 
-/** Build an AliasIndex from rows shaped like the alias tables. */
+/** Append an owner to an alias, never replacing one that is already there. */
+function addAlias(map: AliasMap, alias: string, owner: string): void {
+  const key = normalise(alias)
+  const owners = map.get(key)
+  if (!owners) map.set(key, [owner])
+  else if (!owners.includes(owner)) owners.push(owner)
+}
+
+/**
+ * Build an AliasIndex from rows shaped like the alias tables.
+ *
+ * The row shapes mirror the DDL exactly: player_aliases carries player_id (a
+ * uuid FK to players.id), club_aliases carries club_slug. The values are
+ * opaque here — appearsViaAlias only ever compares them for equality, to group
+ * aliases belonging to one entity — so a UUID works exactly as a slug did.
+ */
 export function buildAliasIndex(
-  playerAliases: { alias: string; player_slug: string }[],
+  playerAliases: { alias: string; player_id: string }[],
   clubAliases: { alias: string; club_slug: string }[],
 ): AliasIndex {
-  const players = new Map<string, string>()
-  const clubs = new Map<string, string>()
-  for (const r of playerAliases) players.set(normalise(r.alias), r.player_slug)
-  for (const r of clubAliases) clubs.set(normalise(r.alias), r.club_slug)
+  const players: AliasMap = new Map()
+  const clubs: AliasMap = new Map()
+  for (const r of playerAliases) addAlias(players, r.alias, r.player_id)
+  for (const r of clubAliases) addAlias(clubs, r.alias, r.club_slug)
   return { players, clubs }
 }
