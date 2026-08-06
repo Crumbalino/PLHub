@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SITE_URL } from '@/lib/site'
 import { JsonLd, breadcrumbSchema } from './JsonLd'
 
 interface BreadcrumbItem {
@@ -11,7 +12,7 @@ interface BreadcrumbProps {
 }
 
 export default function Breadcrumb({ items }: BreadcrumbProps) {
-  const baseUrl = 'https://pl-hub-webapp12.vercel.app'
+  const baseUrl = SITE_URL
   const schema = breadcrumbSchema(
     items.map((item) => ({
       name: item.name,

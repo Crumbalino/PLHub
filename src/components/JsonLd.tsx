@@ -1,4 +1,5 @@
 import React from 'react';
+import { SITE_URL } from '@/lib/site';
 
 export interface JsonLdProps {
   data: Record<string, any>;
@@ -22,12 +23,12 @@ export function websiteSchema() {
     '@type': 'WebSite',
     name: 'PLHub',
     description: 'Premier League news, fixtures, stats and insights',
-    url: 'https://pl-hub-webapp12.vercel.app',
+    url: SITE_URL,
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://pl-hub-webapp12.vercel.app?q={search_term_string}',
+        urlTemplate: `${SITE_URL}?q={search_term_string}`,
       },
       query_input: 'required name=search_term_string',
     },
@@ -43,8 +44,8 @@ export function organizationSchema() {
     '@type': 'Organization',
     name: 'PLHub',
     description: 'Your Premier League insight hub',
-    url: 'https://pl-hub-webapp12.vercel.app',
-    logo: 'https://pl-hub-webapp12.vercel.app/logo.svg',
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.svg`,
     sameAs: [
       'https://twitter.com/plhub',
       'https://github.com/Crumbalino/PLHub',
@@ -68,7 +69,7 @@ export function sportsTeamSchema(
     '@type': 'SportsTeam',
     name: clubName,
     alternateName: clubCode,
-    url: `https://pl-hub-webapp12.vercel.app/clubs/${clubCode.toLowerCase()}`,
+    url: `${SITE_URL}/clubs/${clubCode.toLowerCase()}`,
     foundingDate: `${founded}-01-01`,
     location: {
       '@type': 'Place',
@@ -215,14 +216,14 @@ export function newsArticleSchema(
     author: {
       '@type': 'Organization',
       name: 'PLHub',
-      url: 'https://pl-hub-webapp12.vercel.app',
+      url: SITE_URL,
     },
     publisher: {
       '@type': 'Organization',
       name: 'PLHub',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://pl-hub-webapp12.vercel.app/logo.svg',
+        url: `${SITE_URL}/logo.svg`,
       },
     },
   };

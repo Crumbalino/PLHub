@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next'
+import { SITE_URL } from '@/lib/site'
 import { NOINDEX } from '@/lib/seo'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
+const siteUrl = SITE_URL
 
 export default function robots(): MetadataRoute.Robots {
   // Sitewide noindex: disallow everything and advertise no sitemap.

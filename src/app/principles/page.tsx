@@ -3,6 +3,7 @@ import React from 'react'
 import PageLayout from '@/components/PageLayout'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/principles' },
   title: 'What PLHub Stands For — Our Principles',
   description:
     'Five things PLHub will never compromise on. Starting with: ' +

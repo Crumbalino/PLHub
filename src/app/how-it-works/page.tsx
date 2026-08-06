@@ -3,6 +3,7 @@ import React from 'react'
 import PageLayout from '@/components/PageLayout'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/how-it-works' },
   title: 'How PLHub Works — Sources, Index, AI Summaries',
   description:
     'How PLHub aggregates Premier League news, scores it by what matters, ' +

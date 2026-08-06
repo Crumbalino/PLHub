@@ -3,6 +3,7 @@ import React from 'react'
 import PageLayout from '@/components/PageLayout'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/about' },
   title: 'About PLHub — The Premier League Without the Noise',
   description:
     'PLHub is a Premier League news aggregator built by a Spurs fan. ' +

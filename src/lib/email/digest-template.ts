@@ -7,6 +7,7 @@
  */
 
 import type { DigestContent, DigestStory } from './digest-content'
+import { SITE_URL } from '@/lib/site'
 
 const COLORS = {
   bg: '#0D1B2A',
@@ -19,7 +20,7 @@ const COLORS = {
   border: '#FFFFFF',
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://plhub.co.uk'
+const siteUrl = SITE_URL
 
 function storyRow(story: DigestStory, index: number): string {
   return `

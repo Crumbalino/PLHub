@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { JsonLd, websiteSchema, organizationSchema } from '@/components/JsonLd'
 import { NOINDEX } from '@/lib/seo'
+import { SITE_URL } from '@/lib/site'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import BackToTopButton from '@/components/BackToTopButton'
 
@@ -24,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '600', '700'],
 })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thefootballhub.uk'
+const siteUrl = SITE_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -59,8 +60,15 @@ export const metadata: Metadata = {
   robots: NOINDEX
     ? { index: false, follow: false }
     : { index: true, follow: true },
+  // This canonical belongs to `/` only. src/app/page.tsx is a client component
+  // and cannot export metadata itself, so the homepage's canonical has to live
+  // on its layout — which is this one.
+  //
+  // EVERY other route MUST override `alternates.canonical` with its own path,
+  // or it silently inherits '/' and declares itself a duplicate of the
+  // homepage. That was the bug in #8. When adding a page, set its canonical.
   alternates: {
-    canonical: siteUrl,
+    canonical: '/',
   },
 }
 
