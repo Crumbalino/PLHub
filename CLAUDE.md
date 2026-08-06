@@ -100,6 +100,9 @@ a client component) — a route omitting `alternates` inherits `/`. Always set i
 
 Supabase `bgshqmpnqfmtsdvzbetm`. RLS on; service role has full access.
 
+**A row count in any doc is a timestamped reading, not a fact** — `posts` and
+`cron_logs` grow every 15 minutes. Re-count before reasoning about volume.
+
 In use: `posts`, `cron_logs`. Also present: `clubs`, `silly_stats`, `card_reactions`,
 `on_this_day`, `quotes`, `trivia`. **No subscribers table.**
 
