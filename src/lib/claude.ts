@@ -11,6 +11,19 @@ export interface SummaryAndHook {
   cardTypeHint?: 'story' | 'stat' | 'quote' | 'result' | 'lol' | 'rumour' | null
 }
 
+/**
+ * Strip a Markdown code fence from a model response.
+ *
+ * The prompt says "Return ONLY valid JSON ... no other text", and the model
+ * still wraps the object in ```json ... ``` a good share of the time. That is
+ * normal model behaviour, not a prompt defect -- never rely on the instruction
+ * alone. Returns the input unchanged when there is no fence.
+ */
+export function stripCodeFences(text: string): string {
+  const fenced = text.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/)
+  return (fenced ? fenced[1] : text).trim()
+}
+
 export async function generateSummary(
   title: string,
   content: string | null,
@@ -75,7 +88,21 @@ Return ONLY valid JSON in this exact format, no other text:
     if (block.type !== 'text') return { summary: null, hook: null, significance: null, cardTypeHint: null }
 
     const text = block.text.trim()
-    const data = JSON.parse(text)
+
+    let data: any
+    try {
+      data = JSON.parse(stripCodeFences(text))
+    } catch (parseErr) {
+      // Log the model's actual output, not just the SyntaxError. Without this
+      // a fenced or prose-wrapped response is indistinguishable from an API
+      // failure -- both just produce a null summary and a `success` cron row.
+      console.error(
+        '[claude] summary JSON parse failed:',
+        parseErr instanceof Error ? parseErr.message : parseErr,
+      )
+      console.error('[claude] raw model output was:', JSON.stringify(text))
+      return { summary: null, hook: null, significance: null, cardTypeHint: null }
+    }
 
     return {
       summary: data.summary || null,
