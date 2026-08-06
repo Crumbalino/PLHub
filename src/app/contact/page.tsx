@@ -3,6 +3,7 @@ import React from 'react'
 import PageLayout from '@/components/PageLayout'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/contact' },
   title: 'Get In Touch — PLHub',
   description: 'PLHub is a one-person operation. That person reads everything.',
 }
