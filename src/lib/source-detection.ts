@@ -65,11 +65,11 @@ const PL_CLUBS: Record<string, string> = {
   'mcfc': 'man-city',
 
   // Manchester United
-  'manchester united': 'man-united',
-  'man united': 'man-united',
-  'man utd': 'man-united',
-  'united': 'man-united',
-  'mufc': 'man-united',
+  'manchester united': 'man-utd',
+  'man united': 'man-utd',
+  'man utd': 'man-utd',
+  'united': 'man-utd',
+  'mufc': 'man-utd',
 
   // Newcastle United
   'newcastle': 'newcastle',

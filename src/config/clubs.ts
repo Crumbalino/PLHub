@@ -240,8 +240,8 @@ export const CLUBS: Record<string, Club> = {
     footballDataId: 67,
     apiSportsId: 34,
   },
-  'nottm-forest': {
-    slug: 'nottm-forest',
+  'nottingham-forest': {
+    slug: 'nottingham-forest',
     name: 'Nottingham Forest Football Club',
     shortName: 'Nottm Forest',
     code: 'NFO',
@@ -270,8 +270,8 @@ export const CLUBS: Record<string, Club> = {
     footballDataId: 340,
     apiSportsId: 41,
   },
-  spurs: {
-    slug: 'spurs',
+  tottenham: {
+    slug: 'tottenham',
     name: 'Tottenham Hotspur Football Club',
     shortName: 'Spurs',
     code: 'TOT',
