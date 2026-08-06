@@ -98,6 +98,37 @@ describe('other sports reusing club names are vetoed', () => {
   })
 })
 
+describe('manager is not a signal, and must not become one again', () => {
+  // Point-in-time facts misfile a corpus that spans months. Five managers moved
+  // between PL clubs in summer 2026; matching a March story about Chelsea
+  // against "Enzo Maresca" would file it under Manchester City.
+  test('a manager name plus a club URL is one signal, not two', () => {
+    assert.equal(
+      classifyClub(
+        'Enzo Maresca ready for the new season',
+        'The head coach spoke to the media on Tuesday.',
+        bbc('manchester-city'),
+      ),
+      null,
+    )
+  })
+
+  test('no match ever reports a manager signal', () => {
+    const all = [
+      matchClubs('Enzo Maresca and Xabi Alonso', null, bbc('chelsea')),
+      matchClubs('Roberto De Zerbi arrives', null, bbc('tottenham-hotspur')),
+      matchClubs('Arsenal beat Everton at the Emirates Stadium', null, bbc('arsenal')),
+    ].flat()
+    assert.ok(all.length > 0, 'fixture should produce matches')
+    for (const m of all) {
+      assert.ok(
+        !(m.signals as string[]).includes('manager'),
+        `${m.slug} reported a manager signal`,
+      )
+    }
+  })
+})
+
 describe('multi-club posts', () => {
   test('most signals wins', () => {
     const m = classifyClub(

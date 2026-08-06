@@ -22,7 +22,25 @@
 
 import { CLUBS } from '@/config/clubs'
 
-export type ClubSignal = 'name' | 'url' | 'stadium' | 'manager' | 'nickname'
+/**
+ * SIGNALS MUST BE TIME-INVARIANT PROPERTIES OF A CLUB.
+ *
+ * A club's name, its URL slug, its ground and its nickname are the same fact
+ * in a post from February and a post from today. They can be absent, which
+ * yields null and is a safe outcome by design. They cannot be wrong.
+ *
+ * `manager` was a signal and was removed. It is point-in-time, and the corpus
+ * spans months, so a current snapshot misfiles historical posts: five managers
+ * moved between Premier League clubs in the summer of 2026, and matching a
+ * March story about Chelsea against "Enzo Maresca" files it under Manchester
+ * City. Measured before removal, manager was load-bearing for 487 of 4,700
+ * classifications (10.4%) and moved none of them to a different club, so the
+ * cost of dropping it was 430 net classifications with no club falling below
+ * 25 posts. Dating it would need per-day tenure history across the whole
+ * corpus window, which no available source provides — football-data returns
+ * coach: null on this key. Do not re-add it. Squad lists fail identically.
+ */
+export type ClubSignal = 'name' | 'url' | 'stadium' | 'nickname'
 
 /** Minimum distinct signal types required to assign a post to a club. */
 export const REQUIRED_SIGNALS = 2
@@ -166,8 +184,9 @@ export function matchClubs(
     if (NAMES[slug].some((n) => wordIn(n, text))) signals.push('name')
     if (URL_TOKENS[slug].some((t) => link.includes(t))) signals.push('url')
     if (club && wordIn(fold(club.stadium), text)) signals.push('stadium')
-    if (club && wordIn(fold(club.manager), text)) signals.push('manager')
     if (NICKNAMES[slug].some((n) => wordIn(n, text))) signals.push('nickname')
+    // No manager signal. See the note on ClubSignal — it is point-in-time and
+    // config.manager is display data for the club page, not a matcher input.
 
     if (signals.length) out.push({ slug, signals })
   }
