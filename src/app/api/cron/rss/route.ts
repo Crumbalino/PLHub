@@ -135,11 +135,18 @@ export async function GET(req: NextRequest) {
       // Detect card type using deterministic patterns
       let detectedType = detectCardType(post.title, post.url)
 
-      // Try to get card_type_hint from Claude if we have sufficient content
+      // Try to get card_type_hint from Claude if we have sufficient content.
+      //
+      // Gated behind SUMMARIES_ENABLED, default OFF. This call runs once per
+      // qualifying post on a cron that fires 96x/day, so leaving it on is an
+      // open-ended spend commitment on every ingest. Enable deliberately:
+      // set SUMMARIES_ENABLED=true and redeploy. Anything other than the exact
+      // string "true" leaves it off.
+      const summariesEnabled = process.env.SUMMARIES_ENABLED === 'true'
       let summary: string | null = null
       let generatedHeadline: string | null = null
       const contentLength = (post.content ?? '').trim().length
-      if (contentLength >= 300) {
+      if (summariesEnabled && contentLength >= 300) {
         try {
           const summaryData = await generateSummary(post.title, post.content)
           summary = summaryData.summary
