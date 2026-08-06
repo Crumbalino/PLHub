@@ -9,6 +9,8 @@ Stack: Next.js 14 App Router, React 18, TypeScript, Tailwind, Supabase, Claude A
 
 Editorial rules: **[docs/PRINCIPLES.md](docs/PRINCIPLES.md)** — read before touching relevance, classification or scoring. Known defects: **[GitHub Issues](https://github.com/Crumbalino/PLHub/issues)** — check before reporting or "fixing" anything below.
 
+**Verify against the live system, not the artefact.** `migrations/`, docs and this file have each been wrong about production — three separate misreadings on 6 Aug 2026 (`fetched_at` as an ingest time, "RLS is enabled on existing tables", `relrowsecurity=true` as proof). Query the database, the deployment and the dashboard; report findings before committing.
+
 ## Claim record
 
 Each claim stores: entities (player, clubs from/to, agent), claim type, verbatim
