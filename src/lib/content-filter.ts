@@ -85,6 +85,37 @@ export const ALWAYS_HIDE = [
  * - ALL posts require PL club mention or competition match
  * - No "trusted source" exceptions
  */
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * Whole-word matcher for a keyword list.
+ *
+ * ALWAYS_HIDE used `text.includes(kw)`, so three-letter entries matched inside
+ * ordinary words: "mma" fired on *commanding*, "efl" on *reflect*, "nfl" on
+ * *influence*, "ashes" on *clashes*, "nba" on unrelated URLs. Measured over
+ * the live corpus that silently hid roughly 200 Premier League posts, and the
+ * shorter the keyword the more damage it did.
+ *
+ * The boundary is applied only where the keyword itself ends in a word
+ * character. Entries like 'fury-', 'get £' and 'bet £10' deliberately end in
+ * punctuation and must keep matching what follows them.
+ */
+function buildMatchers(keywords: string[]): { kw: string; re: RegExp }[] {
+  return keywords.map((kw) => {
+    const lead = /^[a-z0-9]/i.test(kw) ? '(?<![a-z0-9])' : ''
+    const tail = /[a-z0-9]$/i.test(kw) ? '(?![a-z0-9])' : ''
+    return { kw, re: new RegExp(`${lead}${escapeRe(kw)}${tail}`, 'i') }
+  })
+}
+
+const ALWAYS_HIDE_MATCHERS = buildMatchers(ALWAYS_HIDE)
+
+/** The ALWAYS_HIDE keyword that hides this text, or null. */
+export function alwaysHideReason(text: string): string | null {
+  for (const { kw, re } of ALWAYS_HIDE_MATCHERS) if (re.test(text)) return kw
+  return null
+}
+
 export function filterPLContent(posts: Post[]): Post[] {
   const PL_COMPETITIONS = [
     'premier league', 'fa cup', 'league cup', 'carabao cup',
@@ -104,8 +135,16 @@ export function filterPLContent(posts: Post[]): Post[] {
       (post.content || '')
     ).toLowerCase()
 
-    // 2. Block ALWAYS_HIDE keywords — fires for ALL sources including BBC/Sky
-    if (ALWAYS_HIDE.some(kw => text.includes(kw))) return false
+    // 2. Block ALWAYS_HIDE keywords — fires for ALL sources including BBC/Sky.
+    //    Whole-word, and logged: a filter that removes content silently is a
+    //    filter nobody can audit.
+    const hidden = alwaysHideReason(text)
+    if (hidden) {
+      console.log(
+        `[content-filter] HIDE "${hidden}" — ${(post.title || '').slice(0, 90)}`,
+      )
+      return false
+    }
 
     // 3. PL relevance check — required for ALL posts regardless of source
     const hasPLClub = PL_CLUBS.some(club => text.includes(club))

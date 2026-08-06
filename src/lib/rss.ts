@@ -1,5 +1,6 @@
 import Parser from 'rss-parser'
 import { isGamblingContent } from './content-filter'
+import { classifyClub } from './club-matcher'
 
 const NON_PL_KEYWORDS = [
   'NFL', 'NBA', 'MLB', 'NHL', 'NASCAR', 'Formula 1', 'F1',
@@ -111,7 +112,8 @@ export interface FetchedRssPost {
   url: string
   content: string | null
   source: 'rss'
-  club_slug: null
+  /** Set by classifyClub(); null when fewer than two signals agree. */
+  club_slug: string | null
   author: string | null
   score: number
   subreddit: string // repurposed as feed name for RSS items
@@ -179,14 +181,17 @@ async function fetchFeed(name: string, url: string): Promise<FetchedRssPost[]> {
       .map((item) => {
         const guid = item.guid ?? item.link ?? ''
         const imageUrl = extractImageUrl(item)
+        const title = item.title ?? 'Untitled'
+        const content = item.contentSnippet ?? item.content ?? null
+        const link = item.link ?? ''
 
         return {
           external_id: guid,
-          title: item.title ?? 'Untitled',
-          url: item.link ?? '',
-          content: item.contentSnippet ?? item.content ?? null,
+          title,
+          url: link,
+          content,
           source: 'rss' as const,
-          club_slug: null,
+          club_slug: classifyClub(title, content, link),
           author: item.creator ?? null,
           score: 0,
           subreddit: name,
