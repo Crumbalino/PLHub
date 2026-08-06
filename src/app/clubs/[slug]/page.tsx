@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { SITE_URL } from '@/lib/site'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getClub, getAllClubSlugs } from '@/config/clubs'
@@ -21,7 +22,7 @@ export async function generateMetadata({
   const club = getClub(params.slug)
   if (!club) return {}
 
-  const baseUrl = 'https://pl-hub-webapp12.vercel.app'
+  const baseUrl = SITE_URL
   const title = `${club.name} News, Transfers & Rumours`
   const description = `The latest ${club.name} news, transfer rumours, match reports and fan discussion. Ranked by the PLHub Index. Updated constantly.`
 
@@ -56,7 +57,7 @@ export default async function ClubPage({
   const club = getClub(params.slug)
   if (!club) notFound()
 
-  const baseUrl = 'https://pl-hub-webapp12.vercel.app'
+  const baseUrl = SITE_URL
 
   /* JSON-LD structured data for this club */
   const clubSchema = sportsTeamSchema(

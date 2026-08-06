@@ -5,7 +5,7 @@
  * Environment variables:
  *   RESEND_API_KEY — your Resend API key
  *   RESEND_AUDIENCE_ID — the audience/list ID for PLHub subscribers
- *   RESEND_FROM_EMAIL — sender address (e.g. digest@plhub.co.uk)
+ *   RESEND_FROM_EMAIL — sender address, required (e.g. digest@thefootballhub.uk)
  */
 
 const RESEND_BASE = 'https://api.resend.com'
@@ -14,6 +14,21 @@ function getApiKey(): string {
   const key = process.env.RESEND_API_KEY
   if (!key) throw new Error('RESEND_API_KEY not set')
   return key
+}
+
+/**
+ * Sender address. No fallback: a wrong From on a real send is worse than a
+ * failed send, and a hardcoded default silently mails from a dead domain.
+ *
+ * Thrown at call time rather than module scope — matching getApiKey() above —
+ * because this module is imported by route handlers that are evaluated during
+ * `next build`, and RESEND_FROM_EMAIL is not currently set in any environment.
+ * A module-scope throw would fail every build rather than only failing sends.
+ */
+function getFromAddress(): string {
+  const from = process.env.RESEND_FROM_EMAIL
+  if (!from) throw new Error('RESEND_FROM_EMAIL not set')
+  return from
 }
 
 async function resendFetch(path: string, options: RequestInit = {}) {
@@ -47,7 +62,7 @@ export async function sendEmail({
   html: string
   from?: string
 }) {
-  const fromAddress = from || process.env.RESEND_FROM_EMAIL || 'PLHub <digest@plhub.co.uk>'
+  const fromAddress = from || getFromAddress()
 
   return resendFetch('/emails', {
     method: 'POST',
@@ -68,7 +83,7 @@ export async function sendBatchEmails(
     html: string
   }>
 ) {
-  const fromAddress = process.env.RESEND_FROM_EMAIL || 'PLHub <digest@plhub.co.uk>'
+  const fromAddress = getFromAddress()
 
   return resendFetch('/emails/batch', {
     method: 'POST',

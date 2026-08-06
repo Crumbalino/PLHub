@@ -73,7 +73,7 @@ export default function ContactPage() {
           How to reach me
         </p>
         <a
-          href="mailto:hi@plhub.co.uk"
+          href="mailto:contact@thefootballhub.uk"
           style={{
             fontSize: '22px',
             fontWeight: 600,
@@ -84,7 +84,7 @@ export default function ContactPage() {
             marginBottom: '12px',
           }}
         >
-          hi@plhub.co.uk
+          contact@thefootballhub.uk
         </a>
         <p
           style={{

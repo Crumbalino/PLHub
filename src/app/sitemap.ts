@@ -1,8 +1,9 @@
 import { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/site';
 import { getAllClubSlugs } from '@/config/clubs';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://pl-hub-webapp12.vercel.app';
+  const baseUrl = SITE_URL;
 
   // Static routes
   const staticRoutes: MetadataRoute.Sitemap = [

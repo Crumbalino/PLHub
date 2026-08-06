@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { JsonLd, websiteSchema, organizationSchema } from '@/components/JsonLd'
 import { NOINDEX } from '@/lib/seo'
+import { SITE_URL } from '@/lib/site'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import BackToTopButton from '@/components/BackToTopButton'
 
@@ -24,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '600', '700'],
 })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thefootballhub.uk'
+const siteUrl = SITE_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
