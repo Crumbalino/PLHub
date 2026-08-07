@@ -119,13 +119,37 @@ export async function getInScopeClubs(): Promise<NavClub[]> {
 
     if (error) throw error
 
-    return (data ?? [])
-      .map((row) => {
-        const club = getClub(row.slug)
-        return club ? { slug: row.slug, name: club.shortName } : null
-      })
-      .filter((c): c is NavClub => c !== null)
-      .sort((a, b) => a.name.localeCompare(b.name, 'en-GB'))
+    // CANONICAL CLUB LIST: `clubs` where in_scope = true. 20 rows.
+    //
+    // Chosen over src/config/clubs.ts (22) and src/lib/clubs.ts (21) because it
+    // is the FK target for posts.club_slug, claims.club_slug,
+    // claims.from_club_slug, players.current_club_slug and club_aliases, and
+    // because its membership was set by an owner-supplied migration
+    // (2026-08-07-promoted-clubs.sql) rather than accumulated by hand. See #24.
+    //
+    // The nav renders the INTERSECTION with config/clubs.ts, because a nav item
+    // has to link to a page and /clubs/[slug] is generated from the config. The
+    // shortfall is logged rather than swallowed: it used to disappear silently,
+    // which is how "Clubs covered: 18" sat next to a 20-club league.
+    const rows = data ?? []
+    const resolved: NavClub[] = []
+    const unpageable: string[] = []
+
+    for (const row of rows) {
+      const club = getClub(row.slug)
+      if (club) resolved.push({ slug: row.slug, name: club.shortName })
+      else unpageable.push(row.slug)
+    }
+
+    if (unpageable.length > 0) {
+      console.error(
+        `[stats] ${unpageable.length} in-scope club(s) have no src/config/clubs.ts entry ` +
+          `and are therefore missing from the nav, the sitemap and /clubs/[slug]: ` +
+          `${unpageable.join(', ')}. Canonical list is clubs.in_scope (${rows.length} rows). See #24.`
+      )
+    }
+
+    return resolved.sort((a, b) => a.name.localeCompare(b.name, 'en-GB'))
   } catch (err) {
     console.error('[stats] Failed to read in-scope clubs:', err)
     return []
