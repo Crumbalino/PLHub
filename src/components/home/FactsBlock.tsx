@@ -24,18 +24,19 @@ export default function FactsBlock({ latest, stats }: FactsBlockProps) {
   return (
     <section className="tfh-facts" aria-labelledby="tfh-facts-title">
       <h2 id="tfh-facts-title" className="tfh-facts-title">
-        {/* [[COPY: facts block heading]] */}
         What this is
       </h2>
 
       <p className="tfh-facts-lede">
-        {/* [[COPY: one paragraph — what the site does. Prose, owner-written.]] */}
+        The Football Hub logs Premier League transfer rumours and scores how
+        well each one is sourced. Not whether it will happen — how much is
+        behind it. Every claim keeps the outlet that published it, the wording
+        they hedged with, and whoever they credited.
       </p>
 
       {latest.length > 0 && (
         <>
           <h3 className="tfh-facts-subtitle">
-            {/* [[COPY: latest items heading]] */}
             Latest
           </h3>
           <ul className="tfh-facts-list">
@@ -58,19 +59,19 @@ export default function FactsBlock({ latest, stats }: FactsBlockProps) {
       <dl className="tfh-facts-numbers">
         {stats.postsIngested > 0 && (
           <div>
-            <dt>{/* [[COPY: label — posts ingested]] */}Stories ingested</dt>
+            <dt>Stories logged</dt>
             <dd>{fmt(stats.postsIngested)}</dd>
           </div>
         )}
         {stats.postsAttributed > 0 && (
           <div>
-            <dt>{/* [[COPY: label — posts attributed]] */}Attributed to a club</dt>
+            <dt>Pinned to a club</dt>
             <dd>{fmt(stats.postsAttributed)}</dd>
           </div>
         )}
         {stats.clubsCovered > 0 && (
           <div>
-            <dt>{/* [[COPY: label — clubs covered]] */}Clubs covered</dt>
+            <dt>Clubs covered</dt>
             <dd>{fmt(stats.clubsCovered)}</dd>
           </div>
         )}

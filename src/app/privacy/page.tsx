@@ -19,9 +19,9 @@ export const metadata: Metadata = {
  * that write each key, the database claim against the live schema, and the
  * reactions claim against the increment_reaction RPC.
  *
- * Anything that frames, introduces or characterises is a [[COPY: ...]]
- * placeholder for the owner. This is one person's voice and generic text
- * would be worse than none.
+ * Every framing line, heading and intro is the owner's, written in one pass
+ * on 7 August 2026. They were placeholders until then, deliberately, because
+ * this is one person's voice and generic text would have been worse than none.
  *
  * If any of these facts stops being true, this page is wrong and must change
  * in the same commit. That is the whole point of writing it from an audit
@@ -49,12 +49,17 @@ export default function PrivacyPage() {
   return (
     <PageLayout
       headline="Privacy"
-      subheading="[[COPY: privacy subheading — one line]]"
+      subheading="What this site knows about you, which is almost nothing."
     >
-      <p style={P}>[[COPY: intro paragraph]]</p>
+      <p style={P}>
+        Most privacy policies are long because the site has a lot to admit.
+        This one is short. We set no cookies, we run no analytics, and the
+        database holds no record of you. What follows is the detail, and the
+        exceptions.
+      </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>[[COPY: heading — cookies]]</h2>
+      <h2 style={H}>No cookies.</h2>
       <p style={P}>
         This site sets no cookies. There is no cookie banner because there is
         nothing to consent to.
@@ -66,7 +71,7 @@ export default function PrivacyPage() {
       </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>[[COPY: heading — analytics]]</h2>
+      <h2 style={H}>No analytics. Not since 6 August.</h2>
       <p style={P}>
         There is no analytics, no session recording, no heatmapping, no
         advertising pixel and no tag manager. Nothing measures you, and nothing
@@ -79,7 +84,7 @@ export default function PrivacyPage() {
       </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>[[COPY: heading — what your browser stores]]</h2>
+      <h2 style={H}>Your browser keeps four things.</h2>
       <p style={P}>
         Four things are saved in your own browser so the site behaves the way
         you left it. All four stay on your device. None is transmitted to this
@@ -97,7 +102,7 @@ export default function PrivacyPage() {
       </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>[[COPY: heading — the database]]</h2>
+      <h2 style={H}>The database holds nothing about you.</h2>
       <p style={P}>
         The database holds football articles, clubs, and the transfer claims
         made in those articles. It holds nothing about visitors. There are no
@@ -114,7 +119,7 @@ export default function PrivacyPage() {
       </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>[[COPY: heading — what our host sees]]</h2>
+      <h2 style={H}>Our host sees your IP address.</h2>
       <p style={P}>
         This site runs on Vercel. Like any web host, Vercel records standard
         server access logs, which include the IP address the request came from,
@@ -124,7 +129,7 @@ export default function PrivacyPage() {
       </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>[[COPY: heading — images from other sites]]</h2>
+      <h2 style={H}>Images come from the publishers.</h2>
       <p style={P}>
         Article thumbnails are loaded directly from the publisher that
         published the article — the BBC, Sky Sports, the Guardian and others.
@@ -134,16 +139,15 @@ export default function PrivacyPage() {
       </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>[[COPY: heading — the newsletter]]</h2>
+      <h2 style={H}>The newsletter isn't running yet.</h2>
       <p style={P}>
-        The newsletter is not running yet. When it is, signing up stores your
-        email address, and your first name if you give one, with the email
-        provider that sends it. That is the only personal information this site
-        will ask you for.
-        {/* [[FACT-PENDING: name the provider. The code currently calls Resend;
-            beehiiv is under consideration. Whichever ships, name it here and
-            say where it stores data, since a US provider is an international
-            transfer.]] */}
+        Signing up stores your email address, and your first name if you give
+        one. That is the only personal information this site will ask you for.
+        No digest is being sent yet.
+      </p>
+      <p style={P}>
+        The newsletter list is stored by Resend, an email provider based in
+        the United States.
       </p>
       <p style={P}>
         You can unsubscribe at any time from a link in any email, and your
@@ -151,7 +155,7 @@ export default function PrivacyPage() {
       </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>[[COPY: heading — your rights]]</h2>
+      <h2 style={H}>Your rights.</h2>
       <p style={P}>
         UK GDPR gives you the right to ask what personal data an organisation
         holds about you, to have it corrected, and to have it deleted. If you
@@ -165,7 +169,7 @@ export default function PrivacyPage() {
       </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>[[COPY: heading — contact]]</h2>
+      <h2 style={H}>Contact.</h2>
       <p style={P}>
         Email <a href="mailto:contact@thefootballhub.uk">contact@thefootballhub.uk</a>.
       </p>

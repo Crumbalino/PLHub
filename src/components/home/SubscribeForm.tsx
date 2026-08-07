@@ -35,7 +35,6 @@ export default function SubscribeForm() {
   return (
     <form onSubmit={onSubmit} className="tfh-hero-form" noValidate>
       <label htmlFor="hero-email" className="tfh-visually-hidden">
-        {/* [[COPY: email field label — screen readers only]] */}
         Email address
       </label>
       <input
@@ -47,15 +46,15 @@ export default function SubscribeForm() {
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="[[COPY: email placeholder]]"
+        placeholder="you@email.com"
         aria-describedby="hero-form-status"
       />
       <button type="submit" disabled={state === 'sending'}>
-        {state === 'sending' ? '[[COPY: button sending]]' : '[[COPY: button]]'}
+        {state === 'sending' ? 'Sending' : 'Subscribe'}
       </button>
       <p id="hero-form-status" role="status" className="tfh-hero-form-status">
-        {state === 'done' && '[[COPY: success message]]'}
-        {state === 'error' && '[[COPY: error message]]'}
+        {state === 'done' && 'Done. The Balloon Door Awards land in October.'}
+        {state === 'error' && "That didn't work. Try again shortly."}
       </p>
     </form>
   )

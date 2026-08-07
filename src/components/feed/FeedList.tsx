@@ -165,7 +165,7 @@ export default function FeedList({
 
       {!isLoading && posts.length === 0 && (
         <div style={{ textAlign: 'center', padding: '64px 24px', border: '1px dashed rgba(248,249,251,0.1)', borderRadius: '10px' }}>
-          <p style={{ fontFamily: "'Sora', sans-serif", color: W70, fontSize: '14px' }}>No stories yet. Check back soon.</p>
+          <p style={{ fontFamily: "'Sora', sans-serif", color: W70, fontSize: '14px' }}>Nothing logged for this club yet.</p>
         </div>
       )}
 
