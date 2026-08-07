@@ -23,8 +23,14 @@
 // The component file stays — it is the input to the homepage rebuild, which is
 // blocked on ten hand-written column items. Do not re-plug it here.
 //
-// getFeed() is still called: FactsBlock needs the three latest posts. Same
-// treatment as the club page — called directly, never this app's own API route.
+// getFeed() is NO LONGER called here. It existed to feed FactsBlock's "Latest"
+// list, which was removed rather than hidden: it put raw ingest directly under
+// "Some of this is true.", so whatever the feed returned became the site's first
+// editorial statement — on removal day, a death story. The homepage does not
+// render ingest. See FactsBlock.tsx.
+//
+// This page now reads only aggregate counts and the club list, so nothing on it
+// can be surprised by an individual story.
 // ─────────────────────────────────────────────────────────────────
 
 import type { Metadata } from 'next'
@@ -32,7 +38,6 @@ import { SITE_URL } from '@/lib/site'
 import Hero from '@/components/home/Hero'
 import FactsBlock from '@/components/home/FactsBlock'
 import SiteNav from '@/components/home/SiteNav'
-import { getFeed, emptyFeed } from '@/lib/feed'
 import { getSiteStats, getInScopeClubs } from '@/lib/stats'
 
 export const dynamic = 'force-dynamic'
@@ -44,11 +49,7 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const [feed, stats, navClubs] = await Promise.all([
-    getFeed({ club: null, sort: 'pulse', page: 1, limit: 20 }).catch((err) => {
-      console.error('[home] feed failed:', err)
-      return emptyFeed()
-    }),
+  const [stats, navClubs] = await Promise.all([
     getSiteStats(),
     getInScopeClubs(),
   ])
@@ -56,11 +57,7 @@ export default async function HomePage() {
   return (
     <div className="tfh-home">
       <Hero />
-      <FactsBlock
-        latest={feed.posts.slice(0, 3)}
-        stats={stats}
-        clubsCovered={navClubs.length}
-      />
+      <FactsBlock stats={stats} clubsCovered={navClubs.length} />
       <SiteNav clubs={navClubs} />
     </div>
   )
