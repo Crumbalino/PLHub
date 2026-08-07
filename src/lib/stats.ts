@@ -13,10 +13,40 @@
 import { createServerClient } from '@/lib/supabase'
 import { getClub } from '@/config/clubs'
 
+/**
+ * Start of the current transfer window. Both homepage counts are windowed to it.
+ *
+ * WHY: unwindowed, `posts` answered 19,356 — and its earliest `published_at` is
+ * 2017-05-15, so the archive reaches back nine years, not to February. A
+ * five-figure all-time total on a page positioned around the *current* window
+ * describes an aggregator's back catalogue, not a transfer window.
+ *
+ * ⚠ THE DATE ITSELF IS AN ASSUMPTION, NOT A VERIFIED FACT. DESIGN_SYSTEM §16.3
+ * governs this and is not in the repo, so I could not read the boundary it
+ * specifies. 2026-06-01 is the conventional opening of the English summer
+ * window; the actual 2026 date has not been checked against a source and recent
+ * seasons have varied (mid-June openings, and a separate early-June mini-window
+ * in 2025). Nothing else in the codebase defines a transfer window — the only
+ * near-match is `claims.resolution_window_ends`, which is per-claim and
+ * unrelated.
+ *
+ * If §16.3 names a different date, change this one line. Counts measured
+ * 7 Aug 2026 for the alternatives, so the cost of being wrong is visible:
+ *
+ *   since 2026-06-01   8,258 logged / 970 pinned   <- current setting
+ *   since 2026-06-14   6,585 logged / 769 pinned
+ *   since 2026-07-01   3,898 logged / 603 pinned
+ *   all time          19,356 logged / 4,644 pinned  <- what shipped before
+ */
+export const TRANSFER_WINDOW_OPENED = '2026-06-01'
+
 export interface SiteStats {
-  /** Every row in posts, whatever its source or classification. */
+  /** Posts published since TRANSFER_WINDOW_OPENED, whatever their source. */
   postsIngested: number
-  /** Posts the two-signal matcher could attribute to exactly one club. */
+  /**
+   * Posts since TRANSFER_WINDOW_OPENED that the two-signal matcher could
+   * attribute to exactly one club.
+   */
   postsAttributed: number
 }
 
@@ -29,11 +59,19 @@ export async function getSiteStats(): Promise<SiteStats> {
   try {
     const supabase = createServerClient()
 
+    // Both counts windowed on published_at, not fetched_at: fetched_at is
+    // refreshed every time a row reappears in a feed (see issue #51), so a
+    // window built on it would pull in years-old stories that were merely
+    // re-seen this week.
     const [total, attributed] = await Promise.all([
-      supabase.from('posts').select('id', { count: 'exact', head: true }),
       supabase
         .from('posts')
         .select('id', { count: 'exact', head: true })
+        .gte('published_at', TRANSFER_WINDOW_OPENED),
+      supabase
+        .from('posts')
+        .select('id', { count: 'exact', head: true })
+        .gte('published_at', TRANSFER_WINDOW_OPENED)
         .not('club_slug', 'is', null),
     ])
 
