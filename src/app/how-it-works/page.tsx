@@ -18,9 +18,10 @@ export default function HowItWorksPage() {
     >
       <Section title="The Sources">
         <P>
-          We aggregate from a curated list of editorial sources: BBC Sport,
-          The Guardian, Sky Sports, talkSPORT, Goal.com, and more. No
-          clickbait sites. No accounts that exist to manufacture outrage.
+          Seven editorial feeds, every one of them checked: BBC Sport,
+          Sky Sports, The Guardian, Football365, The Independent, ESPN FC and
+          FourFourTwo. No clickbait sites. No accounts that exist to
+          manufacture outrage.
           If it&apos;s not worth your time, it&apos;s not in the feed.
         </P>
       </Section>
