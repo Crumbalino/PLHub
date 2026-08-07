@@ -139,7 +139,7 @@ export default function PrivacyPage() {
       </p>
 
       {/* ── FACT ── */}
-      <h2 style={H}>The newsletter isn't running yet.</h2>
+      <h2 style={H}>The newsletter isn&rsquo;t sending yet.</h2>
       <p style={P}>
         Signing up stores your email address, and your first name if you give
         one. That is the only personal information this site will ask you for.
