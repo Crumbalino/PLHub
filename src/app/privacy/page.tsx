@@ -132,12 +132,6 @@ export default function PrivacyPage() {
         the request in the ordinary way any website you visit does. We do not
         send them anything about you.
       </p>
-      {/* [[FACT-CHECK: delete the sentence below once the placeholder homepage
-          feed is gone — PR #29 removes picsum.photos entirely.]] */}
-      <p style={P}>
-        The homepage currently loads a small number of placeholder images from
-        picsum.photos. They go when the placeholder content does.
-      </p>
 
       {/* ── FACT ── */}
       <h2 style={H}>[[COPY: heading — the newsletter]]</h2>
