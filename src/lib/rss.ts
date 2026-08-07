@@ -168,17 +168,152 @@ function extractImageUrl(item: any): string | null {
   return null
 }
 
-async function fetchFeed(name: string, url: string): Promise<FetchedRssPost[]> {
+/**
+ * A feed whose newest item is older than this is treated as a failure, not a
+ * quiet success.
+ *
+ * 14 days clears an international break or a quiet fortnight without crying
+ * wolf, and would have caught 90min in Sep 2025 instead of Aug 2026 — it sat at
+ * 200 OK with 90 well-formed items the whole time, which is invisible to any
+ * `<item>` count. Named constant, not a literal: the threshold is a judgement
+ * and the next person changing it should see the reasoning.
+ */
+export const FEED_STALE_AFTER_DAYS = 14
+
+export interface FeedDiagnostics {
+  name: string
+  url: string
+  /** False if the feed is unreachable, empty, or stale. */
+  ok: boolean
+  /** Greppable reason, null when ok. Goes to cron_logs.error_message. */
+  failure: string | null
+  /** Items in the XML, before any filtering. */
+  rawItems: number
+  /** Items surviving the gambling and PL filters. */
+  keptItems: number
+  newestPublishedAt: string | null
+  newestAgeDays: number | null
+}
+
+/**
+ * Parse a feed date, tolerating the non-numeric timezone abbreviations real
+ * publishers ship.
+ *
+ * Sky Sports serves `Fri, 07 Aug 2026 15:21:00 BST`. RFC-822 allows only UT/GMT,
+ * the US military zones and numeric offsets, so V8 returns Invalid Date for BST
+ * — every Sky item parsed as undated, and an undated feed can never be measured
+ * stale. Sky was therefore exempt from staleness detection entirely, which is
+ * the exact blind spot this item exists to close.
+ *
+ * Only offsets actually observed in the configured feeds are mapped. Anything
+ * else stays unparsed and is skipped rather than guessed at.
+ */
+function parseFeedDate(raw: string): Date | null {
+  const direct = new Date(raw)
+  if (!Number.isNaN(direct.getTime())) return direct
+
+  const OFFSETS: Record<string, string> = {
+    BST: '+0100', // British Summer Time — Sky Sports
+    GMT: '+0000',
+  }
+  const zone = raw.trim().split(/\s+/).pop() ?? ''
+  const offset = OFFSETS[zone.toUpperCase()]
+  if (!offset) return null
+
+  const patched = new Date(raw.trim().replace(new RegExp(`${zone}$`, 'i'), offset))
+  return Number.isNaN(patched.getTime()) ? null : patched
+}
+
+/** Newest publish date across items, from the feed's own dates only. */
+function newestItemDate(items: { isoDate?: string; pubDate?: string }[]): Date | null {
+  let newest: Date | null = null
+  for (const item of items) {
+    // NOT the mapped published_at — that defaults to now() when a feed omits
+    // the date, which would make a stale feed look current.
+    const raw = item.isoDate ?? item.pubDate
+    if (!raw) continue
+    const d = parseFeedDate(raw)
+    if (!d) continue
+    if (!newest || d > newest) newest = d
+  }
+  return newest
+}
+
+/** One line, greppable, for cron_logs.error_message. No migration needed. */
+export function describeFeedFailure(d: FeedDiagnostics): string {
+  return [
+    `feed=${d.name}`,
+    `reason=${d.failure}`,
+    `raw=${d.rawItems}`,
+    `kept=${d.keptItems}`,
+    `newest=${d.newestPublishedAt ?? 'none'}`,
+    `age_days=${d.newestAgeDays ?? 'n/a'}`,
+    `url=${d.url}`,
+  ].join(' ')
+}
+
+export async function fetchFeedWithDiagnostics(
+  name: string,
+  url: string
+): Promise<{ posts: FetchedRssPost[]; diagnostics: FeedDiagnostics }> {
   const parser = new Parser({
     customFields: {
       item: [['media:thumbnail', 'mediaThumbnail'], ['media:content', 'mediaContent']],
     },
   })
 
-  try {
-    const feed = await parser.parseURL(url)
+  const base: FeedDiagnostics = {
+    name,
+    url,
+    ok: false,
+    failure: null,
+    rawItems: 0,
+    keptItems: 0,
+    newestPublishedAt: null,
+    newestAgeDays: null,
+  }
 
-    return (feed.items ?? [])
+  let feed: Awaited<ReturnType<Parser['parseURL']>>
+  try {
+    feed = await parser.parseURL(url)
+  } catch (err) {
+    // Was `return []`, which logged as a success. A 404 is a failure.
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`[RSS] ${name} unreachable:`, msg)
+    return { posts: [], diagnostics: { ...base, failure: `unreachable: ${msg}` } }
+  }
+
+  const items = feed.items ?? []
+  const newest = newestItemDate(items)
+  const ageDays =
+    newest === null ? null : Math.floor((Date.now() - newest.getTime()) / 86_400_000)
+
+  const withDates: FeedDiagnostics = {
+    ...base,
+    rawItems: items.length,
+    newestPublishedAt: newest?.toISOString() ?? null,
+    newestAgeDays: ageDays,
+  }
+
+  // 200 with zero items is the nastiest failure: well-formed, parses clean,
+  // writes nothing, and looks identical to a quiet news day.
+  if (items.length === 0) {
+    console.error(`[RSS] ${name} returned 200 with zero items`)
+    return { posts: [], diagnostics: { ...withDates, failure: 'empty: 200 with zero items' } }
+  }
+
+  if (ageDays !== null && ageDays > FEED_STALE_AFTER_DAYS) {
+    console.error(`[RSS] ${name} is stale: newest item ${ageDays}d old`)
+    return {
+      posts: [],
+      diagnostics: {
+        ...withDates,
+        failure: `stale: newest item ${ageDays}d old, threshold ${FEED_STALE_AFTER_DAYS}d`,
+      },
+    }
+  }
+
+  const posts = items
       .filter((item) => {
         const title = item.title ?? ''
         const description = item.contentSnippet ?? item.content ?? ''
@@ -210,10 +345,17 @@ async function fetchFeed(name: string, url: string): Promise<FetchedRssPost[]> {
           published_at: item.isoDate ?? item.pubDate ?? new Date().toISOString(),
         }
       })
-  } catch (err) {
-    console.error(`Failed to fetch ${name} RSS:`, err)
-    return []
-  }
+
+  // Filtered down to nothing is NOT a failure: a fresh feed can legitimately
+  // carry no Premier League transfer copy on a given run. Only unreachable,
+  // empty or stale count. Conflating the two would page on a quiet news hour.
+  return { posts, diagnostics: { ...withDates, ok: true, keptItems: posts.length } }
+}
+
+/** Posts only. Kept for callers that do not report health. */
+async function fetchFeed(name: string, url: string): Promise<FetchedRssPost[]> {
+  const { posts } = await fetchFeedWithDiagnostics(name, url)
+  return posts
 }
 
 export async function fetchAllRssFeeds(): Promise<FetchedRssPost[]> {
@@ -245,8 +387,10 @@ export const fetchBBCSportRss = () => fetchFeed('BBC Sport', FEEDS[0].url)
  * Fetch a single RSS feed by index — used by the rotation cron.
  * Returns the feed name alongside the posts for logging.
  */
-export async function fetchSingleFeed(index: number): Promise<{ name: string; posts: FetchedRssPost[] }> {
+export async function fetchSingleFeed(
+  index: number
+): Promise<{ name: string; posts: FetchedRssPost[]; diagnostics: FeedDiagnostics }> {
   const feed = FEEDS[index % FEEDS.length]
-  const posts = await fetchFeed(feed.name, feed.url)
-  return { name: feed.name, posts }
+  const { posts, diagnostics } = await fetchFeedWithDiagnostics(feed.name, feed.url)
+  return { name: feed.name, posts, diagnostics }
 }

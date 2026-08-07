@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchSingleFeed, FEEDS } from "@/lib/rss"
+import { fetchSingleFeed, FEEDS, describeFeedFailure } from "@/lib/rss"
 import { createServerClient } from '@/lib/supabase'
 import { upgradeImageUrl } from '@/lib/formatting'
 import { logCronJob } from '@/lib/cron-logging'
@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
     // With 5 feeds on a 15-min cron, each feed is checked every ~75 minutes.
     const runIndex = Math.floor(Date.now() / (15 * 60 * 1000))
     const feedIndex = runIndex % FEEDS.length
-    const { name: feedName, posts } = await fetchSingleFeed(feedIndex)
+    const { name: feedName, posts, diagnostics } = await fetchSingleFeed(feedIndex)
 
     // Batch duplicate check: fetch all existing external_ids and urls in one query
     const externalIds = posts.map(p => p.external_id)
@@ -190,17 +190,29 @@ export async function GET(req: NextRequest) {
     }
 
     const executionTime = Date.now() - startTime
+
+    // A feed that 404s, returns zero items, or serves a frozen archive is NOT a
+    // success. This run used to log 'success' either way, which is how three
+    // dead feeds stayed invisible for months. No migration: the detail is packed
+    // into error_message, which already exists.
     await logCronJob({
       jobName: 'rss_fetch',
-      status: 'success',
+      status: diagnostics.ok ? 'success' : 'error',
       storiesProcessed: inserted,
+      errorMessage: diagnostics.ok ? null : describeFeedFailure(diagnostics),
       executionTimeMs: executionTime,
     })
 
     return NextResponse.json({
       success: true,
+      // Distinct from `success`: the request completed, the feed may not have.
+      feedOk: diagnostics.ok,
+      feedFailure: diagnostics.failure,
       feed: feedName,
       feedIndex,
+      rawItems: diagnostics.rawItems,
+      newestItem: diagnostics.newestPublishedAt,
+      newestAgeDays: diagnostics.newestAgeDays,
       total: posts.length,
       inserted,
       skipped,
