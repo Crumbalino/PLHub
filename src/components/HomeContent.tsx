@@ -2,11 +2,20 @@ import FeedList from '@/components/feed/FeedList';
 import SnapshotContainer from '@/components/snapshot/SnapshotContainer';
 import ClubFilterBar from '@/components/ClubFilterBar';
 
+import type { FeedPost } from '@/lib/types';
+
 interface HomeContentProps {
   clubSlug: string | null;
+  /** Page 1, fetched on the server so the feed is in the HTML a crawler sees. */
+  initialPosts?: FeedPost[];
+  initialHasMore?: boolean;
 }
 
-export default function HomeContent({ clubSlug }: HomeContentProps) {
+export default function HomeContent({
+  clubSlug,
+  initialPosts,
+  initialHasMore,
+}: HomeContentProps) {
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 24px 80px' }}>
       <style>{`
@@ -23,7 +32,11 @@ export default function HomeContent({ clubSlug }: HomeContentProps) {
           <div style={{ marginBottom: '24px' }}>
             <ClubFilterBar currentClub={clubSlug ?? undefined} />
           </div>
-          <FeedList club={clubSlug} />
+          <FeedList
+            club={clubSlug}
+            initialPosts={initialPosts}
+            initialHasMore={initialHasMore}
+          />
         </main>
 
         <aside className="tfh-snapshot">

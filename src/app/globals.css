@@ -93,3 +93,147 @@ button, a, [role="button"] { min-height: 44px; min-width: 44px; }
     grid-template-columns: repeat(5, 1fr);
   }
 }
+
+/* ── Homepage hero ──────────────────────────────────────────────────────
+   The form must be visible without scrolling on a 6" phone. Sized in svh:
+   the SMALL viewport height, i.e. with mobile browser chrome showing. Plain
+   vh measures the chrome-hidden height and would push the form under the
+   address bar on first paint. Nothing here has a fixed height, so a short
+   screen compresses the gaps instead of overflowing. */
+.tfh-hero {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  text-align: center;
+}
+.tfh-hero-inner {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 4vh, 32px);
+}
+.tfh-hero-name {
+  font-family: var(--font-sora), sans-serif;
+  font-weight: 700;
+  font-size: clamp(15px, 4vw, 18px);
+  letter-spacing: 0.02em;
+  color: var(--plh-text-70);
+  margin: 0;
+}
+.tfh-hero-line {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-sora), sans-serif;
+  font-weight: 800;
+  font-size: clamp(28px, 8vw, 44px);
+  line-height: 1.1;
+  color: var(--plh-text-100);
+}
+.tfh-hero-awards {
+  margin: 0;
+  font-family: var(--font-sora), sans-serif;
+  font-size: clamp(12px, 3.4vw, 14px);
+  color: var(--plh-text-50);
+}
+
+.tfh-hero-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.tfh-hero-form input {
+  flex: 1 1 180px; /* fits beside the button on a 375px screen without wrapping */
+  min-width: 0;
+  padding: 13px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--plh-border);
+  background: var(--plh-card);
+  color: var(--plh-text-100);
+  font-family: var(--font-sora), sans-serif;
+  font-size: 16px; /* 16px or iOS zooms the viewport on focus */
+}
+.tfh-hero-form button {
+  flex: 0 0 auto;
+  padding: 13px 22px;
+  border-radius: 8px;
+  border: 1px solid #3AAFA9;
+  background: #3AAFA9;
+  color: #0B1B1A;
+  font-family: var(--font-sora), sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+.tfh-hero-form button:disabled { opacity: 0.5; cursor: default; }
+.tfh-hero-form-status {
+  flex: 1 0 100%;
+  margin: 0;
+  min-height: 1.2em;
+  font-family: var(--font-sora), sans-serif;
+  font-size: 13px;
+  color: var(--plh-text-70);
+}
+.tfh-visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ── Homepage facts block ────────────────────────────────────────────── */
+.tfh-facts {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 20px 8px;
+  font-family: var(--font-sora), sans-serif;
+  color: var(--plh-text-70);
+}
+.tfh-facts-title {
+  font-size: 20px; font-weight: 700; margin: 0 0 12px;
+  color: var(--plh-text-100);
+}
+.tfh-facts-subtitle {
+  font-size: 14px; font-weight: 600; margin: 24px 0 8px;
+  color: var(--plh-text-100);
+}
+.tfh-facts-lede { margin: 0; font-size: 15px; line-height: 1.6; }
+.tfh-facts-list { margin: 0; padding-left: 18px; font-size: 15px; line-height: 1.7; }
+.tfh-facts-list a { color: var(--plh-text-100); }
+.tfh-facts-source { color: var(--plh-text-50); }
+.tfh-facts-numbers {
+  display: flex; flex-wrap: wrap; gap: 24px; margin: 24px 0 0;
+}
+.tfh-facts-numbers div { margin: 0; }
+.tfh-facts-numbers dt { font-size: 12px; color: var(--plh-text-50); }
+.tfh-facts-numbers dd {
+  margin: 2px 0 0; font-size: 22px; font-weight: 700;
+  color: var(--plh-text-100);
+}
+
+/* ── Homepage below-fold nav ─────────────────────────────────────────── */
+.tfh-nav {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 8px;
+  font-family: var(--font-sora), sans-serif;
+}
+.tfh-nav-title {
+  font-size: 14px; font-weight: 600; margin: 24px 0 10px;
+  color: var(--plh-text-100);
+}
+.tfh-nav-clubs, .tfh-nav-pages {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 8px 16px;
+}
+.tfh-nav-clubs a, .tfh-nav-pages a {
+  font-size: 15px; color: var(--plh-text-70); text-decoration: none;
+  display: inline-flex; align-items: center;
+}
+.tfh-nav-clubs a:hover, .tfh-nav-pages a:hover {
+  color: var(--plh-text-100); text-decoration: underline;
+}
