@@ -24,11 +24,15 @@
    always meant to exist (making it permanent). That call needs §5.1. This shim
    takes neither side — it stops the site rendering unpainted in the meantime.
 
-   NOT DECLARED, deliberately — no §5.1 mapping exists for them:
-     --plh-text-70, --plh-text-50, --plh-text-75  the scale here is
-       100/80/60/40/25, so 70/50/75 have no source value and guessing one would
-       invent design. They are `color`, so they now inherit the body colour and
-       stay legible — which they were not before this block.
+   --plh-text-70 and --plh-text-50 WERE undeclared here and are now declared
+   from DESIGN_SYSTEM §5.2, which supplied what §17 did not: hierarchy is opacity
+   on textBase, never a grey hex. Before that they fell back to inheriting the
+   body colour, so the hero name and awards line rendered at full opacity.
+
+   STILL NOT DECLARED — no source value:
+     --plh-text-75  one hover state in SortTabs. §5.2 gives 100/70/50 for dark
+       and 100/75/65 for light; 75 is not a step on the dark ramp, and reusing
+       the light 75% here would be guessing. Inherits the body colour.
      --plh-border-hover  a hover background in ClubFilterBar and elsewhere.
      --plh-text-base  consumed as `rgba(var(--plh-text-base), 0.05)`, i.e. a bare
        RGB triple, not a colour. Different format from anything in §17. The
@@ -42,7 +46,11 @@
   --plh-elevated: #162D45;
   --plh-text-100: #FAF5F0;
   --plh-text-80: rgba(250, 245, 240, 0.80);
+  /* §5.2: hierarchy is opacity on textBase, never a grey hex. 250,245,240 is
+     #FAF5F0. Consumed by the hero name (70%) and the awards line (50%). */
+  --plh-text-70: rgba(250, 245, 240, 0.70);
   --plh-text-60: rgba(250, 245, 240, 0.60);
+  --plh-text-50: rgba(250, 245, 240, 0.50);
   --plh-text-40: rgba(250, 245, 240, 0.40);
   --plh-text-25: rgba(250, 245, 240, 0.25);
   --plh-pink: #E84080;
@@ -64,7 +72,19 @@
   --plh-elevated: #F0F1F4;
   --plh-text-100: #1A1D23;
   --plh-text-80: rgba(13, 27, 42, 0.80);
+  /* §5.2: light mode needs MORE opacity than dark for the same perceived
+     hierarchy — 75%/65% here against 70%/50% on the dark ground, not a
+     transcription error.
+     26,29,35 is #1A1D23, the textBase §5.2 names for light mode.
+     NOTE THE INCONSISTENCY, not introduced here: the 80/60/40/25 steps above
+     and below use rgba(13,27,42,…) = #0D1B2A, the navy, which is NOT the light
+     textBase §5.2 specifies. Those came verbatim from Brand ID §17. So §17 and
+     §5.2 disagree about light-mode text, and the light ramp is currently mixed.
+     Left as found rather than silently restated — §5.2 governs the two tokens
+     added here; someone with both docs should reconcile the rest. */
+  --plh-text-70: rgba(26, 29, 35, 0.75);
   --plh-text-60: rgba(13, 27, 42, 0.60);
+  --plh-text-50: rgba(26, 29, 35, 0.65);
   --plh-text-40: rgba(13, 27, 42, 0.40);
   --plh-text-25: rgba(13, 27, 42, 0.25);
   --plh-pink: #E84080;
