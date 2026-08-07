@@ -11,20 +11,21 @@
 // ============================================================
 
 import { createServerClient } from '@/lib/supabase'
-import { getAllClubSlugs, getClub } from '@/config/clubs'
+import { getClub } from '@/config/clubs'
 
 export interface SiteStats {
   /** Every row in posts, whatever its source or classification. */
   postsIngested: number
   /** Posts the two-signal matcher could attribute to exactly one club. */
   postsAttributed: number
-  /** Club pages that exist. Derived from config, not from the database. */
-  clubsCovered: number
 }
 
-export async function getSiteStats(): Promise<SiteStats> {
-  const clubsCovered = getAllClubSlugs().length
+// "Clubs covered" is deliberately NOT here. It is getInScopeClubs().length,
+// passed in by the page, so the number and the nav list are the same array
+// and cannot drift apart. Counting config entries made it 22 against a nav
+// of 18 — both correct, counting different things, and wrong side by side.
 
+export async function getSiteStats(): Promise<SiteStats> {
   try {
     const supabase = createServerClient()
 
@@ -42,13 +43,12 @@ export async function getSiteStats(): Promise<SiteStats> {
     return {
       postsIngested: total.count ?? 0,
       postsAttributed: attributed.count ?? 0,
-      clubsCovered,
     }
   } catch (err) {
     console.error('[stats] Failed to read counts:', err)
     // Degrade to zeros rather than break the page. The facts block hides any
     // figure that is zero, so a failed read shows nothing instead of a lie.
-    return { postsIngested: 0, postsAttributed: 0, clubsCovered }
+    return { postsIngested: 0, postsAttributed: 0 }
   }
 }
 

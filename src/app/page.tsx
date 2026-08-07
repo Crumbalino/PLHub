@@ -46,7 +46,11 @@ export default async function HomePage() {
   return (
     <div className="tfh-home">
       <Hero />
-      <FactsBlock latest={feed.posts.slice(0, 3)} stats={stats} />
+      <FactsBlock
+        latest={feed.posts.slice(0, 3)}
+        stats={stats}
+        clubsCovered={navClubs.length}
+      />
       <SiteNav clubs={navClubs} />
       <HomeContent
         clubSlug={null}
