@@ -580,3 +580,153 @@ page-walking `/api/feed` cannot measure content volume, which is the substance o
 - **Nothing from the approved batches is now outstanding.** Still not started
   because never approved: T4 (delete dead sidebar widgets) and T6 (draft
   `/about`, `/how-it-works`, `/principles`).
+
+---
+
+# Session log — part 4 (same day, 7 Aug 2026)
+
+## Shipped
+
+| PR | Title | Verified live |
+|---|---|---|
+| [#59](https://github.com/Crumbalino/PLHub/pull/59) | Remove the Latest block from the homepage | yes |
+| [#60](https://github.com/Crumbalino/PLHub/pull/60) | Close the two dead gaps on the homepage | yes |
+| [#61](https://github.com/Crumbalino/PLHub/pull/61) | Window the homepage stats to the current transfer window | yes |
+| [#62](https://github.com/Crumbalino/PLHub/pull/62) | Name `clubs.in_scope` canonical, stop the nav shortfall being silent | yes |
+| [#63](https://github.com/Crumbalino/PLHub/pull/63) | `docs/PAGE_INVENTORY.md` | n/a (docs) |
+
+### Latest block removed (#59)
+
+Deleted, not hidden. The live list at removal was two non-transfer stories and
+**"Perimeter walls around pitches banned after Vigar death"** — a death, under
+"Some of this is true.", on a page that claims to score how well-sourced a
+*transfer rumour* is. Nothing filtered for that and nothing could.
+
+Removed with it, none of which styled or served anything else: the `latest` prop,
+the `FeedPost` import, `.tfh-facts-subtitle`, `.tfh-facts-list`,
+`.tfh-facts-list a`, `.tfh-facts-source`, and the `getFeed()`/`emptyFeed()` call
+in `page.tsx`. Homepage 23,210 → 20,718 B live. `getFeed` still serves the club
+pages and `/api/feed`.
+
+### The two dead gaps (#60) — cause was not what was expected
+
+**Not a leftover wrapper from #37.** `.tfh-home` has **zero** CSS rules in the
+whole stylesheet and there is no `main` rule, so the wrapper contributes nothing.
+Two unrelated causes:
+
+**Gap 2, stats row → "Clubs" — 64px from three rules stacking:**
+
+| Rule | Contribution |
+|---|---|
+| `.tfh-facts` `padding-bottom` | 8px |
+| `.tfh-nav` `padding-top` | 32px |
+| `.tfh-nav-title` `margin-top` | **24px** ← the bug |
+
+The 24px exists to separate the *second* nav heading ("More") from the club list
+above it. It also applied to the *first* ("Clubs"), where `.tfh-nav`'s own padding
+already does that job. Fixed with `.tfh-nav > .tfh-nav-title:first-child
+{ margin-top: 0 }`, leaving 40px.
+
+**Gap 1, Balloon Door line → "What this is" — two contributors, one fixed:**
+`.tfh-facts` `padding-top` 48px → 24px, **and** `.tfh-hero`'s
+`min-height: 100svh` with `align-items: center`, which I did not touch. The hero
+centres inside a full-viewport box, so half its unused height falls below the
+awards line — on a 1000px-tall viewport with ~320px of content that is ~340px,
+an order of magnitude more than the padding, and it grows with viewport height.
+Changing it alters a locked component's height behaviour, so it is a design call.
+
+### Windowed stats (#61)
+
+| | Stories logged | Pinned to a club |
+|---|---|---|
+| Before (all time) | 19,356 | 4,644 |
+| After (since 2026-06-01) | **8,258** | **970** |
+
+Windowed on `published_at`, **not** `fetched_at` — the latter is refreshed
+whenever a row reappears in a feed (#51), so a window built on it would pull in
+years-old stories merely re-seen this week.
+
+Relabelled to "Stories logged this window" / "Pinned to a club this window".
+
+**The all-time figure was worse than described:** `posts`' earliest
+`published_at` is **2017-05-15**, so the archive reaches back nine years, not to
+February.
+
+**⚠ The window date is an assumption.** DESIGN_SYSTEM §16.3 is not in the repo and
+nothing in the codebase defines a transfer window. `2026-06-01` is conventional
+but unverified. It is one exported constant, `TRANSFER_WINDOW_OPENED`, with the
+alternatives and their measured counts beside it (2026-06-14 → 6,585/769;
+2026-07-01 → 3,898/603).
+
+### Club nav (#62) — canonical list chosen, 20 not reached
+
+**Canonical: `clubs` WHERE `in_scope = true` — 20 rows.** Chosen over
+`src/config/clubs.ts` (22 keys) and `src/lib/clubs.ts` (21) because it is the FK
+target for `posts.club_slug`, `claims.club_slug`, `claims.from_club_slug`,
+`players.current_club_slug` and `club_aliases`; because its membership was set by
+an owner-supplied migration rather than accumulated; and because it is the only
+one of the three that is 20. Recorded in #24 with a suggested re-scope.
+
+**The nav still renders 18, and 20 is blocked on facts, not code.**
+`coventry-city` and `hull-city` are in scope with no config entry, so
+`/clubs/coventry-city` and `/clubs/hull-city` **404 on production**. Adding config
+entries requires `manager` (rendered unconditionally on the club page), `code` /
+`founded` / `city` / `stadium` (fed into `sportsTeamSchema`), and
+`footballDataId` / `apiSportsId` (five consumers each — a placeholder silently
+fetches another club's data). I do not have those facts.
+
+`2026-08-07-promoted-clubs.sql` also withheld both pages deliberately: 1 post and
+6 posts measured, *"a page with one post is not worth launching."*
+
+What #62 does fix: the shortfall was swallowed by `.filter(c => c !== null)`. It
+now logs which slugs were dropped and why.
+
+## Already done when re-requested
+
+Two items in the later batch had been completed earlier in the session and were
+not redone: the **§5.2 opacity tokens** (#57, verified live per selector block)
+and the **211-row delete** (#48 closed, 19,567 → 19,356). Both are recorded in
+part 3.
+
+## `docs/PAGE_INVENTORY.md` (#63)
+
+Facts-only inventory of every route, the link graph, sitemap reconciliation, API
+routes and dead ends. Measured, not inferred. The findings that were not already
+tracked:
+
+- **6 orphans** with no inbound link from any other page: `/clubs/leicester`,
+  `/clubs/southampton`, `/clubs/west-ham`, `/clubs/wolves`, `/deadline-day`,
+  `/unsubscribe`. **The first four are indexable *and* in the sitemap** — they are
+  `in_scope = false` clubs that still have pages and sitemap entries.
+- **0 broken internal links**, and **0 links from an indexable page to a noindex
+  one**.
+- Sitemap is clean: 27 entries, all real routes, all 200, all https, all apex.
+- Routes absent from the sitemap: `/contact`, `/deadline-day`, `/unsubscribe`.
+- **18 API routes: 11 fail-closed, 7 open.** Five open ones are unreachable from
+  the app because their only caller has no render site, and **`/api/summary` has
+  no caller anywhere in `src`**.
+- **8 components have no render site**; `SnapshotContainer` and `ClubFilterBar`
+  are reachable only via `HomeContent`, which no route imports; **`Navbar` is
+  imported at `layout.tsx:5` and never rendered.**
+- `/clubs/[slug]` renders **"ranked by the PLHub Index"** — the deprecated
+  product — on 22 live indexed pages.
+- Served club-page HTML contains **0** links to any of the seven configured
+  publishers. Where the 20 rendered article titles point is recorded UNKNOWN.
+
+## Correction to my own reporting
+
+A local page-render check reported **16** club nav links where live shows 18.
+Direct instrumentation of `getInScopeClubs()` returns **18**, with
+`leeds-united` and `sunderland` resolving correctly and only `coventry-city` and
+`hull-city` dropped — matching live. The 16 was a measurement artifact I could not
+reproduce. Recording it because I quoted it mid-session.
+
+## Final state
+
+- **19 PRs merged today:** #37 #39 #40 #41 #42 #43 #44 #45 #46 #47 #56 #57 #58
+  #59 #60 #61 #62 #63, plus this log.
+- **Issues:** 6 closed, 13 verified and commented, 8 filed.
+- **Handed back, not done:** the hero's `100svh` centring (locked component);
+  `TRANSFER_WINDOW_OPENED`'s exact date (§16.3 unreadable); config entries for
+  `coventry-city` and `hull-city` (owner-supplied club facts). T4 and T6 remain
+  unstarted — never approved.
