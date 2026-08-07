@@ -293,10 +293,13 @@ button, a, [role="button"] { min-height: 44px; min-width: 44px; }
 }
 
 /* ── Homepage facts block ────────────────────────────────────────────── */
+/* padding-top was 48px. Halved: it was set when a 30-screen feed followed this
+   block, so 48px read as a section break. With the page now ending three
+   elements later it read as a hole. */
 .tfh-facts {
   max-width: 720px;
   margin: 0 auto;
-  padding: 48px 20px 8px;
+  padding: 24px 20px 8px;
   font-family: var(--font-sora), sans-serif;
   color: var(--plh-text-70);
 }
@@ -327,6 +330,14 @@ button, a, [role="button"] { min-height: 44px; min-width: 44px; }
 .tfh-nav-title {
   font-size: 14px; font-weight: 600; margin: 24px 0 10px;
   color: var(--plh-text-100);
+}
+/* The 24px top margin above exists to separate the SECOND heading ("More") from
+   the club list above it. On the FIRST heading ("Clubs") it stacked on top of
+   .tfh-nav's own 32px padding-top and .tfh-facts' 8px padding-bottom, giving a
+   64px gap between the stats row and "Clubs" where ~40px reads as intentional.
+   Fragments do not create elements, so the "Clubs" h2 really is :first-child. */
+.tfh-nav > .tfh-nav-title:first-child {
+  margin-top: 0;
 }
 .tfh-nav-clubs, .tfh-nav-pages {
   list-style: none; margin: 0; padding: 0;
