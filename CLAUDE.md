@@ -1,13 +1,36 @@
 # CLAUDE.md
 
-**The Football Hub** — `thefootballhub.uk` — a transfer rumour accountability
-ledger. Log each claim, resolve it later, score the source.
+**The Football Hub** — `thefootballhub.uk` — transfer gossip, scored.
+
+**Claim-first. The score is on the rumour, not the reporter.** It describes how
+well-sourced a claim is, not whether the transfer will happen and not how
+trustworthy a journalist is. Author track record is an *input* to the score; it
+is never the published product. Anything that ships a per-journalist reliability
+rating is the wrong product — that was the old PLHub Index, and it is gone.
+
+**The unit is the rumour, not the article.** Many articles, one claim.
+
+**The product form:** a daily gossip column with the score inline, at **one
+permanent URL that updates in place.** Not a feed. Not an archive. The homepage
+feed (`HomeContent`) is **deliberately unplugged** — see `src/app/page.tsx`; #29
+re-plugged it once and it broke the front door on the day the site went
+indexable. Do not re-plug it.
+
+**The hero is locked** — settled three times, not to be reopened, and
+DESIGN_SYSTEM §16.2 is wrong to reopen it:
+
+> The Football Hub / Some of this is true. / Transfer gossip. Scored.
 
 Byline is **"by G"**. Not "by Adhdad" — superseded, do not reintroduce. Channel:
 **GVsEverything**. Annual awards: **The Balloon Door Awards**, early October.
 Stack: Next.js 14 App Router, React 18, TypeScript, Tailwind, Supabase, Claude API.
 
 Editorial rules: **[docs/PRINCIPLES.md](docs/PRINCIPLES.md)** — read before touching relevance, classification or scoring. Known defects: **[GitHub Issues](https://github.com/Crumbalino/PLHub/issues)** — check before reporting or "fixing" anything below.
+
+**Two governing docs live outside this repo — ask G, don't reinvent them here.**
+`DESIGN_SYSTEM.md` (§4 data contract, §6 tokens, §7 routes/layout, §8 blocks)
+governs anything visual; `EDITORIAL_VOICE.md` (§6 banned language, §7 pronouns,
+§8 commercial policy, §11 the writer's test) governs **every string that ships.**
 
 **Club-matcher signals must be time-invariant properties of a club** (`src/lib/club-matcher.ts`) — name, URL slug, stadium, nickname. `manager` was dropped: it is point-in-time, the corpus spans months, and a current snapshot misfiles historical posts (five managers moved between PL clubs in summer 2026). Do not re-add it, and do not add squad lists, which fail the same way.
 
@@ -79,24 +102,35 @@ A missing secret must 401. Never `if (cronSecret && …)` — fails open. Never 
 | `src/lib/prompts/by-the-numbers.ts:64` | `claude-haiku-4-5-20251001` | By The Numbers tile |
 | `src/app/api/cron/rss/route.ts:16` | `claude-haiku-4-5-20251001` | `isRelevantToPL()` — **defined but never called** |
 
-Inline summarisation is **gated off** (`SUMMARIES_ENABLED`) — deprecated
-aggregator product, not the ledger; backfill is off too, so nothing writes
-summaries. The model fences its JSON: parse via `stripCodeFences()`, never bare
+**Summaries are deprecated. `SUMMARIES_ENABLED=false` is deliberate and
+permanent — not a cost decision and not a bug. Do not "fix" it, do not re-enable
+it, do not schedule the backfill.** Inline article summarisation was the
+aggregator product; the product is now a scored claim, and a summary of someone
+else's article is not that. Backfill is off too, so nothing writes summaries.
+Anything asking for a summary job to be restored — including CURRENT_STATE §2 —
+is superseded. See issue #3 for the reasoning, closed won't-do.
+
+The model fences its JSON: parse via `stripCodeFences()`, never bare
 `JSON.parse`.
 
 ## SEO
 
-**Sitewide noindex**: `src/lib/seo.ts` exports `NOINDEX` from `SITE_NOINDEX`,
+**Indexability switch**: `src/lib/seo.ts` exports `NOINDEX` from `SITE_NOINDEX`,
 consumed only by `layout.tsx` (`metadata.robots`) and `robots.ts`. No page
-overrides `robots`. **Build-time — a flip needs a redeploy.** Currently `true` on
-Production and Preview.
+overrides `robots`. **Build-time — a flip needs a redeploy.**
+
+**The site is INDEXABLE as of 7 Aug 2026.** Measured on production that day:
+`<meta name="robots" content="index, follow">` and `/robots.txt` serving
+`Allow: /` with `Disallow: /api/`. Assume Google and AI crawlers are reading
+every deploy. Preview was not measured.
 
 **Never add `public/robots.txt`** — it shadows the generated route and silently
 disables the switch.
 
 **Every route sets its own `alternates.canonical`**, relative to `metadataBase`;
-both derive from `SITE_URL`. The root canonical is the *homepage's* (`page.tsx` is
-a client component) — a route omitting `alternates` inherits `/`. Always set it.
+both derive from `SITE_URL`. A route omitting `alternates` inherits `/`. Always
+set it. (`page.tsx` is a **server** component and exports `metadata` directly —
+the "client component" note here was stale.)
 
 ## Database
 
