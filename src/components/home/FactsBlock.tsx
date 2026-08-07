@@ -16,11 +16,13 @@ import type { SiteStats } from '@/lib/stats'
 interface FactsBlockProps {
   latest: FeedPost[]
   stats: SiteStats
+  /** getInScopeClubs().length — the same array the nav renders. */
+  clubsCovered: number
 }
 
 const fmt = (n: number) => n.toLocaleString('en-GB')
 
-export default function FactsBlock({ latest, stats }: FactsBlockProps) {
+export default function FactsBlock({ latest, stats, clubsCovered }: FactsBlockProps) {
   return (
     <section className="tfh-facts" aria-labelledby="tfh-facts-title">
       <h2 id="tfh-facts-title" className="tfh-facts-title">
@@ -69,10 +71,10 @@ export default function FactsBlock({ latest, stats }: FactsBlockProps) {
             <dd>{fmt(stats.postsAttributed)}</dd>
           </div>
         )}
-        {stats.clubsCovered > 0 && (
+        {clubsCovered > 0 && (
           <div>
             <dt>Clubs covered</dt>
-            <dd>{fmt(stats.clubsCovered)}</dd>
+            <dd>{fmt(clubsCovered)}</dd>
           </div>
         )}
       </dl>
