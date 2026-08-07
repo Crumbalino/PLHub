@@ -20,9 +20,10 @@ import type { Metadata } from 'next'
 import { SITE_URL } from '@/lib/site'
 import Hero from '@/components/home/Hero'
 import FactsBlock from '@/components/home/FactsBlock'
+import SiteNav from '@/components/home/SiteNav'
 import HomeContent from '@/components/HomeContent'
 import { getFeed, emptyFeed } from '@/lib/feed'
-import { getSiteStats } from '@/lib/stats'
+import { getSiteStats, getInScopeClubs } from '@/lib/stats'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,18 +34,20 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const [feed, stats] = await Promise.all([
+  const [feed, stats, navClubs] = await Promise.all([
     getFeed({ club: null, sort: 'pulse', page: 1, limit: 20 }).catch((err) => {
       console.error('[home] feed failed:', err)
       return emptyFeed()
     }),
     getSiteStats(),
+    getInScopeClubs(),
   ])
 
   return (
     <div className="tfh-home">
       <Hero />
       <FactsBlock latest={feed.posts.slice(0, 3)} stats={stats} />
+      <SiteNav clubs={navClubs} />
       <HomeContent
         clubSlug={null}
         initialPosts={feed.posts}
