@@ -79,6 +79,15 @@ const NAMES: Record<string, string[]> = {
   tottenham: ['tottenham hotspur', 'tottenham'],
   'west-ham': ['west ham united', 'west ham'],
   wolves: ['wolverhampton wanderers', 'wolves'],
+
+  // Promoted for 2026-27. 'leeds' and 'hull' are bare town names, which is
+  // exactly why the second signal exists. 'coventry' likewise.
+  sunderland: ['sunderland'],
+  'hull-city': ['hull city', 'hull'],
+  'leeds-united': ['leeds united', 'leeds'],
+  'coventry-city': ['coventry city', 'coventry'],
+  // Championship since 2026-27, still matched so from_club works.
+  burnley: ['burnley'],
 }
 
 /**
@@ -109,6 +118,11 @@ const NICKNAMES: Record<string, string[]> = {
   tottenham: ['spurs'],
   'west-ham': ['hammers', 'irons'],
   wolves: [],
+  sunderland: ['black cats'],
+  'hull-city': ['tigers'],
+  'leeds-united': ['whites'],
+  'coventry-city': ['sky blues'],
+  burnley: ['clarets'],
 }
 
 /**
@@ -122,6 +136,7 @@ const OTHER_SPORT_VETO = [
   'rugby', 'super league', 'warrington', 'wigan warriors', 'st helens',
   'leeds rhinos', 'hull kr', 'castleford', 'salford red devils',
   'leicester tigers', 'sale sharks', 'saracens', 'northampton saints',
+  'hull fc', 'coventry rugby', 'wasps',
   'harlequins', 'gloucester rugby', 'bath rugby', 'exeter chiefs',
   'cricket', 'the hundred', 'county championship',
 ]
