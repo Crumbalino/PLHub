@@ -423,19 +423,26 @@ export default function StoryCard({
               )}
             </div>
 
-            {/* Index score */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '3px',
-              flexShrink: 0, color: WHITE,
-              fontFamily: "'JetBrains Mono', monospace",
-              fontWeight: 700, fontSize: '12px',
-            }}>
-              <svg width="7" height="7" viewBox="0 0 24 24" fill="none"
-                style={{ stroke: WHITE, strokeWidth: '3.5', strokeLinecap: 'round' }}>
-                <path d="M2 14V2H14" />
-              </svg>
-              {post.indexScore}
-            </div>
+            {/* The PLHub Index score pill was here. REMOVED, not hidden —
+                DESIGN_SYSTEM §13 deletes the Index.
+                It rendered `post.indexScore` as a bare number with no label:
+                21 of them per club page, across 22 indexed pages, showing values
+                like 95 / 79 / 63 that nothing on the site explained.
+                Three of its five components are constants, so the number was
+                not measuring what a reader would assume. Per post, live:
+                  scoreEngagement    12   always — RSS rows have score = 0 and
+                                          Reddit ingest is dormant
+                  scoreSignificance  12   always — score_significance is never
+                                          written (#18)
+                  scoreMultiSource    0   always — source_count is only written
+                                          by an unscheduled cron
+                  scoreCredibility  25/22 a hardcoded per-publisher table
+                                          (bbc 25, guardian 24, sky 22 …)
+                  scoreRecency      1-5   the only input that varies per story
+                So it was mostly a publisher-trust constant — the score-the-
+                reporter model the claim-first pivot rejects. Do not reinstate it.
+                `indexScore` is still on the FeedPost type and still orders the
+                default view; removing that is a behaviour change, not copy. */}
           </div>
 
           {/* COLLAPSED — teaser */}
