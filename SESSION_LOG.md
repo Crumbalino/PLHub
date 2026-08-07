@@ -457,3 +457,126 @@ light mode paints `#F8F9FB`, it is a real defect on five pages.
   column items.
 - **`getComputedStyle(document.body).backgroundColor`** still unverified by a
   human — the Chrome extension was not connected in this session.
+
+---
+
+# Session log — part 3 (same day, 7 Aug 2026)
+
+Two approved follow-ups: the missing opacity tokens, and the re-approved delete.
+
+## Opacity tokens declared (#57) — verified live
+
+#43 left `--plh-text-70` and `--plh-text-50` undeclared because Brand ID §17 only
+documents a 100/80/60/40/25 ramp, and inventing intermediate steps would have been
+designing rather than mapping. **DESIGN_SYSTEM §5.2 supplied the actual rule:
+hierarchy is opacity on textBase, never a grey hex.**
+
+| Mode | textBase | `--plh-text-100` | `--plh-text-70` | `--plh-text-50` |
+|---|---|---|---|---|
+| Dark | `#FAF5F0` | 100% | **70%** | **50%** |
+| Light | `#1A1D23` | 100% | **75%** | **65%** |
+
+Light carries more opacity than dark for the same perceived hierarchy — §5.2's
+spec, not a transcription slip. `rgba()`, matching the existing shim's form.
+
+**Verified on the served stylesheet after deploy** (`916a95e02da75f4e.css`),
+per selector block:
+
+```
+:root    100=#faf5f0   70=hsla(30,50%,96%,.7)   50=hsla(30,50%,96%,.5)
+.light   100=#1a1d23   70=rgba(26,29,35,.75)    50=rgba(26,29,35,.65)
+```
+
+`hsla(30,50%,96%)` is cssnano's rewrite of `#FAF5F0` — same colour. Token count
+18 → **20**. Both consumers confirmed still wired in the live CSS:
+`.tfh-hero-name{…color:var(--plh-text-70)}` (the "The Football Hub" line) and
+`.tfh-hero-awards{…color:var(--plh-text-50)}` (the Balloon Door Awards line).
+
+Standing caveat unchanged: I can verify the declarations, the values and the
+consuming rules in the served stylesheet, but not `getComputedStyle` — the Chrome
+extension is not connected in this session.
+
+### A doc conflict found doing it, left as found
+
+**Brand ID §17 and DESIGN_SYSTEM §5.2 disagree about light-mode text.** §5.2 names
+`#1A1D23` as the light textBase, but the `80/60/40/25` steps §17 supplied verbatim
+use `rgba(13, 27, 42, …)` — that is `#0D1B2A`, the navy.
+
+So the light ramp is now **mixed**: 100/70/50 on `#1A1D23`, 80/60/40/25 on
+`#0D1B2A`. I did not restate the other four — §5.2 governed only the two tokens
+approved here, and silently rebasing the rest would be a design change smuggled
+into a token fix. Recorded in `globals.css` for whoever holds both docs.
+
+`--plh-text-75` also still undeclared: 75 is not a step on the dark ramp and
+borrowing light's 75% would be guessing. One hover state in `SortTabs`. Along with
+`--plh-border-hover` and `--plh-text-base`.
+
+## The 211 orphaned rows: deleted (#48 closed)
+
+Re-approved after the condition was clarified — the original hold was about
+per-story pages 404ing, and `/api/feed` is a paginated list, so removing rows
+shortens the list rather than breaking a route. **Item 3 from part 1 is no longer
+a skip.**
+
+```
+DELETE /rest/v1/posts?subreddit=in.(talkSPORT,90min)   →  200, content-range: */211
+```
+
+| Metric | Before | After |
+|---|---|---|
+| `posts` total | 19,567 | **19,356** (−211 exactly) |
+| `talkSPORT` | 130 | **0** |
+| `90min` | 81 | **0** |
+| of those with `club_slug` | 36 | **0** |
+
+A full backup of all 211 rows (every column, 277 KB JSON) was taken immediately
+before the delete. Both rows that were provably rendering are gone, checked the
+same way they were found: `/api/feed?club=nottingham-forest` no longer serves
+"…coach requires stitches…" and `?club=crystal-palace` no longer serves the Dean
+Henderson row. `/`, and the nottingham-forest, crystal-palace, liverpool and
+chelsea club pages all still 200.
+
+Remaining feed names in `posts`: BBC Sport, Sky Sports, ESPN FC, The Guardian,
+FourFourTwo, The Independent. No orphaned source names left.
+
+### The club-page counts did not move, and that is #49 proving itself
+
+| Club | Before | After |
+|---|---|---|
+| nottingham-forest | 21 | 21 |
+| crystal-palace | 28 | 28 |
+| chelsea | 143 | 143 |
+| liverpool | 200 | 200 |
+
+`getFeed` advances its offset by `fetchLimit` while returning only `limit` rows,
+so the corpus holds more rows than the API can expose. Deleting rows deep in the
+list promotes rows that were previously skipped, and the page-walk total stays
+flat.
+
+**The flat counts are not evidence the delete failed** — the database counts and
+the two per-row checks establish that it worked. They are evidence that
+page-walking `/api/feed` cannot measure content volume, which is the substance of
+#49.
+
+## Corrections to my own earlier reporting
+
+- **My first deploy check for #57 gave a false pass.** It grepped for
+  `plh-text-70`, which matches the pre-existing `var(--plh-text-70)` *usage*, so
+  it succeeded against the older build and I briefly read 18 tokens as a failed
+  deploy. Re-polled on the declaration (`--plh-text-70:`) and got the real
+  deploy. Worth knowing for any future check of this kind: **grep the
+  declaration, never the token name.**
+- Part 1 recorded 31 rows carrying `club_slug`; the correct total was **36** (17
+  talkSPORT + 19 90min). 31 was the count *among the 92 that survive
+  `filterPLContent`* — a different set, correct in its own sentence but easy to
+  misread.
+
+## Final state
+
+- **13 PRs merged today:** #37 #39 #40 #41 #42 #43 #44 #45 #46 #47 #56 #57, plus
+  this log.
+- **Issues:** 6 closed (#3 #12 #15 #16 #38 #48), 12 verified and commented,
+  8 filed. 19 open.
+- **Nothing from the approved batches is now outstanding.** Still not started
+  because never approved: T4 (delete dead sidebar widgets) and T6 (draft
+  `/about`, `/how-it-works`, `/principles`).
