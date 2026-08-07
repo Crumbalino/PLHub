@@ -67,6 +67,21 @@ function isPremierLeagueContent(title: string, description: string): boolean {
   return true
 }
 
+// Seven feeds, all measured producing on 7 Aug 2026. Every URL here was curled
+// on that date: 200, XML content type, items published inside 24 hours.
+//
+// Removals, same date:
+//   Goal.com — every candidate URL 404s (/feeds/en/news, /feed, /feed/, /rss,
+//     /rss.xml, /feeds/news.xml, /en/feeds/news) and the homepage <head> carries
+//     no application/rss+xml link. It had written 0 rows, ever. The publisher is
+//     alive; its feed is not. Re-add only with a URL that has been curled.
+//   90min — the feed WORKS (200, 90 items). The content is the problem: its
+//     newest item was published 11 Aug 2025 and the ingest was still inserting
+//     those rows in Aug 2026, so year-old stories arrived stamped as fresh.
+//     A frozen archive passes any <item>-count check. Do not re-add.
+//
+// Football365 was NOT removed: /premier-league/rss 404s, but /rss returns 200
+// with 31 transfer items. URL corrected rather than dropped.
 export const FEEDS = [
   {
     name: 'BBC Sport',
@@ -81,19 +96,15 @@ export const FEEDS = [
     url: 'https://www.theguardian.com/football/rss',
   },
   {
-    name: 'Goal.com',
-    url: 'https://www.goal.com/feeds/en/news',
-  },
-  {
-    name: '90min',
-    url: 'https://www.90min.com/feed',
-  },
-  {
     name: 'Football365',
-    url: 'https://www.football365.com/premier-league/rss',
+    // Was /premier-league/rss — 404. This one is site-wide, not PL-only, so
+    // isPremierLeagueContent() does more work here than on the old URL.
+    url: 'https://www.football365.com/rss',
   },
   {
     name: 'The Independent',
+    // Thin but live: 3 items on 7 Aug 2026, newest that afternoon, 514 rows
+    // written. Kept deliberately — a low item count is not a dead feed.
     url: 'https://www.independent.co.uk/sport/football/premier-league/rss',
   },
   {
