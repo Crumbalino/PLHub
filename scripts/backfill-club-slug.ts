@@ -38,12 +38,18 @@ const CHUNK = 200
  * the RSS cron writes every 15 minutes — and a reconcile that quietly nulls
  * ten times more than expected should stop and be looked at, not proceed.
  *
- * `moved` is 0 by construction, not by observation: removing a signal can only
- * lower a club's score, so it can turn a win into a tie (null) or leave it
- * alone. It can never make a different club win outright. A non-zero `moved`
- * means an assumption broke and the run must not proceed.
+ * WHAT `moved` MEANS DEPENDS ON THE CHANGE, so it is not a fixed invariant.
+ * Removing a signal can only lower a club's score, so it turns a win into a
+ * tie (null) or leaves it alone, and `moved` is 0 by construction. ADDING a
+ * club can make that club win outright, so `moved` is legitimately non-zero.
+ * Either way the number is predicted offline first and asserted exactly — the
+ * guard's job is to catch a run that does something other than what was
+ * measured, not to encode one permanent truth.
+ *
+ * These figures are from the run that added Sunderland, Hull City, Leeds
+ * United and Coventry City to the matcher. Re-measure before the next change.
  */
-const EXPECT = { nulled: 487, moved: 0, gained: 57 }
+const EXPECT = { nulled: 170, moved: 10, gained: 48 }
 const TOLERANCE = 0.15 // fractional, on nulled/gained
 const MIN_ABS = 20 // absolute floor so small counts are not tripped by noise
 
