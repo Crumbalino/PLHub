@@ -40,7 +40,12 @@ export async function generateMetadata({
   const name = displayName(club.name)
   // The layout template appends " | The Football Hub".
   const title = `${name} Transfer News`
-  const description = `The latest ${name} transfer news, rumours and reporting, ranked by the PLHub Index. Updated constantly.`
+  // No score named here. The PLHub Index is deleted (DESIGN_SYSTEM §13) and this
+  // description was reused in meta description, og:description,
+  // twitter:description and the JSON-LD, so the claim appeared 8 times in the
+  // HTML of all 22 club pages. Says only what the list is; makes no claim about
+  // the order, because the order is not something the site stands behind.
+  const description = `Transfer news and reporting about ${name}, gathered from published football coverage and updated through the day.`
 
   return {
     title,
@@ -135,7 +140,8 @@ export default async function ClubPage({
                 Manager: <span className="text-[var(--plh-text-100)]">{club.manager}</span>
               </p>
               <p className="text-sm text-[var(--plh-text-50)] mt-2">
-                Latest news, transfers and discussion — ranked by the PLHub Index
+                Transfer stories that mention {displayName(club.name)}, gathered
+                from published football coverage
               </p>
             </div>
           </header>

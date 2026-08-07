@@ -139,10 +139,19 @@ export default function FeedList({
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '20px', borderLeft: `3px solid ${TEAL}`, paddingLeft: '12px' }}>
         <h2 style={{ fontFamily: "'Sora', sans-serif", fontWeight: 700, fontSize: '18px', color: WHITE, margin: 0, opacity: fading ? 0 : 1, transition: 'opacity 0.15s ease' }}>
-          {sortMode === 'pulse' ? 'Ranked by the Hub Index' : 'Latest stories'}
+          {/* Neither label names a score. The PLHub Index is deleted
+              (DESIGN_SYSTEM §13), and describing the 'pulse' order accurately
+              would mean advertising a hardcoded per-publisher trust table
+              (src/lib/scoring.ts: bbc 25, guardian 24, sky 22 …) plus a recency
+              decay — two of its four pillars are dead constants, since
+              score_significance is never written (#18) and source_count is only
+              written by an unscheduled cron. So the default view claims no
+              order at all, and only the one order the code actually guarantees
+              is named. */}
+          {sortMode === 'pulse' ? 'Stories' : 'Newest first'}
         </h2>
         <button onClick={toggleSort} style={{ fontFamily: "'Sora', sans-serif", fontSize: '12px', fontWeight: 500, color: TEAL, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-          {sortMode === 'pulse' ? 'show latest' : 'rank by index'}
+          {sortMode === 'pulse' ? 'show newest first' : 'show default order'}
         </button>
       </div>
 
