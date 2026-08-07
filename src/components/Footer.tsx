@@ -8,6 +8,7 @@ export default function Footer() {
     { href: '/how-it-works', label: 'How It Works' },
     { href: '/principles', label: 'Our Principles' },
     { href: '/contact', label: 'Contact' },
+    { href: '/privacy', label: 'Privacy' },
   ];
 
   const handleBackToTop = useCallback(() => {
