@@ -134,12 +134,19 @@ ANTHROPIC_API_KEY=         FOOTBALL_DATA_API_KEY=          CRON_SECRET=
 NEXT_PUBLIC_SITE_URL=https://thefootballhub.uk
 SITE_NOINDEX=true          # "true" noindexes; build-time
 SUMMARIES_ENABLED=false    # "true" enables inline summarisation at ingest
-GA_MEASUREMENT_ID=         YOUTUBE_API_KEY=                # optional
+YOUTUBE_API_KEY=                                           # optional
 RESEND_API_KEY= RESEND_AUDIENCE_ID= RESEND_FROM_EMAIL=  # UNSET — digest and /api/subscribe both 500
 ```
 
 Dead vars set in Vercel, read by no code: `ENABLE_BTN`, `ENABLE_AI_SUMMARIES`
-(**not** `SUMMARIES_ENABLED`), `API_FOOTBALL_KEY`.
+(**not** `SUMMARIES_ENABLED`), `API_FOOTBALL_KEY`, `GA_MEASUREMENT_ID`.
+
+**No analytics, no session recording, no pixels, no third-party fonts.** GA4
+and Microsoft Clarity ran on every page with no consent gate until 6 Aug 2026;
+both are removed. Adding any tracker back needs a lawful basis and a consent
+banner under UK GDPR/PECR — and `/how-it-works` promises no cookie walls, which
+is only true while nothing needs consent. Fonts come from `next/font`,
+self-hosted; never re-add a `fonts.googleapis.com` link or `@import`.
 
 ## Conventions
 

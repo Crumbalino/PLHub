@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next'
-import Script from 'next/script'
 import { Sora, JetBrains_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/lib/theme-context'
 import './globals.css'
@@ -8,7 +7,6 @@ import Footer from '@/components/Footer'
 import { JsonLd, websiteSchema, organizationSchema } from '@/components/JsonLd'
 import { NOINDEX } from '@/lib/seo'
 import { SITE_URL } from '@/lib/site'
-import GoogleAnalytics from '@/components/GoogleAnalytics'
 import BackToTopButton from '@/components/BackToTopButton'
 
 const sora = Sora({
@@ -86,8 +84,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const gaMeasurementId = process.env.GA_MEASUREMENT_ID
-
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
@@ -97,51 +93,27 @@ export default function RootLayout({
             __html: `(function(){try{var m=localStorage.getItem('tfh-mode');if(m==='light')document.documentElement.classList.add('light');}catch(e){}})();`,
           }}
         />
-        {/* Google Fonts */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;600;700&display=swap"
-          rel="stylesheet"
-        />
+        {/* No webfont <link> here. next/font (above) self-hosts Sora and
+            JetBrains Mono from our own origin. A fonts.googleapis.com
+            stylesheet would send every visitor's IP to Google for nothing. */}
         <JsonLd data={orgSchema} />
         <JsonLd data={webSchema} />
       </head>
       <body className={`${sora.variable} ${jetbrainsMono.variable} font-sora antialiased`}>
         <ThemeProvider>
-          {gaMeasurementId && (
-            <GoogleAnalytics measurementId={gaMeasurementId} />
-          )}
-
           <main>{children}</main>
           <BackToTopButton />
           <Footer />
         </ThemeProvider>
 
-        {/* Google Analytics GA4 */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-HKPQJ58BR1"
-          strategy="afterInteractive"
-        />
-        <Script id="ga4" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-HKPQJ58BR1');
-          `}
-        </Script>
-
-        {/* Microsoft Clarity */}
-        <Script id="clarity" strategy="afterInteractive">
-          {`
-            (function(c,l,a,r,i,t,y){
-              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "vn616wbelr");
-          `}
-        </Script>
+        {/* NO ANALYTICS, NO SESSION RECORDING, NO PIXELS.
+            Google Analytics (G-HKPQJ58BR1) and Microsoft Clarity
+            (vn616wbelr) were loaded here on every page. Clarity records
+            sessions — pointer movement, scrolling, clicks. Both set cookies,
+            and neither had a consent gate, which UK GDPR/PECR requires before
+            they load. /how-it-works promises "no cookie consent walls"; the
+            way to keep that promise is to need no consent, not to skip it.
+            Do not add a tracker back without a lawful basis and a banner. */}
       </body>
     </html>
   )
