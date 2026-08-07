@@ -135,7 +135,11 @@ NEXT_PUBLIC_SITE_URL=https://thefootballhub.uk
 SITE_NOINDEX=true          # "true" noindexes; build-time
 SUMMARIES_ENABLED=false    # "true" enables inline summarisation at ingest
 YOUTUBE_API_KEY=                                           # optional
-RESEND_API_KEY= RESEND_AUDIENCE_ID= RESEND_FROM_EMAIL=  # UNSET — digest and /api/subscribe both 500
+RESEND_API_KEY=            # SET but NOT VALID — 11 chars, no re_ prefix;
+                           # /audiences returns 400 "API key is invalid"
+RESEND_AUDIENCE_ID= RESEND_FROM_EMAIL=  # STILL UNSET — addContact() needs the
+                           # audience id, so /api/subscribe and digest 500
+                           # regardless of the key. Verified 7 Aug 2026.
 ```
 
 Dead vars set in Vercel, read by no code: `ENABLE_BTN`, `ENABLE_AI_SUMMARIES`

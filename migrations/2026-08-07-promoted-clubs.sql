@@ -18,12 +18,22 @@
 -- them as a from_club and so a per-season membership table has something to
 -- point at.
 --
--- Burnley deliberately has NO entry in src/config/clubs.ts, so /clubs/burnley
--- does not exist and is not in the sitemap. A row without a page is the
--- correct shape here: it is a foreign-key target, not a destination. It also
--- removes the question of what to print as their manager, which we do not
--- have -- no page, no hero, no wrong fact. The matcher does not know them
--- either, so no post is ever attributed to a club you cannot open.
+-- THREE OF THESE FIVE HAVE A ROW BUT NO PAGE. Burnley, Hull City and Coventry
+-- City are absent from src/config/clubs.ts, so /clubs/<slug> does not exist
+-- for them and they are not in the sitemap or the homepage nav.
+--
+--   Burnley       Championship. The row is a foreign-key target for
+--                 claims.from_club_slug, not a destination. It also disposes
+--                 of the manager we do not have: no page, no hero, no wrong
+--                 fact. Removed from the matcher too, so nothing is
+--                 attributed to a club you cannot open.
+--
+--   Hull City     Promoted for 2026-27, so the Feb-Aug 2026 corpus barely
+--   Coventry City covers them -- both were in the Championship for all of it.
+--                 Measured before launch: 1 post and 6 posts. They stay IN
+--                 the matcher so attribution accrues from the new season, and
+--                 a config entry turns the page on later with content already
+--                 behind it. A page with one post is not worth launching.
 --
 -- Live facts this relies on (verified 2026-08-07):
 --   clubs           20 rows, 16 in_scope true
