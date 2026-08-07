@@ -27,7 +27,6 @@ export default function SiteNav({ clubs }: { clubs: NavClub[] }) {
       {clubs.length > 0 && (
         <>
           <h2 className="tfh-nav-title">
-            {/* [[COPY: club list heading]] */}
             Clubs
           </h2>
           <ul className="tfh-nav-clubs">
@@ -41,7 +40,6 @@ export default function SiteNav({ clubs }: { clubs: NavClub[] }) {
       )}
 
       <h2 className="tfh-nav-title">
-        {/* [[COPY: pages list heading]] */}
         More
       </h2>
       <ul className="tfh-nav-pages">
