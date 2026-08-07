@@ -304,14 +304,9 @@ button, a, [role="button"] { min-height: 44px; min-width: 44px; }
   font-size: 20px; font-weight: 700; margin: 0 0 12px;
   color: var(--plh-text-100);
 }
-.tfh-facts-subtitle {
-  font-size: 14px; font-weight: 600; margin: 24px 0 8px;
-  color: var(--plh-text-100);
-}
+/* .tfh-facts-subtitle / -list / -source deleted with the "Latest" block —
+   they styled nothing else. See FactsBlock.tsx for why it is not coming back. */
 .tfh-facts-lede { margin: 0; font-size: 15px; line-height: 1.6; }
-.tfh-facts-list { margin: 0; padding-left: 18px; font-size: 15px; line-height: 1.7; }
-.tfh-facts-list a { color: var(--plh-text-100); }
-.tfh-facts-source { color: var(--plh-text-50); }
 .tfh-facts-numbers {
   display: flex; flex-wrap: wrap; gap: 24px; margin: 24px 0 0;
 }
