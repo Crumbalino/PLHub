@@ -62,12 +62,20 @@ build with `Refusing to build with a guessed domain`. Intended, not a broken rep
 
 RSS + Reddit is the intended surface. **Scraping is dead — do not reintroduce it.**
 
-- RSS: `FEEDS` declares **9** feeds, one per run, rotated, polled every 135 min.
-  **Only 6 produce anything** (measured 6 Aug 2026): BBC, Sky, ESPN, FourFourTwo,
-  Guardian, Independent. **Goal.com** / **Football365** 404 and have *never*
-  written a row; **90min** returns 200 but nothing published since Sep 2025 — a
-  frozen archive that looks healthy to any `<item>` count. 3 of 9 slots fetch
-  nothing.
+- RSS: `FEEDS` declares **7** feeds, one per run, rotated. **All 7 were measured
+  producing on 7 Aug 2026**: BBC, Sky, Guardian, Football365, Independent, ESPN,
+  FourFourTwo. Every URL in that list has been curled — 200, XML, items inside
+  24h. Do not add a feed without curling it first.
+  - **Goal.com removed** — 7 candidate URLs all 404, no `<head>` rss link tag,
+    0 rows ever written. The publisher is alive; the feed is not.
+  - **90min removed** — the feed works (200, 90 items); the *content* is frozen
+    at 11 Aug 2025 and ingest was still inserting those rows a year later, so
+    stale stories arrived looking fresh. A frozen archive passes any `<item>`
+    count. **Do not re-add either.**
+  - **Football365 URL corrected**, not removed: `/premier-league/rss` 404s,
+    `/rss` serves 31 transfer items. Site-wide, so the PL filter works harder.
+  - **The Independent is thin, not dead** — 3 items, 514 rows. Kept. A low item
+    count is not a failure.
 - Reddit: `src/lib/reddit.ts`. Cron disabled — nothing arriving.
 - `posts.source` is `rss|reddit|youtube`; only `rss` is written.
 
