@@ -14,6 +14,19 @@ export async function generateStaticParams() {
   return getAllClubSlugs().map((slug) => ({ slug }))
 }
 
+/**
+ * The club's name as a reader would write it.
+ *
+ * config.name is the legal form ("Tottenham Hotspur Football Club") and
+ * config.shortName is the nickname ("Spurs"), and neither is what people
+ * search. Stripping the suffix gives "Tottenham Hotspur" — the term the slug
+ * was chosen for. Derived rather than added as a config field so there is no
+ * fourth club list to keep in sync.
+ */
+function displayName(name: string): string {
+  return name.replace(/\s+Football Club$/, '')
+}
+
 /* ── Rich SEO metadata per club ── */
 export async function generateMetadata({
   params,
@@ -24,8 +37,10 @@ export async function generateMetadata({
   if (!club) return {}
 
   const baseUrl = SITE_URL
-  const title = `${club.name} News, Transfers & Rumours`
-  const description = `The latest ${club.name} news, transfer rumours, match reports and fan discussion. Ranked by the PLHub Index. Updated constantly.`
+  const name = displayName(club.name)
+  // The layout template appends " | The Football Hub".
+  const title = `${name} Transfer News`
+  const description = `The latest ${name} transfer news, rumours and reporting, ranked by the PLHub Index. Updated constantly.`
 
   return {
     title,
@@ -34,16 +49,16 @@ export async function generateMetadata({
       canonical: `${baseUrl}/clubs/${params.slug}`,
     },
     openGraph: {
-      title: `${club.name} News & Transfers | PLHub`,
-      description: `Latest ${club.name} news ranked by the PLHub Index.`,
+      title: `${name} Transfer News | The Football Hub`,
+      description,
       url: `${baseUrl}/clubs/${params.slug}`,
-      siteName: 'PLHub',
+      siteName: 'The Football Hub',
       locale: 'en_GB',
       type: 'website',
     },
     twitter: {
       card: 'summary',
-      title: `${club.name} News | PLHub`,
+      title: `${name} Transfer News | The Football Hub`,
       description,
     },
   }
@@ -111,7 +126,7 @@ export default async function ClubPage({
           <header className="mb-8 pb-6 border-b border-[var(--plh-border)]">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-[var(--plh-text-100)] mb-2">
-                {club.name}
+                {displayName(club.name)} Transfer News
               </h1>
               <p className="text-sm text-[var(--plh-text-50)]">
                 {club.code} • Founded {club.founded} • {club.city}
