@@ -1,5 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ESLint is a gate you run, NOT a gate that blocks deploys — for now.
+  //
+  // .eslintrc.json was added 7 Aug 2026 so `npm run lint` finally works; before
+  // that there was no config at all and `next lint` sat waiting on an
+  // interactive prompt, which is why CLAUDE.md called build "the only working
+  // gate". Turning it on surfaced 7 errors and 7 warnings that already existed:
+  // 7x react/no-unescaped-entities and 7x @next/next/no-img-element across 8
+  // files. Fixing them was explicitly out of scope.
+  //
+  // Next runs ESLint during `next build` by default, and those 7 errors fail the
+  // build — which would have blocked every deploy on an indexed site to fix
+  // straight quotes. So linting is decoupled from the build until the backlog is
+  // cleared. FLIP THIS TO false once `npm run lint` is clean; that is the point
+  // at which the gate starts earning its keep.
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // The vercel.app alias served the whole site at 200 alongside the apex —
   // measured 7 Aug 2026, every path, on an indexed site. A canonical tag was
   // the only thing pointing home, and a canonical is a hint, not a rule.
