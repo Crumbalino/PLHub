@@ -45,15 +45,19 @@ export default function FactsBlock({ stats, clubsCovered }: FactsBlockProps) {
       {/* Any figure that failed to read comes back as 0 and is omitted rather
           than printed as a zero, which would read as a claim. */}
       <dl className="tfh-facts-numbers">
+        {/* Labels say "this window" because the counts are windowed to
+            TRANSFER_WINDOW_OPENED. "Stories logged" unqualified read as an
+            all-time archive figure, which is what it was. If the window is ever
+            removed, these labels have to change back in the same commit. */}
         {stats.postsIngested > 0 && (
           <div>
-            <dt>Stories logged</dt>
+            <dt>Stories logged this window</dt>
             <dd>{fmt(stats.postsIngested)}</dd>
           </div>
         )}
         {stats.postsAttributed > 0 && (
           <div>
-            <dt>Pinned to a club</dt>
+            <dt>Pinned to a club this window</dt>
             <dd>{fmt(stats.postsAttributed)}</dd>
           </div>
         )}
