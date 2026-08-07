@@ -18,6 +18,13 @@
 -- them as a from_club and so a per-season membership table has something to
 -- point at.
 --
+-- Burnley deliberately has NO entry in src/config/clubs.ts, so /clubs/burnley
+-- does not exist and is not in the sitemap. A row without a page is the
+-- correct shape here: it is a foreign-key target, not a destination. It also
+-- removes the question of what to print as their manager, which we do not
+-- have -- no page, no hero, no wrong fact. The matcher does not know them
+-- either, so no post is ever attributed to a club you cannot open.
+--
 -- Live facts this relies on (verified 2026-08-07):
 --   clubs           20 rows, 16 in_scope true
 --   clubs.subreddit NOT NULL  <- changed below

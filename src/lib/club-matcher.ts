@@ -86,8 +86,6 @@ const NAMES: Record<string, string[]> = {
   'hull-city': ['hull city', 'hull'],
   'leeds-united': ['leeds united', 'leeds'],
   'coventry-city': ['coventry city', 'coventry'],
-  // Championship since 2026-27, still matched so from_club works.
-  burnley: ['burnley'],
 }
 
 /**
@@ -122,7 +120,6 @@ const NICKNAMES: Record<string, string[]> = {
   'hull-city': ['tigers'],
   'leeds-united': ['whites'],
   'coventry-city': ['sky blues'],
-  burnley: ['clarets'],
 }
 
 /**

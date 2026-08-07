@@ -375,22 +375,6 @@ export const CLUBS: Record<string, Club> = {
     footballDataId: 1076,
     apiSportsId: 0,
   },
-  // Championship since 2026-27. Kept so claims can name them as a from_club.
-  burnley: {
-    slug: 'burnley',
-    name: 'Burnley Football Club',
-    shortName: 'Burnley',
-    code: 'BUR',
-    primaryColour: '#6C1D45',
-    secondaryColour: '#99D6EA',
-    competitions: ['ELC'],
-    founded: 1882,
-    stadium: 'Turf Moor',
-    city: 'Burnley',
-    manager: 'TBC', // [[DATA: Burnley manager -- not supplied]]
-    footballDataId: 328,
-    apiSportsId: 0,
-  },
 };
 
 export function getClub(slug: string): Club | undefined {
