@@ -2,6 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── TEMPORARY TOKEN SHIM — added 7 Aug 2026, see issue #38 ─────────────────
+   The --plh-* custom properties were referenced in 67 places across the live
+   HTML and declared in exactly none. Not in this file, not in tailwind.config.ts,
+   not inline, not in theme-context.tsx. Every `var(--plh-…)` was invalid at
+   computed-value time, so nothing painted the page ground: the "white
+   background overriding the dark theme" was the absence of any background at
+   all, on the day the site went indexable.
+
+   Values copied from `Brand ID/plhub-brand-v2.html` §17 "CSS Implementation
+   Reference", which states it is the single source of truth for the colour
+   system in code. Corroborated by tailwind.config.ts, whose navy (#0D1B2A),
+   surface (#112238) and surface-hover (#162D45) match --plh-bg, --plh-card and
+   --plh-elevated exactly. DESIGN_SYSTEM.md §5.1 is not in the repo and was not
+   readable — if §5.1 disagrees with the Brand ID file, §5.1 wins and this block
+   should be corrected.
+
+   WHY THIS IS TEMPORARY: issue #38 records two possible fixes. Either the
+   inline-TS-token migration was the intended destination and every var(--plh-*)
+   consumer should be migrated (making this block dead), or these properties were
+   always meant to exist (making it permanent). That call needs §5.1. This shim
+   takes neither side — it stops the site rendering unpainted in the meantime.
+
+   NOT DECLARED, deliberately — no §5.1 mapping exists for them:
+     --plh-text-70, --plh-text-50, --plh-text-75  the scale here is
+       100/80/60/40/25, so 70/50/75 have no source value and guessing one would
+       invent design. They are `color`, so they now inherit the body colour and
+       stay legible — which they were not before this block.
+     --plh-border-hover  a hover background in ClubFilterBar and elsewhere.
+     --plh-text-base  consumed as `rgba(var(--plh-text-base), 0.05)`, i.e. a bare
+       RGB triple, not a colour. Different format from anything in §17. The
+       SkeletonCard shimmer stays invisible until it is defined or rewritten.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Dark mode (default) — html carries `dark` in layout.tsx */
+:root, .dark {
+  --plh-bg: #0D1B2A;
+  --plh-card: #112238;
+  --plh-elevated: #162D45;
+  --plh-text-100: #FAF5F0;
+  --plh-text-80: rgba(250, 245, 240, 0.80);
+  --plh-text-60: rgba(250, 245, 240, 0.60);
+  --plh-text-40: rgba(250, 245, 240, 0.40);
+  --plh-text-25: rgba(250, 245, 240, 0.25);
+  --plh-pink: #E84080;
+  --plh-pink-hover: #D03670;
+  --plh-pink-active: #B82E60;
+  --plh-gold: #D4A843;
+  --plh-teal: #3AAFA9;
+  --plh-ice: #8AACCC;
+  --plh-violet: #C084FC;
+  --plh-orange: #F97316;
+  --plh-border: rgba(250, 245, 240, 0.05);
+  --plh-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Light mode — theme-context.tsx adds `light` to documentElement */
+.light {
+  --plh-bg: #F8F9FB;
+  --plh-card: #FFFFFF;
+  --plh-elevated: #F0F1F4;
+  --plh-text-100: #1A1D23;
+  --plh-text-80: rgba(13, 27, 42, 0.80);
+  --plh-text-60: rgba(13, 27, 42, 0.60);
+  --plh-text-40: rgba(13, 27, 42, 0.40);
+  --plh-text-25: rgba(13, 27, 42, 0.25);
+  --plh-pink: #E84080;
+  --plh-pink-hover: #D03670;
+  --plh-pink-active: #B82E60;
+  --plh-gold: #B8923A;
+  --plh-teal: #2A9490;
+  --plh-ice: #5A7F9F;
+  --plh-violet: #9B59B6;
+  --plh-orange: #D96A14;
+  --plh-border: rgba(13, 27, 42, 0.08);
+  --plh-shadow: 0 2px 6px rgba(13, 27, 42, 0.05), 0 1px 2px rgba(13, 27, 42, 0.03);
+}
+
 /* No @import from fonts.googleapis.com. Sora and JetBrains Mono are loaded by
    next/font in layout.tsx, which self-hosts them from our own origin. A CSS
    @import would send every visitor's IP to Google and block first paint on a
@@ -10,7 +87,17 @@
 /* ── Base ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+/* Paints the ground. Part of the #38 shim and not optional with it: defining
+   --plh-text-100 as #FAF5F0 without a background would put off-white hero type
+   on an unpainted white page — worse than the undefined state, where color fell
+   back to black. The Brand ID document sets its own body the same way
+   (`background: var(--navy); color: var(--warm-white)`). */
+body {
+  background: var(--plh-bg);
+  color: var(--plh-text-100);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 /* ── Keyframe animations (web only — RN uses Animated API) ── */
 
