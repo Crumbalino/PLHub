@@ -730,3 +730,87 @@ reproduce. Recording it because I quoted it mid-session.
   `TRANSFER_WINDOW_OPENED`'s exact date (§16.3 unreadable); config entries for
   `coventry-city` and `hull-city` (owner-supplied club facts). T4 and T6 remain
   unstarted — never approved.
+
+---
+
+# Session log — part 5
+
+## The PLHub Index comes off the club pages (#65) — verified live
+
+DESIGN_SYSTEM §13 deletes the Index. It was on all 22 indexed club pages in
+**four** places, three named and one unnamed.
+
+**Named — 9 occurrences per page:**
+
+| Site | Occurrences |
+|---|---|
+| `clubs/[slug]/page.tsx:43` — metadata description, reused in `meta description`, `og:description`, `twitter:description` and the JSON-LD | **8** |
+| `clubs/[slug]/page.tsx:138` — visible strapline | 1 |
+| `feed/FeedList.tsx:142,145` — feed heading and toggle ("rank by index") | visible |
+
+**Unnamed — 21 occurrences per page.** `StoryCard` rendered `post.indexScore` as
+a **bare number** beside a bracket icon — 95, 79, 79, 79, 63 on Liverpool — with
+nothing on the site explaining it. Removed as well: a number with no label is
+still a claim, and deleting the words while leaving the number would have been
+worse than either.
+
+### What the number actually was, measured live per post
+
+| Component | Value | Why |
+|---|---|---|
+| `scoreEngagement` | **12 always** | RSS rows have `score = 0`; Reddit dormant |
+| `scoreSignificance` | **12 always** | `score_significance` is never written (#18) |
+| `scoreMultiSource` | **0 always** | `source_count` only written by an unscheduled cron |
+| `scoreCredibility` | 25 / 22 | **hardcoded publisher table** — `bbc 25`, `guardian 24`, `sky 22`, `mirror 12`, `thesun 10` |
+| `scoreRecency` | 1–5 | the only per-story variable |
+
+Three of five components are constants, so the score was substantially a
+publisher-trust constant — the score-the-reporter model the claim-first pivot
+rejects. It also drives the default sort order (`sort: 'pulse'` →
+`calculatePLHubIndex`).
+
+### Replacement copy — says what the list is, claims no order
+
+| Where | New |
+|---|---|
+| description | *Transfer news and reporting about &lt;Club&gt;, gathered from published football coverage and updated through the day.* |
+| strapline | *Transfer stories that mention &lt;Club&gt;, gathered from published football coverage* |
+| feed heading | **Stories** (default) / **Newest first** (toggled) |
+| toggle | *show newest first* / *show default order* |
+
+The default order is called "default" rather than described. Describing it
+accurately would mean advertising the publisher-trust table; describing it as
+anything else would be a claim the code does not support. "Newest first" is the
+one order the code guarantees.
+
+### Live verification
+
+`/clubs/liverpool`: "PLHub Index" / "Hub Index" / "rank by index" **9 → 0**;
+rendered score numbers **21 → 0**; 20 `<article>` cards, source names,
+timestamps, manager line, breadcrumb and JSON-LD all intact. Spot-checked
+`/clubs/arsenal`, `/clubs/man-utd`, `/clubs/wolves` — all 200, 0 named, 0 scores.
+Homepage unaffected. The one bracket path left in the HTML is a decorative
+`aria-hidden` element.
+
+### Left in place, flagged not done
+
+- **`indexScore` still exists** on the `FeedPost` type, still orders the default
+  view, and the five score components are **still in the RSC payload** sent to
+  the browser. Removing either is a behaviour change, not copy.
+- **`/how-it-works` still has a whole "The PLHub Index" section** (`page.tsx:29`,
+  `:32`). That is the wrong-pages work.
+- `src/lib/scoring.ts` still implements the four-pillar system; `NewsCard`,
+  `HubIndexScore`, `SnapshotBlock` and `BracketSVG` still reference it in code or
+  comments. None has a render site.
+
+## Final state for the session
+
+- **21 PRs merged:** #37 #39 #40 #41 #42 #43 #44 #45 #46 #47 #56 #57 #58 #59 #60
+  #61 #62 #63 #64 #65, plus this log.
+- **Issues:** 6 closed, 13 verified and commented, 8 filed.
+- **Handed back rather than guessed:** the hero's `100svh` centring;
+  `TRANSFER_WINDOW_OPENED`'s exact date (§16.3 unreadable); config entries for
+  `coventry-city` and `hull-city`; removal of `indexScore` from the type and the
+  default sort.
+- **Never approved, so never started:** T4 (delete the dead sidebar widgets) and
+  T6 (draft `/about`, `/how-it-works`, `/principles`).
