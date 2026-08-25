@@ -34,11 +34,13 @@ getSnapshot(entity) → SnapshotPayload
 | Route | Entity | H1 |
 |---|---|---|
 | `/` | `premier-league` | The Football Hub |
-| `/tottenham` | `tottenham` | Tottenham Snapshot |
-| `/arsenal` | `arsenal` | Arsenal Snapshot |
+| `/tottenham` | `tottenham` | Tottenham |
+| `/arsenal` | `arsenal` | Arsenal |
 | … | … | … |
 
 **The page is a client of the API, not a database consumer.** `GET /api/v1/snapshot/{entity}` returns the entire page as JSON (§14). The website is client one. React Native is client two. No page component queries Supabase directly — that decision is what makes the app a port rather than a rebuild.
+
+**The H1 is the club name and nothing else.** "Snapshot" is internal wording — it names the thing we are building, not the thing the reader arrived at. The public name for this page is not settled, and until it is, the page is titled with the only word that is certainly right.
 
 **Reserved slug registry.** Clubs live at root, so a static reserved list must exist before any new top-level route is added: `transfers`, `matches`, `search`, `about`, `how-it-works`, `privacy`, `terms`, `api`, `snapshot`, `deadline-day`. A club slug can never collide with these.
 
@@ -222,8 +224,8 @@ Poll every 60s during a fixture window only. No polling otherwise.
 ```
 AVAILABILITY
 
-Romero          OUT         Groin injury
-Bissouma        SUSPENDED   Until 19 Sep
+Romero          OUT         Groin injury · 33 days
+Bissouma        SUSPENDED   Suspended until 19 Sep
 Kulusevski      DOUBTFUL    Thigh injury · 75%
 Solanke         BACK        Returned to training
 ```
@@ -238,6 +240,16 @@ The `news` string is the club's own wording. **Display it as-is.** Do not rewrit
 2. **Drop "chance of playing".** `"Thigh injury - 50% chance of playing"` renders `Thigh injury · 50%`. Under a DOUBTFUL label a percentage can only mean one thing, and the words are the block's own label repeated in every row.
 
 A real return date passes through untouched: `"Ankle injury - Expected back 19 Sep"` renders `Ankle injury · Expected back 19 Sep`.
+
+**Where the return date was dropped, say how long he has been out instead.** FPL stamps `news_added` on every item, so days elapsed is always available and is the only fact left once the null marker has gone. `"Groin injury - Unknown return date"`, filed 33 days ago, renders `Groin injury · 33 days`.
+
+Rounded down to whole days, and nothing below one day — a fresh injury is news on its own and "0 days" is a worse answer than silence.
+
+**Only where a null marker was actually dropped, and only for OUT and SUSPENDED.** Three conditions, and each rules out a real case:
+
+- **DOUBTFUL is excluded** because it already carries a percentage, and two numbers on one line is the block competing with itself.
+- **A row with a real return date is excluded**, because the date is the better fact.
+- **Status alone is not the test.** Measured live on 25 Aug 2026, the only suspended player in the league reads `"Suspended until 19 Sep"` — no separator, and a return date already in the sentence. Gating on `SUSPENDED` rather than on the missing date would have appended a day count to a line that already said when he is back.
 
 **Removing a null marker is not rewriting. Changing "Knee injury" to anything at all is.** The line between the two is that the first drops a word that carries no information and the second alters a club's medical claim.
 
@@ -330,11 +342,13 @@ This is what makes twenty pages an ecosystem rather than twenty silos. The Arsen
 
 ### 10. THE NUMBERS
 
-Collapsed by default. One line visible, expands to six.
-
 Position · points · goal difference · goals scored · goals conceded · xG for/against.
 
-Slowest-moving block on the page. Never above the fold on mobile.
+**Does not render on the club page.** Collapsed, it showed position and points — both of which the Table sits directly above it and already gives, for seven clubs including this one. The one line a reader saw was the line they had just read. THE_FOOTBALL_HUB §9, copy rule 2: if every row says it, delete it.
+
+**The `numbers` key stays in the §14 payload.** The data is sound and the duplication is a property of this page's layout, not of the numbers. A surface with no table — the newsletter, a widget — can render it without changing anything upstream.
+
+If it returns here, it returns without position and points, and it needs a reason to exist beyond four numbers nobody asked for.
 
 ---
 
@@ -601,7 +615,8 @@ Verification fails → **publish the card without the summary.** Headline, outle
   },
   "availability": [
     { "player": "Romero", "photo": "url", "status": "OUT",
-      "detail": "Groin injury - Unknown return date", "chance": 0 }
+      "detail": "Groin injury - Unknown return date", "chance": 0,
+      "news_added": "2026-07-23T10:30:00Z" }
   ],
   "referee": {
     "name": "Anthony Taylor", "cards_per_game": 4.8,

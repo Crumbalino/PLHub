@@ -133,6 +133,13 @@ export interface AvailabilityRow {
   /** The club's own wording, verbatim. Never rewritten — §7.4. */
   detail: string
   chance: number | null
+  /**
+   * When the club filed this news. FPL stamps it on every item.
+   *
+   * §7.4 renders days elapsed for a player with no return date, which is the
+   * one useful thing left to say once "unknown return date" has been dropped.
+   */
+  news_added: string | null
 }
 
 export interface KeyDatum {
@@ -486,6 +493,7 @@ export function buildAvailability(
       status,
       detail: (el.news ?? '').trim(),
       chance: el.chance_of_playing_next_round,
+      news_added: el.news_added,
     })
   }
 
