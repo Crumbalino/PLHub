@@ -6,11 +6,14 @@
  * no adapter, no Supabase and no source directly — which is the decision that
  * makes React Native a port rather than a rebuild.
  *
- * SCOPE. Seven blocks: the match (all four phases), availability, referee, key
- * data, table, form, the numbers. The centre column is out of scope entirely —
- * no big story, no developing, no confirmed, no worth your time, no fan pulse —
- * and so is the desktop three-column layout (§4). This is the §5 mobile stack
- * at every width, single column.
+ * SCOPE. Six blocks: the match (all four phases), availability, referee, key
+ * data, table, form. The centre column is out of scope entirely — no big story,
+ * no developing, no confirmed, no worth your time, no fan pulse — and so is the
+ * desktop three-column layout (§4). This is the §5 mobile stack at every width,
+ * single column.
+ *
+ * The Numbers (§7.10) was here and is not any more; the note in blocks.tsx says
+ * why. Its key is still in the payload.
  *
  * Sign-off (§7.17) is also absent. It is a centre-column block whose line is
  * human and whose counts come from clustering, so there is nothing yet for it
@@ -27,7 +30,6 @@ import {
   KeyData,
   LeagueTable,
   MatchBlock,
-  NumbersBlock,
   RefereeBlock,
   relativeTime,
   type Snapshot,
@@ -90,7 +92,7 @@ export default async function TottenhamSnapshotPage() {
     const today = new Date(now).toISOString()
     return (
       <article className="mx-auto max-w-xl px-4 py-10">
-        <h1 className="text-2xl font-semibold">Tottenham Snapshot</h1>
+        <h1 className="text-2xl font-semibold">Tottenham</h1>
         <p className="mt-4">Nothing worth logging today.</p>
         <p className="mt-1 text-sm opacity-70">
           <time dateTime={today}>
@@ -118,41 +120,48 @@ export default async function TottenhamSnapshotPage() {
    *   2  Availability                2  Availability
    *   3  Referee (PRE only)          3  Table
    *   4  Key data                    4  Form
-   *   5  Table                       5  The numbers
+   *   5  Table
    *   6  Form
-   *   7  The numbers
    *
    * Two things about the off-week order are the spec's, not mine. §5 drops Key
-   * Data from the BREAK stack, and Referee is `PRE` only by §7.5. The Numbers is
-   * not listed in either stack; §7.10 says never above the fold on mobile, so
-   * it goes last in both.
+   * Data from the BREAK stack, and Referee is `PRE` only by §7.5.
+   *
+   * The Numbers is absent from both. It sat last in each and showed position and
+   * points, which the table immediately above already gives for seven clubs —
+   * see the note in blocks.tsx. The key stays in the payload.
    */
   const blocks = matchweek
     ? [
         <MatchBlock key="match" match={snapshot.match} entity={entity.name} />,
-        <Availability key="availability" rows={snapshot.availability ?? []} />,
+        <Availability
+          key="availability"
+          rows={snapshot.availability ?? []}
+          now={now}
+        />,
         phase === 'PRE' ? (
           <RefereeBlock key="referee" referee={snapshot.referee} />
         ) : null,
         <KeyData key="key-data" data={snapshot.key_data ?? []} />,
         <LeagueTable key="table" table={snapshot.table} />,
         <Form key="form" form={snapshot.form ?? []} />,
-        <NumbersBlock key="numbers" numbers={snapshot.numbers} />,
       ]
     : [
         <MatchBlock key="match" match={snapshot.match} entity={entity.name} />,
-        <Availability key="availability" rows={snapshot.availability ?? []} />,
+        <Availability
+          key="availability"
+          rows={snapshot.availability ?? []}
+          now={now}
+        />,
         <LeagueTable key="table" table={snapshot.table} />,
         <Form key="form" form={snapshot.form ?? []} />,
-        <NumbersBlock key="numbers" numbers={snapshot.numbers} />,
       ]
 
   return (
     <article className="mx-auto max-w-xl px-4 py-10">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {entity.name} Snapshot
-        </h1>
+        {/* The club, nothing else. "Snapshot" is internal wording and the
+            public name for this page is not settled. */}
+        <h1 className="text-2xl font-semibold tracking-tight">{entity.name}</h1>
         {updated_at && (
           <p className="mt-1 text-sm opacity-70">
             updated{' '}

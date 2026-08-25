@@ -6,7 +6,7 @@
  * That is the whole point — a skeleton whose geometry differs from the content
  * it replaces causes the layout shift it was supposed to prevent.
  *
- * Five blocks, which is the off-week count. A matchweek render adds two more
+ * Four blocks, which is the off-week count. A matchweek render adds two more
  * below the fold, where a shift costs nothing.
  *
  * No pulse and no shimmer: those are decoration, and the design system that
@@ -26,7 +26,7 @@ export default function Loading() {
       </header>
 
       <div className="mt-8 space-y-6" aria-hidden="true">
-        {[0, 1, 2, 3, 4].map((i) => (
+        {[0, 1, 2, 3].map((i) => (
           <section key={i} className="border-t border-white/15 pt-5">
             {/* the mono block heading */}
             <div className="h-3 w-24 rounded bg-white/10" />

@@ -66,6 +66,7 @@ export interface AvailabilityRow {
   status: string
   detail: string
   chance: number | null
+  news_added: string | null
 }
 
 export interface KeyDatum {
@@ -186,9 +187,6 @@ function xg(value: number): string {
   return value.toFixed(1)
 }
 
-/** Keys in The Numbers that are modelled rather than counted. */
-const XG_KEYS = new Set<keyof Numbers>(['xg_for', 'xg_against'])
-
 /**
  * FPL's separator between the injury and the return date.
  *
@@ -251,16 +249,65 @@ export function availabilityDetail(detail: string): string {
 }
 
 /**
- * 1 → 1st, 2 → 2nd, 3 → 3rd, 4 → 4th.
+ * True when FPL gave a null marker where the return date belongs.
  *
- * A bare `${n}th` reads "1th" at the top of the table, which is where the
- * league leaders are and therefore the most-read case.
+ * This, not the status, is what qualifies a row for a days-out count. Measured
+ * against live data on 25 Aug 2026, the only suspended player in the league
+ * reads `"Suspended until 19 Sep"` — no separator, and a return date already in
+ * the sentence. Gating on status alone would append "2 days" to a line that
+ * already says when he is back.
  */
-function ordinal(n: number): string {
-  const mod100 = n % 100
-  if (mod100 >= 11 && mod100 <= 13) return `${n}th`
-  const suffix = ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'
-  return `${n}${n % 10 <= 3 ? suffix : 'th'}`
+function hasNoReturnDate(detail: string): boolean {
+  const raw = (detail ?? '').trim().replace(/\s*-\s*$/, '').trim()
+  const at = raw.indexOf(NEWS_SEPARATOR)
+  if (at === -1) return false
+  const rest = raw.slice(at + NEWS_SEPARATOR.length).trim()
+  return !rest || NO_RETURN_DATE.test(rest)
+}
+
+/** Statuses where a days-out count is the useful thing to say. */
+const DAYS_OUT_STATUSES = new Set(['OUT', 'SUSPENDED'])
+
+/**
+ * Whole days elapsed since an ISO timestamp, or null.
+ *
+ * Rounded down, and null below a day — "0 days" is a worse answer than
+ * silence, and a fresh injury reads as news on its own.
+ */
+export function daysSince(iso: string | null | undefined, now: number): number | null {
+  if (!iso) return null
+  const then = Date.parse(iso)
+  if (Number.isNaN(then) || then > now) return null
+  const days = Math.floor((now - then) / 86_400_000)
+  return days >= 1 ? days : null
+}
+
+/**
+ * PAGE_SPEC §7.4 — the finished availability line.
+ *
+ * `availabilityDetail` decides what of the club's wording survives; this adds
+ * the one thing FPL knows that the club's sentence does not. When there is no
+ * return date, how long he has already been out is the only remaining fact, and
+ * FPL stamps `news_added` on every item.
+ *
+ *   OUT       "Groin injury - Unknown return date"    → Groin injury · 33 days
+ *   OUT       "Leg injury - Expected back 28 Nov"     → Leg injury · Expected back 28 Nov
+ *   SUSPENDED "Suspended until 19 Sep"                → Suspended until 19 Sep
+ *   DOUBTFUL  "Thigh injury - 75% chance of playing"  → Thigh injury · 75%
+ *
+ * DOUBTFUL never gets a day count: it already carries a percentage, and two
+ * numbers in one line is the block competing with itself.
+ */
+export function availabilityLine(row: AvailabilityRow, now: number): string {
+  const base = availabilityDetail(row.detail)
+  if (!DAYS_OUT_STATUSES.has(row.status)) return base
+  if (!hasNoReturnDate(row.detail)) return base
+
+  const days = daysSince(row.news_added, now)
+  if (days === null) return base
+
+  const count = `${days} day${days === 1 ? '' : 's'}`
+  return base ? `${base} · ${count}` : count
 }
 
 // ---------------------------------------------------------------------------
@@ -450,7 +497,7 @@ export function MatchBlock({ match, entity }: { match: Match | null; entity: str
  * and §15 names it as the exception): nobody being unavailable is genuinely
  * good news and worth stating.
  */
-export function Availability({ rows }: { rows: AvailabilityRow[] }) {
+export function Availability({ rows, now }: { rows: AvailabilityRow[]; now: number }) {
   if (!rows.length) {
     return (
       <Block title="Availability">
@@ -463,7 +510,7 @@ export function Availability({ rows }: { rows: AvailabilityRow[] }) {
     <Block title="Availability">
       <ul className="space-y-2">
         {rows.map((r) => {
-          const detail = availabilityDetail(r.detail)
+          const detail = availabilityLine(r, now)
           return (
             <li key={r.player}>
               <span className="font-medium">{r.player}</span>{' '}
@@ -648,56 +695,13 @@ export function Form({ form }: { form: string[] }) {
 // ---------------------------------------------------------------------------
 // 10. THE NUMBERS — §7.10
 // ---------------------------------------------------------------------------
-
-const NUMBER_LABELS: Array<[keyof Numbers, string]> = [
-  ['position', 'Position'],
-  ['points', 'Points'],
-  ['gd', 'Goal difference'],
-  ['goals_for', 'Goals scored'],
-  ['goals_against', 'Goals conceded'],
-  ['xg_for', 'xG for'],
-  ['xg_against', 'xG against'],
-]
-
-/**
- * §7.10 — collapsed by default, one line visible, expands to six. The slowest
- * moving block on the page, and never above the fold on mobile.
- *
- * `<details>` does the collapsing with no JavaScript and no client component,
- * which keeps the whole page a server render.
- */
-export function NumbersBlock({ numbers }: { numbers: Numbers | null }) {
-  if (!numbers) return null
-
-  const present = NUMBER_LABELS.filter(
-    ([key]) => typeof numbers[key] === 'number'
-  )
-  if (!present.length) return null
-
-  const summary = [
-    typeof numbers.position === 'number' ? ordinal(numbers.position) : null,
-    typeof numbers.points === 'number' ? `${numbers.points} pts` : null,
-  ]
-    .filter(Boolean)
-    .join(' · ')
-
-  return (
-    <Block title="The numbers">
-      <details>
-        <summary className="cursor-pointer">
-          {summary || `${present.length} numbers`}
-        </summary>
-        <dl className="mt-3 space-y-1 text-sm">
-          {present.map(([key, label]) => (
-            <div key={key} className="flex justify-between gap-4">
-              <dt className="opacity-70">{label}</dt>
-              <dd className="tabular-nums">
-                {XG_KEYS.has(key) ? xg(numbers[key] as number) : numbers[key]}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </details>
-    </Block>
-  )
-}
+//
+// Not rendered on this page, and there is no component here.
+//
+// The block showed position and points above four more numbers. The table sits
+// directly above it and already shows position and points for seven clubs
+// including this one, so the two lines a reader actually saw were the two the
+// table had just given them — copy rule 2, if every row says it, delete it.
+//
+// The `numbers` key stays in the §14 payload. The data is sound and a client
+// with no table has something to render; this page is not that client.
