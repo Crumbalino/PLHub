@@ -241,6 +241,8 @@ A real return date passes through untouched: `"Ankle injury - Expected back 19 S
 
 **Removing a null marker is not rewriting. Changing "Knee injury" to anything at all is.** The line between the two is that the first drops a word that carries no information and the second alters a club's medical claim.
 
+Both rules are the general ones applied to this block — THE_FOOTBALL_HUB §9, copy rules 1, 3 and 4. They hold everywhere a string reaches a block, not only here.
+
 Order: SUSPENDED, OUT, DOUBTFUL, BACK. Cap 8, expandable.
 
 **Status word is text, never colour alone.** A dot may reinforce it. WCAG 1.4.1.
