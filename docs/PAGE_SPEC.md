@@ -111,8 +111,8 @@ Derived from FPL `fixtures` (`kickoff_time`, `started`, `finished`) plus system 
 │ LEAGUE       │  [Video]                     │  most assists          │
 │  [3 items]   │  [Article]                   │  form player           │
 │              │                              │  one booking away      │
-│ THE NUMBERS  │ FAN PULSE                    │                        │
-│  [expandable]│  [3 threads]                 │                        │
+│              │ FAN PULSE                    │                        │
+│              │  [3 threads]                 │                        │
 │              │                              │                        │
 │              │ ─────────────                │                        │
 │              │ Sign-off                     │                        │
@@ -331,7 +331,7 @@ Form      W W W D L
 Missing   Saliba (back, unknown return)
 Story     Arsenal open talks over Player X · 6 outlets
 
-                                    Arsenal Snapshot →
+                                          Arsenal →
 ```
 
 This is what makes twenty pages an ecosystem rather than twenty silos. The Arsenal page carries Tottenham in the same slot in the same week.

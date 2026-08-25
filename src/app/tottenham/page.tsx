@@ -24,6 +24,7 @@ import type { Metadata } from 'next'
 import React from 'react'
 import { headers } from 'next/headers'
 import { SITE_URL } from '@/lib/site'
+import { tokens as t } from '@/lib/tokens'
 import {
   Availability,
   Form,
@@ -45,7 +46,7 @@ export const metadata: Metadata = {
   // Every route sets its own canonical or it silently inherits '/' and declares
   // itself a duplicate of the homepage.
   alternates: { canonical: '/tottenham' },
-  title: 'Tottenham Snapshot',
+  title: 'Tottenham',
   description:
     'Where Tottenham are, what has changed, and what is happening around the ' +
     'next match. Updated through the day.',
@@ -91,10 +92,10 @@ export default async function TottenhamSnapshotPage() {
   if (!snapshot) {
     const today = new Date(now).toISOString()
     return (
-      <article className="mx-auto max-w-xl px-4 py-10">
-        <h1 className="text-2xl font-semibold">Tottenham</h1>
-        <p className="mt-4">Nothing worth logging today.</p>
-        <p className="mt-1 text-sm opacity-70">
+      <article className="mx-auto" style={{ maxWidth: t.measure.page, paddingLeft: t.space[4], paddingRight: t.space[4], paddingTop: t.space[10], paddingBottom: t.space[10] }}>
+        <h1 style={{ fontSize: t.type.size.xl, lineHeight: t.type.leading.xl, fontWeight: t.type.weight.semibold }}>Tottenham</h1>
+        <p style={{ marginTop: t.space[4] }}>Nothing worth logging today.</p>
+        <p style={{ marginTop: t.space[1], fontSize: t.type.size.sm, lineHeight: t.type.leading.sm, opacity: t.colour.text.step.muted }}>
           <time dateTime={today}>
             {new Intl.DateTimeFormat('en-GB', {
               timeZone: 'Europe/London',
@@ -157,13 +158,13 @@ export default async function TottenhamSnapshotPage() {
       ]
 
   return (
-    <article className="mx-auto max-w-xl px-4 py-10">
+    <article className="mx-auto" style={{ maxWidth: t.measure.page, paddingLeft: t.space[4], paddingRight: t.space[4], paddingTop: t.space[10], paddingBottom: t.space[10] }}>
       <header>
         {/* The club, nothing else. "Snapshot" is internal wording and the
             public name for this page is not settled. */}
-        <h1 className="text-2xl font-semibold tracking-tight">{entity.name}</h1>
+        <h1 style={{ fontSize: t.type.size.xl, lineHeight: t.type.leading.xl, fontWeight: t.type.weight.semibold, letterSpacing: t.type.tracking.tight }}>{entity.name}</h1>
         {updated_at && (
-          <p className="mt-1 text-sm opacity-70">
+          <p style={{ marginTop: t.space[1], fontSize: t.type.size.sm, lineHeight: t.type.leading.sm, opacity: t.colour.text.step.muted }}>
             updated{' '}
             <time dateTime={updated_at}>{relativeTime(updated_at, now)}</time>
           </p>
@@ -172,7 +173,7 @@ export default async function TottenhamSnapshotPage() {
 
       {/* Blocks never move. A block with no data returns null and its
           neighbours close the gap — no placeholder, no empty container. */}
-      <div className="mt-8 space-y-6">{blocks}</div>
+      <div style={{ marginTop: t.space[8], display: 'flex', flexDirection: 'column', gap: t.space[6] }}>{blocks}</div>
     </article>
   )
 }
