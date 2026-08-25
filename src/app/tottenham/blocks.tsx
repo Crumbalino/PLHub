@@ -172,6 +172,19 @@ function scorerLabel(s: Scorer): string {
 
 const FORM_WORD: Record<string, string> = { W: 'Win', D: 'Draw', L: 'Loss' }
 
+/**
+ * 1 → 1st, 2 → 2nd, 3 → 3rd, 4 → 4th.
+ *
+ * A bare `${n}th` reads "1th" at the top of the table, which is where the
+ * league leaders are and therefore the most-read case.
+ */
+function ordinal(n: number): string {
+  const mod100 = n % 100
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`
+  const suffix = ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'
+  return `${n}${n % 10 <= 3 ? suffix : 'th'}`
+}
+
 // ---------------------------------------------------------------------------
 // Shared shell
 // ---------------------------------------------------------------------------
@@ -330,9 +343,10 @@ export function MatchBlock({ match, entity }: { match: Match | null; entity: str
       {/* §18 open question 1: no free API carries UK rights, so this is absent
           until it is entered by hand rather than guessed at. */}
       {match.broadcaster && <Meta>{match.broadcaster}</Meta>}
-      {match.difficulty !== null && (
-        <Meta>Difficulty {match.difficulty} of 5</Meta>
-      )}
+      {/* FPL's difficulty rating stays in the §14 payload but is not rendered.
+          §7.1 lists it as a colour-coded 1–5, and there is no colour system to
+          code it against yet; as a bare number it reads as a score the page has
+          not earned the right to state. */}
     </Block>
   )
 }
@@ -518,15 +532,22 @@ export function LeagueTable({
 // 8. FORM — §7.8
 // ---------------------------------------------------------------------------
 
+/** Below this many results, form is noise rather than a trend. */
+const MIN_FORM_RESULTS = 3
+
 /**
  * §7.8 — last five, most recent left. Letters, not colour alone.
  *
  * The letter carries the meaning visually and the full word is exposed to
  * assistive technology, so the block does not depend on knowing that L is bad.
  * An ordered list, because the order is the information.
+ *
+ * Fewer than three results and the block does not render. One letter is not
+ * form, it is a result — and the match block already said it. In August that
+ * means the block appears in the third week of the season.
  */
 export function Form({ form }: { form: string[] }) {
-  if (!form.length) return null
+  if (form.length < MIN_FORM_RESULTS) return null
 
   return (
     <Block title="Form">
@@ -572,7 +593,7 @@ export function NumbersBlock({ numbers }: { numbers: Numbers | null }) {
   if (!present.length) return null
 
   const summary = [
-    typeof numbers.position === 'number' ? `${numbers.position}th` : null,
+    typeof numbers.position === 'number' ? ordinal(numbers.position) : null,
     typeof numbers.points === 'number' ? `${numbers.points} pts` : null,
   ]
     .filter(Boolean)

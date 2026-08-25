@@ -193,10 +193,94 @@ describe('live: snapshot route', { concurrency: false }, () => {
   })
 
   test('keys behind a source this build does not own are empty', { timeout: LIVE_TIMEOUT }, () => {
-    assert.deepEqual(body.table, { rows: [], highlight: 'tottenham' })
-    assert.deepEqual(body.numbers, {})
     assert.deepEqual(body.confirmed, [])
     assert.deepEqual(body.worth_your_time, [])
+  })
+
+  // -------------------------------------------------------------------------
+  // §7.7 table and §7.10 numbers — football-data.org
+  // -------------------------------------------------------------------------
+
+  test('table is the §7.7 window with the club highlighted', { timeout: LIVE_TIMEOUT }, () => {
+    const table = body.table as { rows: Array<Payload>; highlight: string }
+    assert.equal(table.highlight, 'tottenham')
+    assert.ok(Array.isArray(table.rows))
+
+    if (!table.rows.length) {
+      console.log('[snapshot] table empty — no key, or football-data unreachable')
+      return
+    }
+
+    // Three above, the club, three below — clamped at the ends of the table.
+    assert.ok(table.rows.length <= 7, '§7.7 is at most seven rows')
+    const us = table.rows.findIndex((r) => r.slug === 'tottenham')
+    assert.ok(us >= 0, 'the highlighted club must be inside its own window')
+    assert.ok(us <= 3, 'at most three rows above the club')
+    assert.ok(table.rows.length - us - 1 <= 3, 'at most three rows below the club')
+
+    // Positions ascend, but they are not contiguous: football-data shares a
+    // position between clubs level on points and goal difference, so the column
+    // can read 15, 16, 16, 18. The window is three rows either side, not three
+    // positions either side.
+    const positions = table.rows.map((r) => Number(r.position))
+    for (let i = 1; i < positions.length; i++) {
+      assert.ok(positions[i] >= positions[i - 1], 'window must be in table order')
+    }
+
+    for (const row of table.rows) {
+      for (const field of [
+        'position',
+        'name',
+        'played',
+        'won',
+        'drawn',
+        'lost',
+        'goals_for',
+        'goals_against',
+        'gd',
+        'points',
+      ] as const) {
+        assert.ok(field in row, `table row is missing ${field}`)
+      }
+      assert.equal(typeof row.name, 'string')
+      // gd must agree with the goal columns, or the source is being misread.
+      assert.equal(row.gd, Number(row.goals_for) - Number(row.goals_against))
+    }
+    console.log(
+      `[snapshot] table rows ${positions[0]}–${positions[positions.length - 1]}, ` +
+        `Tottenham at ${table.rows[us].position}`
+    )
+  })
+
+  test('numbers carries §7.10 and agrees with the table row', { timeout: LIVE_TIMEOUT }, () => {
+    const numbers = body.numbers as Payload
+    const table = body.table as { rows: Array<Payload>; highlight: string }
+    const us = table.rows.find((r) => r.slug === 'tottenham')
+
+    if (!Object.keys(numbers).length) {
+      console.log('[snapshot] numbers empty — no key, or football-data unreachable')
+      return
+    }
+
+    if (us) {
+      // The two keys are read from the same standings row; they must not drift.
+      assert.equal(numbers.position, us.position)
+      assert.equal(numbers.points, us.points)
+      assert.equal(numbers.gd, us.gd)
+      assert.equal(numbers.goals_for, us.goals_for)
+      assert.equal(numbers.goals_against, us.goals_against)
+    }
+
+    for (const field of ['xg_for', 'xg_against'] as const) {
+      if (field in numbers) {
+        assert.equal(typeof numbers[field], 'number')
+        assert.ok((numbers[field] as number) >= 0, `${field} cannot be negative`)
+      }
+    }
+    console.log(
+      `[snapshot] numbers — ${numbers.position} / ${numbers.points}pts / ` +
+        `xG ${numbers.xg_for}–${numbers.xg_against}`
+    )
   })
 
   test('signoff carries its shape with a null human line', { timeout: LIVE_TIMEOUT }, () => {
