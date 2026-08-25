@@ -21,6 +21,11 @@ interface Club {
   shortName?: string
 }
 
+// The 2026/27 Premier League. `id` is the club's Premier League badge code, so
+// it must match the code in the badgeUrl for the same slug in src/lib/clubs.ts —
+// it builds the badge src below. Slugs match src/lib/clubs.ts too: `man-city`
+// and `man-utd` were `manchester-city` and `manchester-united` here, which meant
+// this bar linked to club pages that do not exist.
 const CLUBS: Club[] = [
   { id: 3, slug: 'arsenal', name: 'Arsenal', shortName: 'ARS' },
   { id: 7, slug: 'aston-villa', name: 'Aston Villa', shortName: 'AVL' },
@@ -28,20 +33,20 @@ const CLUBS: Club[] = [
   { id: 36, slug: 'brighton', name: 'Brighton', shortName: 'BHA' },
   { id: 91, slug: 'bournemouth', name: 'Bournemouth', shortName: 'BOU' },
   { id: 8, slug: 'chelsea', name: 'Chelsea', shortName: 'CHE' },
+  { id: 9, slug: 'coventry', name: 'Coventry', shortName: 'COV' },
   { id: 31, slug: 'crystal-palace', name: 'Crystal Palace', shortName: 'CRY' },
   { id: 11, slug: 'everton', name: 'Everton', shortName: 'EVE' },
   { id: 54, slug: 'fulham', name: 'Fulham', shortName: 'FUL' },
+  { id: 88, slug: 'hull', name: 'Hull', shortName: 'HUL' },
   { id: 40, slug: 'ipswich', name: 'Ipswich', shortName: 'IPS' },
-  { id: 13, slug: 'leicester', name: 'Leicester', shortName: 'LEI' },
+  { id: 2, slug: 'leeds', name: 'Leeds', shortName: 'LEE' },
   { id: 14, slug: 'liverpool', name: 'Liverpool', shortName: 'LIV' },
-  { id: 43, slug: 'manchester-city', name: 'Man City', shortName: 'MCI' },
-  { id: 1, slug: 'manchester-united', name: 'Man Utd', shortName: 'MUN' },
+  { id: 43, slug: 'man-city', name: 'Man City', shortName: 'MCI' },
+  { id: 1, slug: 'man-utd', name: 'Man Utd', shortName: 'MUN' },
   { id: 4, slug: 'newcastle', name: 'Newcastle', shortName: 'NEW' },
   { id: 17, slug: 'nottingham-forest', name: 'Forest', shortName: 'NFO' },
-  { id: 20, slug: 'southampton', name: 'Southampton', shortName: 'SOU' },
   { id: 6, slug: 'tottenham', name: 'Spurs', shortName: 'TOT' },
-  { id: 21, slug: 'west-ham', name: 'West Ham', shortName: 'WHU' },
-  { id: 39, slug: 'wolverhampton', name: 'Wolves', shortName: 'WOL' },
+  { id: 56, slug: 'sunderland', name: 'Sunderland', shortName: 'SUN' },
 ]
 
 const clubMap = Object.fromEntries(CLUBS.map(c => [c.slug, c]))
