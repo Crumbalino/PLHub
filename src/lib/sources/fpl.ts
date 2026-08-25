@@ -210,18 +210,18 @@ const BACK_WINDOW_MS = 7 * 24 * 60 * 60 * 1000
 const TRANSFER_NEWS = /\bhas (joined|left|signed for)\b|\bon loan (to|at)\b|\btransferred to\b/i
 
 /**
- * §7.6 "one booking away": four yellows before the 19th fixture, five before
+ * §7.6 "one booking away": four yellows before the 19th fixture, nine before
  * the 32nd.
  *
- * NOTE FOR REVIEW — this is the spec's wording implemented literally. The
- * Premier League's actual disciplinary thresholds are 5 yellows before match 19
- * (one-match ban) and 10 before match 32 (two-match ban), which would make
- * "one booking away" 4 and 9 rather than 4 and 5. The spec is canonical here so
- * it is what ships; if the 9 is intended, this table is the only edit.
+ * These follow the Premier League's disciplinary thresholds — five yellows in
+ * the first 19 fixtures is a one-match ban, ten in the first 32 is a two-match
+ * ban — so a player is one booking away at four and at nine. PAGE_SPEC §7.6
+ * originally read "five before the 32nd", which would have flagged players who
+ * were five bookings clear of anything.
  */
 export const BOOKING_THRESHOLDS: Array<{ beforeFixture: number; yellows: number }> = [
   { beforeFixture: 19, yellows: 4 },
-  { beforeFixture: 32, yellows: 5 },
+  { beforeFixture: 32, yellows: 9 },
 ]
 
 /** Official player headshot, §10 step 3. */

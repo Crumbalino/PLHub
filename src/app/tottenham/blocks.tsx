@@ -173,6 +173,23 @@ function scorerLabel(s: Scorer): string {
 const FORM_WORD: Record<string, string> = { W: 'Win', D: 'Draw', L: 'Loss' }
 
 /**
+ * Expected goals, to one decimal place.
+ *
+ * The payload carries full precision; rendering two decimals would be false
+ * precision on a modelled quantity. One decimal is also what the derivation can
+ * actually support: xG against is a goalkeeper-minutes sum that runs about 1%
+ * under the exact per-fixture figure, and rounding here absorbs that difference
+ * rather than displaying it. Rounding is a render concern, so it lives here and
+ * not in the adapter.
+ */
+function xg(value: number): string {
+  return value.toFixed(1)
+}
+
+/** Keys in The Numbers that are modelled rather than counted. */
+const XG_KEYS = new Set<keyof Numbers>(['xg_for', 'xg_against'])
+
+/**
  * 1 → 1st, 2 → 2nd, 3 → 3rd, 4 → 4th.
  *
  * A bare `${n}th` reads "1th" at the top of the table, which is where the
@@ -284,8 +301,8 @@ export function MatchBlock({ match, entity }: { match: Match | null; entity: str
 
         {match.xg && (
           <p className="mt-2 text-sm">
-            <abbr title="Expected goals">xG</abbr> {match.xg.home.toFixed(2)} —{' '}
-            {match.xg.away.toFixed(2)}
+            <abbr title="Expected goals">xG</abbr> {xg(match.xg.home)} —{' '}
+            {xg(match.xg.away)}
           </p>
         )}
 
@@ -609,7 +626,9 @@ export function NumbersBlock({ numbers }: { numbers: Numbers | null }) {
           {present.map(([key, label]) => (
             <div key={key} className="flex justify-between gap-4">
               <dt className="opacity-70">{label}</dt>
-              <dd className="tabular-nums">{numbers[key]}</dd>
+              <dd className="tabular-nums">
+                {XG_KEYS.has(key) ? xg(numbers[key] as number) : numbers[key]}
+              </dd>
             </div>
           ))}
         </dl>
