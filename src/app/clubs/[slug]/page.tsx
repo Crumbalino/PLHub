@@ -136,9 +136,13 @@ export default async function ClubPage({
               <p className="text-sm text-[var(--plh-text-50)]">
                 {club.code} • Founded {club.founded} • {club.city}
               </p>
-              <p className="text-sm text-[var(--plh-text-70)] mt-2">
-                Manager: <span className="text-[var(--plh-text-100)]">{club.manager}</span>
-              </p>
+              {/* A missing value means the line does not render. An empty
+                  "Manager:" is the absence of a fact dressed as a fact. */}
+              {club.manager && (
+                <p className="text-sm text-[var(--plh-text-70)] mt-2">
+                  Manager: <span className="text-[var(--plh-text-100)]">{club.manager}</span>
+                </p>
+              )}
               <p className="text-sm text-[var(--plh-text-50)] mt-2">
                 Transfer stories that mention {displayName(club.name)}, gathered
                 from published football coverage

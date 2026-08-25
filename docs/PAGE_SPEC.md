@@ -222,15 +222,26 @@ Poll every 60s during a fixture window only. No polling otherwise.
 ```
 AVAILABILITY
 
-Romero          OUT         Groin · unknown return
+Romero          OUT         Groin injury
 Bissouma        SUSPENDED   Until 19 Sep
-Kulusevski      DOUBTFUL    Thigh · 75%
+Kulusevski      DOUBTFUL    Thigh injury · 75%
 Solanke         BACK        Returned to training
 ```
 
 Source: FPL `status` mapped as — `i` → OUT, `s` → SUSPENDED, `d` → DOUBTFUL, `u` → UNAVAILABLE (exclude if a completed transfer), `a` with recent `news_added` → BACK.
 
 The `news` string is the club's own wording. **Display it as-is.** Do not rewrite, do not summarise, do not embellish. It is already factual and already short.
+
+**The string is two parts joined by ` - `:** the injury description, then the return date or a marker standing in for its absence. Split on the separator and apply two rules to the second half only. The injury description is never touched.
+
+1. **Render the return date only when there is one.** `"Knee injury - Unknown return date"` renders `Knee injury`, full stop. "Unknown return date" is FPL's null written as English, and a line whose content is *we do not know* is a line that should not have rendered. Same for TBC, N/A and their kin.
+2. **Drop "chance of playing".** `"Thigh injury - 50% chance of playing"` renders `Thigh injury · 50%`. Under a DOUBTFUL label a percentage can only mean one thing, and the words are the block's own label repeated in every row.
+
+A real return date passes through untouched: `"Ankle injury - Expected back 19 Sep"` renders `Ankle injury · Expected back 19 Sep`.
+
+**Removing a null marker is not rewriting. Changing "Knee injury" to anything at all is.** The line between the two is that the first drops a word that carries no information and the second alters a club's medical claim.
+
+Both rules are the general ones applied to this block — THE_FOOTBALL_HUB §9, copy rules 1, 3 and 4. They hold everywhere a string reaches a block, not only here.
 
 Order: SUSPENDED, OUT, DOUBTFUL, BACK. Cap 8, expandable.
 
