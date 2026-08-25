@@ -190,6 +190,67 @@ function xg(value: number): string {
 const XG_KEYS = new Set<keyof Numbers>(['xg_for', 'xg_against'])
 
 /**
+ * FPL's separator between the injury and the return date.
+ *
+ * The string is always two parts: what is wrong, then when he is back — or a
+ * marker standing in for the fact that nobody knows.
+ */
+const NEWS_SEPARATOR = ' - '
+
+/**
+ * Return-date markers that mean "no date", not a date.
+ *
+ * These are FPL's null values written as English. Dropping one is not rewriting
+ * the club's wording; it is declining to render an absence as though it were
+ * content.
+ */
+const NO_RETURN_DATE = /^(unknown|unknown return date|no return date|tbc|tba|n\/a|unknown expected return( date)?)$/i
+
+/** "50% chance of playing" → "50%". The label already says it is a doubt. */
+const CHANCE_OF_PLAYING = /^(\d{1,3})\s*%\s*chance of playing$/i
+
+/**
+ * PAGE_SPEC §7.4 — the availability detail line.
+ *
+ * The injury description is the club's own wording and passes through
+ * verbatim, always. What changes is only what follows it:
+ *
+ *   "Knee injury - Unknown return date"      → "Knee injury"
+ *   "Thigh injury - 50% chance of playing"   → "Thigh injury · 50%"
+ *   "Ankle injury - Expected back 19 Sep"    → "Ankle injury · Expected back 19 Sep"
+ *   "Suspended until 19 Sep"                 → "Suspended until 19 Sep"
+ *
+ * Two rules and nothing else. A missing value does not render — "unknown
+ * return date" is the absence of information, and printing it fills a line
+ * with the fact that we have nothing. And "chance of playing" is the block's
+ * own label repeated in every row: under DOUBTFUL, 50% can only mean one thing.
+ *
+ * Everything else is left exactly as the club published it. Only the part after
+ * the separator is ever touched, and only to drop a null marker or a phrase the
+ * label already carries.
+ */
+export function availabilityDetail(detail: string): string {
+  // A trailing separator with nothing after it is the same empty return date,
+  // just badly punctuated. Strip it before splitting or it survives as "Knee
+  // injury -".
+  const raw = (detail ?? '').trim().replace(/\s*-\s*$/, '').trim()
+  if (!raw) return ''
+
+  const at = raw.indexOf(NEWS_SEPARATOR)
+  if (at === -1) return raw
+
+  const injury = raw.slice(0, at).trim()
+  const rest = raw.slice(at + NEWS_SEPARATOR.length).trim()
+
+  if (!rest || NO_RETURN_DATE.test(rest)) return injury
+
+  const chance = CHANCE_OF_PLAYING.exec(rest)
+  if (chance) return `${injury} · ${chance[1]}%`
+
+  return `${injury} · ${rest}`
+}
+
+/**
  * 1 → 1st, 2 → 2nd, 3 → 3rd, 4 → 4th.
  *
  * A bare `${n}th` reads "1th" at the top of the table, which is where the
@@ -378,11 +439,12 @@ export function MatchBlock({ match, entity }: { match: Match | null; entity: str
  * The status word is text, never colour alone (WCAG 1.4.1) — so it is a word,
  * and there is no dot and no colour at all in this build.
  *
- * The `detail` string is the club's own wording and renders verbatim. It is not
- * rewritten, summarised or embellished anywhere on the way to the screen. It
- * already carries the chance of playing where the club stated one, which is why
- * the numeric `chance` is not also printed — that would show the same fact
- * twice in two voices.
+ * The injury description is the club's own wording and renders verbatim. It is
+ * not rewritten, summarised or embellished anywhere on the way to the screen.
+ * `availabilityDetail` trims only the return-date half of the string, and only
+ * to drop a null marker or a phrase the status label already carries — see the
+ * note there. The numeric `chance` is never printed separately, because the
+ * string already carries it and two voices for one fact is one too many.
  *
  * This is the one block permitted a message rather than a non-render (§7.4,
  * and §15 names it as the exception): nobody being unavailable is genuinely
@@ -400,15 +462,18 @@ export function Availability({ rows }: { rows: AvailabilityRow[] }) {
   return (
     <Block title="Availability">
       <ul className="space-y-2">
-        {rows.map((r) => (
-          <li key={r.player}>
-            <span className="font-medium">{r.player}</span>{' '}
-            <span className="font-mono text-[0.7rem] uppercase tracking-wider opacity-70">
-              {r.status}
-            </span>
-            {r.detail && <span className="block text-sm opacity-70">{r.detail}</span>}
-          </li>
-        ))}
+        {rows.map((r) => {
+          const detail = availabilityDetail(r.detail)
+          return (
+            <li key={r.player}>
+              <span className="font-medium">{r.player}</span>{' '}
+              <span className="font-mono text-[0.7rem] uppercase tracking-wider opacity-70">
+                {r.status}
+              </span>
+              {detail && <span className="block text-sm opacity-70">{detail}</span>}
+            </li>
+          )
+        })}
       </ul>
     </Block>
   )

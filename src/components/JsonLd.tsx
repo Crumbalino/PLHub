@@ -84,11 +84,18 @@ export function sportsTeamSchema(
         addressCountry: 'GB',
       },
     },
-    coach: {
-      '@type': 'Person',
-      name: manager,
-      jobTitle: 'Manager',
-    },
+    // Omitted entirely when there is no manager on file. A Person with an
+    // empty name is not a smaller claim than a wrong one — it is a malformed
+    // entity, and search engines read it as one.
+    ...(manager
+      ? {
+          coach: {
+            '@type': 'Person',
+            name: manager,
+            jobTitle: 'Manager',
+          },
+        }
+      : {}),
     sport: 'Football',
     league: {
       '@type': 'SportsLeague',
