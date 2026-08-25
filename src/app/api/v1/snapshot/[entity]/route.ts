@@ -24,6 +24,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
+import * as footballdata from '@/lib/sources/footballdata'
 import * as fpl from '@/lib/sources/fpl'
 import * as pulselive from '@/lib/sources/pulselive'
 import { getFanPulse } from '@/lib/sources/reddit'
@@ -187,12 +188,26 @@ export async function GET(
     const played =
       fixtures && team ? fpl.fixturesPlayed(fixtures, team.id, now) : 0
 
-    const [match, fanPulse] = await Promise.all([
+    // The two football-data reads hit one endpoint; the adapter's cache and
+    // single-flight collapse them into a single upstream request.
+    const [match, fanPulse, table, tableNumbers] = await Promise.all([
       bootstrap && fixtures && team
         ? buildMatch(bootstrap, fixtures, team, phase, now)
         : Promise.resolve(null),
       club?.subreddit ? getFanPulse(club.subreddit) : Promise.resolve(null),
+      footballdata.getTable(entity),
+      footballdata.getNumbers(entity),
     ])
+
+    // §7.10 — the standings row carries everything but expected goals, which
+    // the FPL adapter derives. Absent either way, the key stays empty and the
+    // block does not render.
+    const xg = bootstrap && team ? fpl.seasonXg(bootstrap, team.id) : null
+    const numbers = tableNumbers
+      ? { ...tableNumbers, ...(xg ?? {}) }
+      : xg
+        ? { ...xg }
+        : {}
 
     // §7.5 is PRE-only. The name is all this build can prove: card averages and
     // the club record need accumulated fixture history, and the one interesting
@@ -218,14 +233,14 @@ export async function GET(
         : null,
       key_data: bootstrap && team ? fpl.buildKeyData(bootstrap, team.id, played) : [],
 
-      // football-data.org, blocks 7 and 10. Not a source this build owns.
-      table: { rows: [], highlight: entity },
+      // §7.7 — three above, the club, three below. football-data.org.
+      table: table ?? { rows: [], highlight: entity },
       form: fixtures && team ? fpl.deriveForm(fixtures, team.id, now) : [],
       next_opponent:
         bootstrap && fixtures && team
           ? buildNextOpponent(bootstrap, fixtures, team, phase, now)
           : null,
-      numbers: {},
+      numbers,
 
       // Ingest pipeline, block 11.
       confirmed: [],

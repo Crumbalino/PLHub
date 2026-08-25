@@ -32,6 +32,8 @@ import {
   liveFixture,
   nextFixture,
   playersOneBookingAway,
+  seasonXg,
+  getMatchXg,
   sumMatchXg,
   teamRef,
   type FplBootstrap,
@@ -76,6 +78,7 @@ function element(over: Partial<FplElement> = {}): FplElement {
     id: 1,
     code: 100,
     team: TOTTENHAM,
+    element_type: 3,
     web_name: 'Player',
     first_name: 'A',
     second_name: 'Player',
@@ -87,6 +90,8 @@ function element(over: Partial<FplElement> = {}): FplElement {
     assists: 0,
     yellow_cards: 0,
     minutes: 900,
+    expected_goals: '0.00',
+    expected_goals_conceded: '0.00',
     ...over,
   }
 }
@@ -467,6 +472,75 @@ describe('per-match xG', () => {
 })
 
 // ---------------------------------------------------------------------------
+// §7.10 — season xG
+// ---------------------------------------------------------------------------
+
+describe('season xG', () => {
+  test('xG for is the whole squad, because a chance belongs to one player', () => {
+    const b = bootstrap([
+      element({ id: 1, expected_goals: '3.40' }),
+      element({ id: 2, expected_goals: '1.10' }),
+      element({ id: 3, element_type: 1, expected_goals: '0.00' }),
+    ])
+    assert.equal(seasonXg(b, TOTTENHAM)?.xg_for, 4.5)
+  })
+
+  /**
+   * The whole reason xG against reads only goalkeepers. `expected_goals_conceded`
+   * accrues per player while on the pitch, so an eleven-player sum counts the
+   * same chance eleven times — 42.59 for a club that had conceded 3.91, measured
+   * live on 25 Aug 2026.
+   */
+  test('xG against reads goalkeepers only, not the squad', () => {
+    const b = bootstrap([
+      element({ id: 1, element_type: 1, expected_goals_conceded: '3.87' }),
+      element({ id: 2, element_type: 2, expected_goals_conceded: '3.80' }),
+      element({ id: 3, element_type: 3, expected_goals_conceded: '3.50' }),
+      element({ id: 4, element_type: 4, expected_goals_conceded: '2.90' }),
+    ])
+    assert.equal(seasonXg(b, TOTTENHAM)?.xg_against, 3.87)
+  })
+
+  test('two goalkeepers sharing the season sum to the team figure', () => {
+    const b = bootstrap([
+      element({ id: 1, element_type: 1, expected_goals_conceded: '2.50' }),
+      element({ id: 2, element_type: 1, expected_goals_conceded: '1.37' }),
+    ])
+    assert.equal(seasonXg(b, TOTTENHAM)?.xg_against, 3.87)
+  })
+
+  test('an unused goalkeeper contributes nothing', () => {
+    const b = bootstrap([
+      element({ id: 1, element_type: 1, minutes: 90, expected_goals_conceded: '3.87' }),
+      element({ id: 2, element_type: 1, minutes: 0, expected_goals_conceded: '0.00' }),
+    ])
+    assert.equal(seasonXg(b, TOTTENHAM)?.xg_against, 3.87)
+  })
+
+  test('a start-of-season squad is 0, not null', () => {
+    const b = bootstrap([element({ element_type: 1 })])
+    assert.deepEqual(seasonXg(b, TOTTENHAM), { xg_for: 0, xg_against: 0 })
+  })
+
+  test('a club with no squad is null', () => {
+    assert.equal(seasonXg(bootstrap([element({ team: 1 })]), TOTTENHAM), null)
+  })
+
+  test('an unparseable figure is skipped rather than poisoning the sum', () => {
+    const b = bootstrap([
+      element({ id: 1, expected_goals: '1.50' }),
+      element({ id: 2, expected_goals: 'n/a' }),
+    ])
+    assert.equal(seasonXg(b, TOTTENHAM)?.xg_for, 1.5)
+  })
+
+  test('a squad with no goalkeeper still reports xG for', () => {
+    const b = bootstrap([element({ element_type: 4, expected_goals: '2.00' })])
+    assert.deepEqual(seasonXg(b, TOTTENHAM), { xg_for: 2, xg_against: 0 })
+  })
+})
+
+// ---------------------------------------------------------------------------
 // LIVE — fantasy.premierleague.com
 // ---------------------------------------------------------------------------
 
@@ -664,6 +738,60 @@ describe('live: FPL fixtures', { concurrency: false }, () => {
     const now = Date.now()
     const next = nextFixture(fixtures, team.id, now)
     if (next) assert.ok(Date.parse(next.kickoff_time ?? '') > now)
+  })
+
+  /**
+   * The check that validates the whole season-xG derivation.
+   *
+   * `sumMatchXg` reads the gameweek-live endpoint and is exact per fixture.
+   * `seasonXg` sums `bootstrap-static` instead, one request rather than one per
+   * matchday. While exactly one match has been played the two must agree on xG
+   * for, and the goalkeeper-based xG against must land within a whisker.
+   *
+   * Once more matches are played the equality no longer holds, so the test
+   * asserts the weaker invariant that a season total cannot be smaller than any
+   * single match inside it.
+   */
+  test('seasonXg agrees with the exact per-fixture figures', { timeout: LIVE_TIMEOUT }, async () => {
+    assert.ok(fixtures && data)
+    const team = findTeam(data, 'tottenham')
+    assert.ok(team)
+    const now = Date.now()
+
+    const season = seasonXg(data, team.id)
+    assert.ok(season, 'no squad — seasonXg should not be null for a live club')
+    assert.ok(season.xg_for >= 0 && season.xg_against >= 0)
+
+    const last = lastFixture(fixtures, team.id, now)
+    if (!last) return
+
+    const perMatch = await getMatchXg(last)
+    if (!perMatch) return
+
+    const home = last.team_h === team.id
+    const matchFor = home ? perMatch.home : perMatch.away
+    const matchAgainst = home ? perMatch.away : perMatch.home
+    const played = fixturesPlayed(fixtures, team.id, now)
+
+    if (played === 1) {
+      assert.equal(
+        season.xg_for,
+        matchFor,
+        'squad-summed xG must reconstruct the single match exactly'
+      )
+      // Goalkeeper minutes miss stoppage-time chances, so allow a small gap.
+      const drift = Math.abs(season.xg_against - matchAgainst)
+      assert.ok(
+        drift <= Math.max(0.15, matchAgainst * 0.05),
+        `xG against drifted ${drift.toFixed(2)} from ${matchAgainst}`
+      )
+      console.log(
+        `[fpl] season xG ${season.xg_for}–${season.xg_against} vs ` +
+          `last match ${matchFor}–${matchAgainst}`
+      )
+    } else {
+      assert.ok(season.xg_for >= matchFor - 0.01, 'a season total cannot undercut one match')
+    }
   })
 
   test('key data builds from live squad data', { timeout: LIVE_TIMEOUT }, () => {

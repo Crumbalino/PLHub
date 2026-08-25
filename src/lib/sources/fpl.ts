@@ -51,6 +51,8 @@ export interface FplElement {
   id: number
   code: number
   team: number
+  /** 1=GK, 2=DEF, 3=MID, 4=FWD. */
+  element_type: number
   web_name: string
   first_name: string
   second_name: string
@@ -63,6 +65,10 @@ export interface FplElement {
   assists: number
   yellow_cards: number
   minutes: number
+  /** Season expected goals, as a decimal string. */
+  expected_goals: string
+  /** Expected goals conceded by this player's team while he was on the pitch. */
+  expected_goals_conceded: string
 }
 
 export interface FplEvent {
@@ -161,6 +167,9 @@ const POST_WINDOW_MS = 48 * 60 * 60 * 1000
 
 /** §3: BREAK is no fixture within 10 days. */
 const BREAK_HORIZON_MS = 10 * 24 * 60 * 60 * 1000
+
+/** FPL `element_type` for a goalkeeper. See `seasonXg`. */
+const GOALKEEPER = 1
 
 /**
  * Upper bound on how long a fixture may be considered LIVE.
@@ -604,6 +613,55 @@ export function sumMatchXg(
 
   if (!seen) return null
   return { home: Math.round(home * 100) / 100, away: Math.round(away * 100) / 100 }
+}
+
+/**
+ * Season expected goals for and against a club, for PAGE_SPEC §7.10.
+ *
+ * BOTH SIDES COME OUT OF ONE `bootstrap-static` READ, and the two halves are
+ * not equally exact. Worth knowing which is which before trusting a figure.
+ *
+ * **xG for is exact.** Every chance belongs to exactly one player, so summing
+ * the squad's `expected_goals` reconstructs the team total precisely. Checked
+ * against the per-fixture figures `sumMatchXg` derives from the gameweek-live
+ * endpoint on 25 Aug 2026: Tottenham 0.57 and Brentford 3.91 both agreed to the
+ * penny.
+ *
+ * **xG against is an approximation, roughly 1% low.** `expected_goals_conceded`
+ * is per player and accrues while he is on the pitch, so summing a whole squad
+ * multiplies it — 42.59 for a club that had conceded 3.91. Goalkeepers are the
+ * usable subset: exactly one is on the pitch at a time, so their sum tracks the
+ * team. Same measurement: 3.87 against a true 3.91, and 0.57 against a true
+ * 0.57. The gap is stoppage-time chances falling outside the recorded minutes,
+ * and it undercounts slightly. An outfield player who goes in goal after a red
+ * card is missed entirely.
+ *
+ * The exact alternative is summing `sumMatchXg` over every played fixture,
+ * which costs one gameweek-live request per matchday — up to 38 on a cold
+ * cache, for a block §7.10 calls the slowest-moving on the page and puts below
+ * the fold. Not worth 38 requests. If §7.10 ever moves somewhere prominent,
+ * that is the upgrade path.
+ */
+export function seasonXg(
+  bootstrap: FplBootstrap,
+  teamId: number
+): { xg_for: number; xg_against: number } | null {
+  const players = squad(bootstrap, teamId)
+  if (!players.length) return null
+
+  const round = (n: number) => Math.round(n * 100) / 100
+  const sum = (list: FplElement[], pick: (e: FplElement) => string) =>
+    list.reduce((total, e) => {
+      const value = Number.parseFloat(pick(e) ?? '0')
+      return Number.isNaN(value) ? total : total + value
+    }, 0)
+
+  const keepers = players.filter((e) => e.element_type === GOALKEEPER)
+
+  return {
+    xg_for: round(sum(players, (e) => e.expected_goals)),
+    xg_against: round(sum(keepers, (e) => e.expected_goals_conceded)),
+  }
 }
 
 // ---------------------------------------------------------------------------
