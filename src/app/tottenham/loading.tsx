@@ -4,7 +4,8 @@
  * The shapes mirror page.tsx exactly: the same container width and padding, the
  * same header block, the same hairline-separated sections at the same spacing.
  * That is the whole point — a skeleton whose geometry differs from the content
- * it replaces causes the layout shift it was supposed to prevent.
+ * it replaces causes the layout shift it was supposed to prevent. Both files
+ * now read those measurements from the same tokens, so they cannot drift.
  *
  * Four blocks, which is the off-week count. A matchweek render adds two more
  * below the fold, where a shift costs nothing.
@@ -13,26 +14,91 @@
  * would license them does not exist yet.
  */
 
+import { tokens as t } from '@/lib/tokens'
+
+/** A skeleton bar. Width is a layout proportion or a scale step, never a px. */
+function Bar({
+  width,
+  height,
+  fill,
+  marginTop,
+}: {
+  width: string
+  height: string
+  fill: string
+  marginTop?: string
+}) {
+  return (
+    <div
+      style={{
+        width,
+        height,
+        marginTop,
+        borderRadius: t.radius.sm,
+        backgroundColor: fill,
+      }}
+    />
+  )
+}
+
 export default function Loading() {
   return (
-    <article className="mx-auto max-w-xl px-4 py-10" aria-busy="true">
+    <article
+      className="mx-auto"
+      aria-busy="true"
+      style={{
+        maxWidth: t.measure.page,
+        paddingLeft: t.space[4],
+        paddingRight: t.space[4],
+        paddingTop: t.space[10],
+        paddingBottom: t.space[10],
+      }}
+    >
       <p className="sr-only">Loading the Tottenham snapshot.</p>
 
       <header aria-hidden="true">
-        {/* h1: text-2xl, tracking-tight */}
-        <div className="h-8 w-64 rounded bg-white/10" />
-        {/* the updated line: text-sm */}
-        <div className="mt-2 h-4 w-32 rounded bg-white/5" />
+        {/* the h1 */}
+        <Bar width={t.space[64]} height={t.space[8]} fill={t.colour.overlay.strong} />
+        {/* the updated line */}
+        <Bar
+          width={t.space[32]}
+          height={t.space[4]}
+          fill={t.colour.overlay.soft}
+          marginTop={t.space[2]}
+        />
       </header>
 
-      <div className="mt-8 space-y-6" aria-hidden="true">
+      <div
+        aria-hidden="true"
+        style={{
+          marginTop: t.space[8],
+          display: 'flex',
+          flexDirection: 'column',
+          gap: t.space[6],
+        }}
+      >
         {[0, 1, 2, 3].map((i) => (
-          <section key={i} className="border-t border-white/15 pt-5">
+          <section
+            key={i}
+            style={{
+              borderTopWidth: t.border.hairline,
+              borderTopStyle: 'solid',
+              borderTopColor: t.colour.rule,
+              paddingTop: t.space[5],
+            }}
+          >
             {/* the mono block heading */}
-            <div className="h-3 w-24 rounded bg-white/10" />
-            <div className="mt-3 space-y-2">
-              <div className="h-6 w-3/4 rounded bg-white/5" />
-              <div className="h-4 w-1/2 rounded bg-white/5" />
+            <Bar width={t.space[24]} height={t.space[3]} fill={t.colour.overlay.strong} />
+            <div
+              style={{
+                marginTop: t.space[3],
+                display: 'flex',
+                flexDirection: 'column',
+                gap: t.space[2],
+              }}
+            >
+              <Bar width="75%" height={t.space[6]} fill={t.colour.overlay.soft} />
+              <Bar width="50%" height={t.space[4]} fill={t.colour.overlay.soft} />
             </div>
           </section>
         ))}

@@ -19,6 +19,7 @@
  */
 
 import React from 'react'
+import { tokens as t } from '@/lib/tokens'
 
 // ---------------------------------------------------------------------------
 // The §14 payload, narrowed to the keys these blocks consume
@@ -328,18 +329,18 @@ function Block({
   children: React.ReactNode
 }) {
   return (
-    <section className="border-t border-white/15 pt-5">
-      <h2 className="font-mono text-[0.7rem] uppercase tracking-[0.15em] opacity-60">
+    <section style={{ borderTopWidth: t.border.hairline, borderTopStyle: 'solid', borderTopColor: t.colour.rule, paddingTop: t.space[5] }}>
+      <h2 className="uppercase" style={{ fontFamily: t.type.family.mono, fontSize: t.type.size.xs, letterSpacing: t.type.tracking.widest, opacity: t.colour.text.step.faint }}>
         {title}
       </h2>
-      <div className="mt-3">{children}</div>
+      <div style={{ marginTop: t.space[3] }}>{children}</div>
     </section>
   )
 }
 
 /** A secondary line: present, quieter, never a different colour. */
 function Meta({ children }: { children: React.ReactNode }) {
-  return <p className="mt-1 text-sm opacity-70">{children}</p>
+  return <p style={{ marginTop: t.space[1], fontSize: t.type.size.sm, lineHeight: t.type.leading.sm, opacity: t.colour.text.step.muted }}>{children}</p>
 }
 
 // ---------------------------------------------------------------------------
@@ -380,7 +381,7 @@ export function MatchBlock({ match, entity }: { match: Match | null; entity: str
     const score = match.score
     return (
       <Block title={heading}>
-        <p className="text-2xl font-semibold">
+        <p style={{ fontSize: t.type.size.xl, lineHeight: t.type.leading.xl, fontWeight: t.type.weight.semibold }}>
           {score && score.home !== null && score.away !== null
             ? `${homeName} ${score.home} — ${score.away} ${awayName}`
             : fixture}
@@ -397,25 +398,25 @@ export function MatchBlock({ match, entity }: { match: Match | null; entity: str
     return (
       <Block title={heading}>
         {match.kickoff && (
-          <p className="text-sm opacity-70">
+          <p style={{ fontSize: t.type.size.sm, lineHeight: t.type.leading.sm, opacity: t.colour.text.step.muted }}>
             <time dateTime={match.kickoff}>{kickoffLabel(match.kickoff)}</time>
           </p>
         )}
-        <p className="mt-1 text-2xl font-semibold">
+        <p style={{ marginTop: t.space[1], fontSize: t.type.size.xl, lineHeight: t.type.leading.xl, fontWeight: t.type.weight.semibold }}>
           {score && score.home !== null && score.away !== null
             ? `${homeName} ${score.home} — ${score.away} ${awayName}`
             : fixture}
         </p>
 
         {match.xg && (
-          <p className="mt-2 text-sm">
+          <p style={{ marginTop: t.space[2], fontSize: t.type.size.sm, lineHeight: t.type.leading.sm }}>
             <abbr title="Expected goals">xG</abbr> {xg(match.xg.home)} —{' '}
             {xg(match.xg.away)}
           </p>
         )}
 
         {scorers.length > 0 && (
-          <ul className="mt-2 flex flex-wrap gap-x-3 text-sm">
+          <ul className="flex flex-wrap" style={{ marginTop: t.space[2], columnGap: t.space[3], fontSize: t.type.size.sm, lineHeight: t.type.leading.sm }}>
             {scorers.map((s, i) => (
               <li key={`${s.player}-${s.minute}-${i}`}>{scorerLabel(s)}</li>
             ))}
@@ -423,7 +424,7 @@ export function MatchBlock({ match, entity }: { match: Match | null; entity: str
         )}
 
         {reds.length > 0 && (
-          <ul className="mt-2 text-sm">
+          <ul style={{ marginTop: t.space[2], fontSize: t.type.size.sm, lineHeight: t.type.leading.sm }}>
             {reds.map((r, i) => (
               <li key={`${r.player}-${r.minute}-${i}`}>
                 Red card — {r.player} {r.minute}&apos;
@@ -444,7 +445,7 @@ export function MatchBlock({ match, entity }: { match: Match | null; entity: str
   if (match.phase === 'BREAK') {
     return (
       <Block title={heading}>
-        <p className="text-2xl font-semibold">{fixture}</p>
+        <p style={{ fontSize: t.type.size.xl, lineHeight: t.type.leading.xl, fontWeight: t.type.weight.semibold }}>{fixture}</p>
         {match.kickoff && (
           <Meta>
             <time dateTime={match.kickoff}>{dateLabel(match.kickoff)}</time>
@@ -459,11 +460,11 @@ export function MatchBlock({ match, entity }: { match: Match | null; entity: str
   return (
     <Block title={heading}>
       {match.kickoff && (
-        <p className="text-sm opacity-70">
+        <p style={{ fontSize: t.type.size.sm, lineHeight: t.type.leading.sm, opacity: t.colour.text.step.muted }}>
           <time dateTime={match.kickoff}>{kickoffLabel(match.kickoff)}</time>
         </p>
       )}
-      <p className="mt-1 text-2xl font-semibold">{fixture}</p>
+      <p style={{ marginTop: t.space[1], fontSize: t.type.size.xl, lineHeight: t.type.leading.xl, fontWeight: t.type.weight.semibold }}>{fixture}</p>
       {detail && <Meta>{detail}</Meta>}
       {/* §18 open question 1: no free API carries UK rights, so this is absent
           until it is entered by hand rather than guessed at. */}
@@ -508,16 +509,16 @@ export function Availability({ rows, now }: { rows: AvailabilityRow[]; now: numb
 
   return (
     <Block title="Availability">
-      <ul className="space-y-2">
-        {rows.map((r) => {
+      <ul>
+        {rows.map((r, i) => {
           const detail = availabilityLine(r, now)
           return (
-            <li key={r.player}>
-              <span className="font-medium">{r.player}</span>{' '}
-              <span className="font-mono text-[0.7rem] uppercase tracking-wider opacity-70">
+            <li key={r.player} style={{ marginTop: i === 0 ? undefined : t.space[2] }}>
+              <span style={{ fontWeight: t.type.weight.medium }}>{r.player}</span>{' '}
+              <span className="uppercase" style={{ fontFamily: t.type.family.mono, fontSize: t.type.size.xs, letterSpacing: t.type.tracking.wide, opacity: t.colour.text.step.muted }}>
                 {r.status}
               </span>
-              {detail && <span className="block text-sm opacity-70">{detail}</span>}
+              {detail && <span className="block" style={{ fontSize: t.type.size.sm, lineHeight: t.type.leading.sm, opacity: t.colour.text.step.muted }}>{detail}</span>}
             </li>
           )
         })}
@@ -543,12 +544,12 @@ export function RefereeBlock({ referee }: { referee: Referee | null }) {
 
   return (
     <Block title="The referee">
-      <p className="text-lg font-medium">{referee.name}</p>
+      <p style={{ fontSize: t.type.size.lg, lineHeight: t.type.leading.lg, fontWeight: t.type.weight.medium }}>{referee.name}</p>
       {referee.cards_per_game !== null && (
         <Meta>{referee.cards_per_game} cards per game</Meta>
       )}
       {referee.club_record && <Meta>Tottenham record: {referee.club_record}</Meta>}
-      {referee.fact && <p className="mt-2 text-sm">{referee.fact}</p>}
+      {referee.fact && <p style={{ marginTop: t.space[2], fontSize: t.type.size.sm, lineHeight: t.type.leading.sm }}>{referee.fact}</p>}
     </Block>
   )
 }
@@ -570,15 +571,15 @@ export function KeyData({ data }: { data: KeyDatum[] }) {
 
   return (
     <Block title="Key data">
-      <dl className="space-y-2">
-        {data.map((d) => (
-          <div key={d.label}>
-            <dt className="font-mono text-[0.7rem] uppercase tracking-wider opacity-60">
+      <dl>
+        {data.map((d, i) => (
+          <div key={d.label} style={{ marginTop: i === 0 ? undefined : t.space[2] }}>
+            <dt className="uppercase" style={{ fontFamily: t.type.family.mono, fontSize: t.type.size.xs, letterSpacing: t.type.tracking.wide, opacity: t.colour.text.step.faint }}>
               {d.label}
             </dt>
             <dd>
               {d.value}
-              {d.detail && <span className="opacity-70"> · {d.detail}</span>}
+              {d.detail && <span style={{ opacity: t.colour.text.step.muted }}> · {d.detail}</span>}
             </dd>
           </div>
         ))}
@@ -608,25 +609,25 @@ export function LeagueTable({
 
   return (
     <Block title="Table">
-      <table className="w-full text-sm tabular-nums">
+      <table className="w-full tabular-nums" style={{ fontSize: t.type.size.sm, lineHeight: t.type.leading.sm }}>
         <caption className="sr-only">
           Premier League table, Tottenham and the clubs either side
         </caption>
         <thead>
-          <tr className="text-left font-mono text-[0.7rem] uppercase tracking-wider opacity-60">
-            <th scope="col" className="py-1 pr-2 font-normal">
+          <tr className="text-left uppercase" style={{ fontFamily: t.type.family.mono, fontSize: t.type.size.xs, letterSpacing: t.type.tracking.wide, opacity: t.colour.text.step.faint }}>
+            <th scope="col" style={{ paddingTop: t.space[1], paddingBottom: t.space[1], paddingRight: t.space[2], fontWeight: t.type.weight.regular }}>
               Pos
             </th>
-            <th scope="col" className="py-1 pr-2 font-normal">
+            <th scope="col" style={{ paddingTop: t.space[1], paddingBottom: t.space[1], paddingRight: t.space[2], fontWeight: t.type.weight.regular }}>
               Club
             </th>
-            <th scope="col" className="py-1 pr-2 text-right font-normal">
+            <th scope="col" className="text-right" style={{ paddingTop: t.space[1], paddingBottom: t.space[1], paddingRight: t.space[2], fontWeight: t.type.weight.regular }}>
               Pl
             </th>
-            <th scope="col" className="py-1 pr-2 text-right font-normal">
+            <th scope="col" className="text-right" style={{ paddingTop: t.space[1], paddingBottom: t.space[1], paddingRight: t.space[2], fontWeight: t.type.weight.regular }}>
               GD
             </th>
-            <th scope="col" className="py-1 text-right font-normal">
+            <th scope="col" className="text-right" style={{ paddingTop: t.space[1], paddingBottom: t.space[1], fontWeight: t.type.weight.regular }}>
               Pts
             </th>
           </tr>
@@ -639,15 +640,15 @@ export function LeagueTable({
                 key={row.slug ?? row.name ?? i}
                 {...(isUs ? { 'aria-current': 'true' as const } : {})}
               >
-                <td className="py-1 pr-2">{row.position ?? ''}</td>
-                <td className="py-1 pr-2">
+                <td style={{ paddingTop: t.space[1], paddingBottom: t.space[1], paddingRight: t.space[2] }}>{row.position ?? ''}</td>
+                <td style={{ paddingTop: t.space[1], paddingBottom: t.space[1], paddingRight: t.space[2] }}>
                   {isUs ? <strong>{row.name}</strong> : row.name}
                 </td>
-                <td className="py-1 pr-2 text-right">{row.played ?? ''}</td>
-                <td className="py-1 pr-2 text-right">
+                <td className="text-right" style={{ paddingTop: t.space[1], paddingBottom: t.space[1], paddingRight: t.space[2] }}>{row.played ?? ''}</td>
+                <td className="text-right" style={{ paddingTop: t.space[1], paddingBottom: t.space[1], paddingRight: t.space[2] }}>
                   {typeof row.gd === 'number' && row.gd > 0 ? `+${row.gd}` : (row.gd ?? '')}
                 </td>
-                <td className="py-1 text-right">{row.points ?? ''}</td>
+                <td className="text-right" style={{ paddingTop: t.space[1], paddingBottom: t.space[1] }}>{row.points ?? ''}</td>
               </tr>
             )
           })}
@@ -680,9 +681,9 @@ export function Form({ form }: { form: string[] }) {
 
   return (
     <Block title="Form">
-      <ol className="flex gap-2 font-mono">
+      <ol className="flex" style={{ gap: t.space[2], fontFamily: t.type.family.mono }}>
         {form.map((letter, i) => (
-          <li key={`${letter}-${i}`} className="text-lg">
+          <li key={`${letter}-${i}`} style={{ fontSize: t.type.size.lg, lineHeight: t.type.leading.lg }}>
             <span aria-hidden="true">{letter}</span>
             <span className="sr-only">{FORM_WORD[letter] ?? letter}</span>
           </li>

@@ -1,6 +1,6 @@
 'use client';
 import { useCallback } from 'react';
-import Logo from '@/components/Logo';
+import Wordmark from '@/components/Wordmark';
 
 export default function Footer() {
   const links = [
@@ -61,7 +61,7 @@ export default function Footer() {
           }}
         >
           <a href="/" style={{ textDecoration: 'none' }} aria-label="The Football Hub home">
-            <Logo tier="nav" />
+            <Wordmark tier="nav" />
           </a>
 
           <nav style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>

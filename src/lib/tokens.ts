@@ -271,3 +271,168 @@ export const SEED_VOTES: Record<number, number> = {
   4: 312,  5: 634,  6: 489,  7: 278,
   8: 401,  9: 156,
 };
+
+// ─────────────────────────────────────────────────────────────────
+// BRAND-SWAP TOKENS — the set the snapshot page reads.
+//
+// A new logo, palette, type scale and spacing scale land in this object
+// and nowhere else, and no component changes.
+//
+// ── PLAIN OBJECT, NEVER CSS CUSTOM PROPERTIES ────────────────────
+//
+// A CSS custom property that is never declared is not an error:
+// `color: var(--plh-text-100)` with no declaration computes to nothing,
+// the element renders invisibly, and every build check passes. That has
+// taken this site down twice — 67 `var(--plh-*)` references with zero
+// declarations, which is why globals.css still carries a shim.
+//
+// A missing key here is a TypeScript error at the call site. The failure
+// moves from runtime-invisible to compile-time-loud, which is the point.
+// Plain objects also port to React Native unchanged: the same values a
+// StyleSheet consumes, with no cascade and no var() to resolve.
+//
+// ── WHERE THE VALUES CAME FROM ───────────────────────────────────
+//
+// Measured from the live DOM of /tottenham on 26 Aug 2026 —
+// getComputedStyle over all 85 rendered elements, not read off source.
+// Source says `text-[0.7rem]`; the browser says 11.2px, and the browser
+// is the one telling the truth. `surface`, `elevated` and `accent` were
+// read from the live custom properties on :root, since the page renders
+// none of them.
+//
+// Sizes are kept in rem rather than the measured px so the page still
+// responds to a reader's browser font size. At a 16px root they compute
+// to exactly the measured pixel values.
+//
+// ── THE ONE PLACE A var() SURVIVES ───────────────────────────────
+//
+// `type.family`. next/font generates a hashed family name per build
+// (`__Sora_2be303`) and exposes it only through a CSS variable it
+// defines itself; hardcoding the hash would break on the next build.
+// The rule above is about *undefined* variables rendering a component
+// invisibly. These are defined by next/font on <body>, and each stack
+// ends in a real generic family, so the worst case is a fallback face
+// rather than nothing at all. React Native takes the family name
+// directly and never sees the var().
+//
+// NOTE: the exports above (FONT, SIZE, WEIGHT, SPACE, RADIUS, …) are the
+// v6.0 set, still imported by fourteen components. They are untouched.
+// This object is the structure new work reads; the two meet when those
+// components migrate.
+// ─────────────────────────────────────────────────────────────────
+
+export const tokens = {
+  colour: {
+    /** Page ground. */
+    background: "#0D1B2A",
+    /** Raised panel. Nothing on the snapshot page uses it yet. */
+    surface: "#112238",
+    /** Raised above `surface`. */
+    elevated: "#162D45",
+    /** The one brand accent. Club colour is never a page theme — PAGE_SPEC §1. */
+    accent: "#E84080",
+
+    text: {
+      /** The only text colour. Hierarchy is opacity on this, never a grey hex. */
+      base: "#FAF5F0",
+      /**
+       * Applied as the CSS `opacity` property, not as colour alpha — that is
+       * what the page does today and what the measurement recorded. Each step
+       * is a real rendered value, not a scale invented here.
+       */
+      step: {
+        full: 1,
+        muted: 0.7,
+        faint: 0.6,
+      },
+    },
+
+    /** Hairline between blocks. */
+    rule: "rgba(255, 255, 255, 0.15)",
+
+    /** Neutral fills, used by the loading skeleton. */
+    overlay: {
+      strong: "rgba(255, 255, 255, 0.10)",
+      soft: "rgba(255, 255, 255, 0.05)",
+    },
+  },
+
+  type: {
+    family: {
+      sans: "var(--font-sora), sans-serif",
+      mono: "'JetBrains Mono', var(--font-mono), monospace",
+    },
+    /** Measured: 11.2 · 14 · 16 · 18 · 24 px at a 16px root. */
+    size: {
+      xs: "0.7rem",
+      sm: "0.875rem",
+      base: "1rem",
+      lg: "1.125rem",
+      xl: "1.5rem",
+    },
+    /**
+     * Paired with `size` above.
+     *
+     * `xs` is deliberately NOT applied anywhere today. The utility it replaced
+     * set a font size and no line height, so `xs` text inherits its parent's —
+     * 1.5 in body copy, 20px inside the table. Forcing a value here changed the
+     * table header by 3px, which is how it was caught. It stays declared for a
+     * surface that needs to set it explicitly.
+     */
+    leading: {
+      xs: "1.5",
+      sm: "1.25rem",
+      base: "1.5rem",
+      lg: "1.75rem",
+      xl: "2rem",
+    },
+    weight: {
+      regular: 400,
+      medium: 500,
+      semibold: 600,
+    },
+    /** In `em`, so tracking scales with whatever size it is applied to. */
+    tracking: {
+      tight: "-0.025em",
+      wide: "0.05em",
+      widest: "0.15em",
+    },
+  },
+
+  /**
+   * One scale for margin, padding, gap, width and height, keyed in quarter-rem
+   * steps — 4 is 1rem. Shared rather than split, because a 16px gap and a 16px
+   * pad are the same decision.
+   */
+  space: {
+    0: "0px",
+    1: "0.25rem",
+    2: "0.5rem",
+    3: "0.75rem",
+    4: "1rem",
+    5: "1.25rem",
+    6: "1.5rem",
+    8: "2rem",
+    10: "2.5rem",
+    24: "6rem",
+    32: "8rem",
+    64: "16rem",
+  },
+
+  /** Rule weights. The hairline between blocks is the only one in use. */
+  border: {
+    hairline: "1px",
+  },
+
+  radius: {
+    none: "0px",
+    sm: "0.25rem",
+  },
+
+  /** Reading measure. 36rem is 576px at a 16px root. */
+  measure: {
+    page: "36rem",
+  },
+} as const;
+
+export type Tokens = typeof tokens;
