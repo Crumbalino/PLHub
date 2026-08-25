@@ -45,6 +45,28 @@ hedging language, outlet, byline, attributed origin, source URL. Resolved later.
 
 1. Security + live domain → 2. Claim schema → 3. Backfill 12–18 months of resolved claims → 4. Source + outlet pages with `Person`/`Organization` schema.
 
+## Branching
+
+- **Every branch is cut from `main`. Never branch off another feature branch.**
+- **One open PR at a time.** If work depends on an unmerged PR, **stop and say so**
+  rather than stacking on it.
+- **One PR does one thing.** Unrelated fixes go in separate PRs.
+
+Why the second rule is not a style preference: `main` is squash-merged, so a
+squashed parent shares no commits with the stack still sitting on the original
+ones. Every child branch then reports conflicts in every file the parent touched
+— conflicts that are pure history artefact, where the parent's tree and `main`'s
+tree are byte-identical. #67–#70 was a four-deep stack and cost two rebases
+across five files to unpick, resolving nothing real. The fix, if it happens
+anyway, is to replay only the child's own commits and skip the merged ones:
+
+```bash
+git rebase --onto origin/main <old-parent-tip> <branch>
+```
+
+Then check the result is unchanged — `git diff origin/main..HEAD` must be
+byte-identical to the branch's diff before the rebase.
+
 ## Commands
 
 ```bash
