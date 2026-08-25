@@ -355,11 +355,16 @@ describe('§7.4 availability', () => {
 // ---------------------------------------------------------------------------
 
 describe('§7.6 yellow-card accumulation', () => {
-  test('threshold is 4 before the 19th fixture, 5 before the 32nd', () => {
+  /**
+   * The Premier League thresholds: five yellows in the first 19 fixtures is a
+   * one-match ban, ten in the first 32 is a two-match ban. One booking away is
+   * therefore four and nine.
+   */
+  test('threshold is 4 before the 19th fixture, 9 before the 32nd', () => {
     assert.equal(bookingThreshold(0), 4)
     assert.equal(bookingThreshold(18), 4)
-    assert.equal(bookingThreshold(19), 5)
-    assert.equal(bookingThreshold(31), 5)
+    assert.equal(bookingThreshold(19), 9)
+    assert.equal(bookingThreshold(31), 9)
   })
 
   test('no threshold remains after the 32nd fixture', () => {
@@ -379,9 +384,11 @@ describe('§7.6 yellow-card accumulation', () => {
   test('the threshold moves with the fixture count', () => {
     const b = bootstrap([
       element({ id: 1, web_name: 'Four', yellow_cards: 4 }),
-      element({ id: 2, web_name: 'Five', yellow_cards: 5 }),
+      element({ id: 2, web_name: 'Nine', yellow_cards: 9 }),
     ])
-    assert.deepEqual(playersOneBookingAway(b, TOTTENHAM, 20), ['Five'])
+    // Past the 19th fixture the first ban is served; the next is at ten.
+    assert.deepEqual(playersOneBookingAway(b, TOTTENHAM, 20), ['Nine'])
+    assert.deepEqual(playersOneBookingAway(b, TOTTENHAM, 10), ['Four'])
   })
 
   test('a departed player is not one booking away', () => {

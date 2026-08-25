@@ -101,8 +101,19 @@ describe('club slug resolution', () => {
     )
   })
 
+  test('the promoted clubs resolve', () => {
+    assert.equal(slugForTeam({ id: 1, name: 'Coventry City FC', shortName: 'Coventry', tla: 'COV' }), 'coventry')
+    assert.equal(slugForTeam({ id: 2, name: 'Hull City AFC', shortName: 'Hull City', tla: 'HUL' }), 'hull')
+    assert.equal(slugForTeam({ id: 3, name: 'Leeds United FC', shortName: 'Leeds United', tla: 'LEE' }), 'leeds')
+  })
+
+  /**
+   * A club outside the division. Not a relegated one — those come back — so
+   * this uses a club the registry has never carried.
+   */
   test('a club absent from the registry resolves to null, not a guess', () => {
-    assert.equal(slugForTeam({ id: 1, name: 'Coventry City FC', shortName: 'Coventry', tla: 'COV' }), null)
+    assert.equal(slugForTeam({ id: 68, name: 'Norwich City FC', shortName: 'Norwich', tla: 'NOR' }), null)
+    assert.equal(slugForTeam({ id: 71, name: 'Sheffield Wednesday FC', shortName: 'Sheffield Wed', tla: 'SHW' }), null)
   })
 
   test('a team with no code and no usable name is null', () => {

@@ -11,7 +11,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#EF0107',
     secondaryColor: '#023474',
     badgeEmoji: '🔴',
-    badgeUrl: `${PL_CDN}/t3.png`,
+    badgeUrl: `${PL_CDN}/t3.svg`,
   },
   {
     slug: 'aston-villa',
@@ -21,7 +21,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#670E36',
     secondaryColor: '#95BFE5',
     badgeEmoji: '🟣',
-    badgeUrl: `${PL_CDN}/t7.png`,
+    badgeUrl: `${PL_CDN}/t7.svg`,
   },
   {
     slug: 'brentford',
@@ -31,7 +31,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#E30613',
     secondaryColor: '#FFD700',
     badgeEmoji: '🐝',
-    badgeUrl: `${PL_CDN}/t94.png`,
+    badgeUrl: `${PL_CDN}/t94.svg`,
   },
   {
     slug: 'brighton',
@@ -41,7 +41,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#0057B8',
     secondaryColor: '#FFCD00',
     badgeEmoji: '🔵',
-    badgeUrl: `${PL_CDN}/t36.png`,
+    badgeUrl: `${PL_CDN}/t36.svg`,
   },
   {
     slug: 'bournemouth',
@@ -51,7 +51,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#DA291C',
     secondaryColor: '#000000',
     badgeEmoji: '🍒',
-    badgeUrl: `${PL_CDN}/t91.png`,
+    badgeUrl: `${PL_CDN}/t91.svg`,
   },
   {
     slug: 'chelsea',
@@ -61,7 +61,17 @@ export const CLUBS: Club[] = [
     primaryColor: '#034694',
     secondaryColor: '#DBA111',
     badgeEmoji: '💙',
-    badgeUrl: `${PL_CDN}/t8.png`,
+    badgeUrl: `${PL_CDN}/t8.svg`,
+  },
+  {
+    slug: 'coventry',
+    name: 'Coventry City',
+    shortName: 'Coventry',
+    subreddit: 'ccfc',
+    primaryColor: '#78D0F3',
+    secondaryColor: '#1D1D5F',
+    badgeEmoji: '🔵',
+    badgeUrl: `${PL_CDN}/t9.svg`,
   },
   {
     slug: 'crystal-palace',
@@ -71,7 +81,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#1B458F',
     secondaryColor: '#C4122E',
     badgeEmoji: '🦅',
-    badgeUrl: `${PL_CDN}/t31.png`,
+    badgeUrl: `${PL_CDN}/t31.svg`,
   },
   {
     slug: 'everton',
@@ -81,7 +91,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#003399',
     secondaryColor: '#FFFFFF',
     badgeEmoji: '💙',
-    badgeUrl: `${PL_CDN}/t11.png`,
+    badgeUrl: `${PL_CDN}/t11.svg`,
   },
   {
     slug: 'fulham',
@@ -91,7 +101,17 @@ export const CLUBS: Club[] = [
     primaryColor: '#000000',
     secondaryColor: '#FFFFFF',
     badgeEmoji: '⚫',
-    badgeUrl: `${PL_CDN}/t54.png`,
+    badgeUrl: `${PL_CDN}/t54.svg`,
+  },
+  {
+    slug: 'hull',
+    name: 'Hull City',
+    shortName: 'Hull',
+    subreddit: 'HullCity',
+    primaryColor: '#F18A00',
+    secondaryColor: '#000000',
+    badgeEmoji: '🐅',
+    badgeUrl: `${PL_CDN}/t88.svg`,
   },
   {
     slug: 'ipswich',
@@ -101,17 +121,17 @@ export const CLUBS: Club[] = [
     primaryColor: '#0053A0',
     secondaryColor: '#FFFFFF',
     badgeEmoji: '💙',
-    badgeUrl: `${PL_CDN}/t40.png`,
+    badgeUrl: `${PL_CDN}/t40.svg`,
   },
   {
-    slug: 'leicester',
-    name: 'Leicester City',
-    shortName: 'Leicester',
-    subreddit: 'lcfc',
-    primaryColor: '#003DA5',
-    secondaryColor: '#FDB913',
-    badgeEmoji: '👑',
-    badgeUrl: `${PL_CDN}/t13.png`,
+    slug: 'leeds',
+    name: 'Leeds',
+    shortName: 'Leeds',
+    subreddit: 'LeedsUnited',
+    primaryColor: '#1D428A',
+    secondaryColor: '#FFCD00',
+    badgeEmoji: '⚪',
+    badgeUrl: `${PL_CDN}/t2.svg`,
   },
   {
     slug: 'liverpool',
@@ -121,7 +141,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#C8102E',
     secondaryColor: '#00B2A9',
     badgeEmoji: '🔴',
-    badgeUrl: `${PL_CDN}/t14.png`,
+    badgeUrl: `${PL_CDN}/t14.svg`,
   },
   {
     slug: 'man-city',
@@ -131,7 +151,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#6CABDD',
     secondaryColor: '#1C2C5B',
     badgeEmoji: '🩵',
-    badgeUrl: `${PL_CDN}/t43.png`,
+    badgeUrl: `${PL_CDN}/t43.svg`,
   },
   {
     slug: 'man-utd',
@@ -141,7 +161,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#DA291C',
     secondaryColor: '#FFE500',
     badgeEmoji: '👹',
-    badgeUrl: `${PL_CDN}/t1.png`,
+    badgeUrl: `${PL_CDN}/t1.svg`,
   },
   {
     slug: 'newcastle',
@@ -151,7 +171,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#241F20',
     secondaryColor: '#41B6E6',
     badgeEmoji: '⬛',
-    badgeUrl: `${PL_CDN}/t4.png`,
+    badgeUrl: `${PL_CDN}/t4.svg`,
   },
   {
     slug: 'nottingham-forest',
@@ -161,17 +181,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#E53233',
     secondaryColor: '#FFFFFF',
     badgeEmoji: '🌲',
-    badgeUrl: `${PL_CDN}/t17.png`,
-  },
-  {
-    slug: 'southampton',
-    name: 'Southampton',
-    shortName: 'Southampton',
-    subreddit: 'saintsfc',
-    primaryColor: '#ED1A3B',
-    secondaryColor: '#FFFFFF',
-    badgeEmoji: '⚪',
-    badgeUrl: `${PL_CDN}/t20.png`,
+    badgeUrl: `${PL_CDN}/t17.svg`,
   },
   {
     slug: 'tottenham',
@@ -181,27 +191,7 @@ export const CLUBS: Club[] = [
     primaryColor: '#132257',
     secondaryColor: '#FFFFFF',
     badgeEmoji: '🐓',
-    badgeUrl: `${PL_CDN}/t6.png`,
-  },
-  {
-    slug: 'west-ham',
-    name: 'West Ham',
-    shortName: 'West Ham',
-    subreddit: 'Hammers',
-    primaryColor: '#7A263A',
-    secondaryColor: '#1BB1E7',
-    badgeEmoji: '⚒️',
-    badgeUrl: `${PL_CDN}/t21.png`,
-  },
-  {
-    slug: 'wolves',
-    name: 'Wolves',
-    shortName: 'Wolves',
-    subreddit: 'wolves',
-    primaryColor: '#FDB913',
-    secondaryColor: '#231F20',
-    badgeEmoji: '🐺',
-    badgeUrl: `${PL_CDN}/t39.png`,
+    badgeUrl: `${PL_CDN}/t6.svg`,
   },
   {
     slug: 'sunderland',
@@ -211,7 +201,8 @@ export const CLUBS: Club[] = [
     primaryColor: '#EB6E1F',
     secondaryColor: '#FFFFFF',
     badgeEmoji: '⚫',
-    badgeUrl: `${PL_CDN}/t58.png`,
+    // t58 was wrong and 403s on the CDN — Sunderland's badge code is 56.
+    badgeUrl: `${PL_CDN}/t56.svg`,
   },
 ]
 
@@ -232,20 +223,20 @@ export const CLUB_CODES: Record<string, string> = {
   brentford: 'BRE',
   brighton: 'BHA',
   chelsea: 'CHE',
+  coventry: 'COV',
   'crystal-palace': 'CRY',
   everton: 'EVE',
   fulham: 'FUL',
+  hull: 'HUL',
   ipswich: 'IPS',
+  leeds: 'LEE',
   liverpool: 'LIV',
   'man-city': 'MCI',
   'man-utd': 'MUN',
   newcastle: 'NEW',
   'nottingham-forest': 'NFO',
-  southampton: 'SOU',
   sunderland: 'SUN',
   tottenham: 'TOT',
-  'west-ham': 'WHU',
-  wolves: 'WOL',
 }
 
 export function getClubCode(slug: string): string {
@@ -253,7 +244,7 @@ export function getClubCode(slug: string): string {
 }
 
 // --- Club Nicknames (for narrative content) ---
-// Primary nickname that fans use (no "The" prefix). For 2025/26 PL season.
+// Primary nickname that fans use (no "The" prefix). For 2026/27 PL season.
 
 export const CLUB_NICKNAMES: Record<string, string> = {
   arsenal: 'Gunners',
@@ -262,20 +253,20 @@ export const CLUB_NICKNAMES: Record<string, string> = {
   brentford: 'Brentford',
   brighton: 'Brighton',
   chelsea: 'Chelsea',
+  coventry: 'Sky Blues',
   'crystal-palace': 'Palace',
   everton: 'Everton',
   fulham: 'Fulham',
+  hull: 'Tigers',
   ipswich: 'Ipswich',
+  leeds: 'Leeds',
   liverpool: 'Liverpool',
   'man-city': 'City',
   'man-utd': 'United',
   newcastle: 'Newcastle',
   'nottingham-forest': 'Forest',
-  southampton: 'Southampton',
   sunderland: 'Sunderland',
   tottenham: 'Spurs',
-  'west-ham': 'West Ham',
-  wolves: 'Wolves',
 }
 
 export function getClubNickname(slug: string): string {
@@ -294,20 +285,20 @@ const CLUB_PATTERNS: [RegExp, string][] = [
   [/\bbrentford\b/i, 'brentford'],
   [/\bbrighton\b/i, 'brighton'],
   [/\bchelsea\b/i, 'chelsea'],
+  [/\bcoventry\b/i, 'coventry'],
   [/\bcrystal palace\b/i, 'crystal-palace'],
   [/\beverton\b/i, 'everton'],
   [/\bfulham\b/i, 'fulham'],
+  [/\bhull\b/i, 'hull'],
   [/\bipswich\b/i, 'ipswich'],
+  [/\bleeds\b/i, 'leeds'],
   [/\bliverpool\b/i, 'liverpool'],
   [/\bman(?:chester)?\s*city\b/i, 'man-city'],
   [/\bman(?:chester)?\s*(?:utd|united)\b/i, 'man-utd'],
   [/\bnewcastle\b/i, 'newcastle'],
   [/\bnott(?:ingham)?\s*forest\b/i, 'nottingham-forest'],
-  [/\bsouthampton\b/i, 'southampton'],
   [/\bsunderland\b/i, 'sunderland'],
   [/\b(?:spurs|tottenham)\b/i, 'tottenham'],
-  [/\bwest ham\b/i, 'west-ham'],
-  [/\bwolv(?:es|erhampton)\b/i, 'wolves'],
 ]
 
 /**
