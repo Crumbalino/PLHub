@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
+import { logCronJob } from '@/lib/cron-logging'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,11 +53,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const startedAt = Date.now()
+
   try {
     const supabase = getSupabase()
     const standings = await getStandingsData()
 
     if (!standings) {
+      await logCronJob({
+        jobName: 'stats_refresh',
+        status: 'error',
+        storiesProcessed: 0,
+        errorMessage: 'standings unavailable from api-football',
+        executionTimeMs: Date.now() - startedAt,
+      })
       return NextResponse.json(
         {
           error: 'Failed to fetch standings',
@@ -100,6 +110,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       processed++
     }
 
+    await logCronJob({
+      jobName: 'stats_refresh',
+      status: 'success',
+      storiesProcessed: processed,
+      errorMessage: null,
+      executionTimeMs: Date.now() - startedAt,
+    })
     return NextResponse.json(
       {
         success: true,
@@ -110,6 +127,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     )
   } catch (err) {
     console.error('[stats-refresh] Error:', err)
+    await logCronJob({
+      jobName: 'stats_refresh',
+      status: 'error',
+      errorMessage: err instanceof Error ? err.message : String(err),
+      executionTimeMs: Date.now() - startedAt,
+    })
     return NextResponse.json(
       {
         error: err instanceof Error ? err.message : 'Unknown error',

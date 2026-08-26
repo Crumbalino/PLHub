@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
+import { logCronJob } from '@/lib/cron-logging'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,11 +57,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const startedAt = Date.now()
+
   try {
     const supabase = getSupabase()
     const completedMatches = await getCompletedMatches()
 
     if (!completedMatches || completedMatches.length === 0) {
+      await logCronJob({
+        jobName: 'post_match_stats',
+        status: 'success',
+        storiesProcessed: 0,
+        errorMessage: 'no completed matches to cache',
+        executionTimeMs: Date.now() - startedAt,
+      })
       return NextResponse.json(
         {
           success: true,
@@ -97,6 +107,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       processed++
     }
 
+    await logCronJob({
+      jobName: 'post_match_stats',
+      status: 'success',
+      storiesProcessed: processed,
+      errorMessage: null,
+      executionTimeMs: Date.now() - startedAt,
+    })
     return NextResponse.json(
       {
         success: true,
@@ -107,6 +124,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     )
   } catch (err) {
     console.error('[post-match-stats] Error:', err)
+    await logCronJob({
+      jobName: 'post_match_stats',
+      status: 'error',
+      errorMessage: err instanceof Error ? err.message : String(err),
+      executionTimeMs: Date.now() - startedAt,
+    })
     return NextResponse.json(
       {
         error: err instanceof Error ? err.message : 'Unknown error',

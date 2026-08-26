@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
+import { logCronJob } from '@/lib/cron-logging'
 import { detectClusters, extractClubs, extractKeywords, type StoryFingerprint } from '@/lib/source-detection'
 
 export const maxDuration = 10
@@ -18,6 +19,10 @@ async function handleRequest(request: NextRequest) {
   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Unlogged until now, which is why `posts.story_cluster` being null on every
+  // row could not be distinguished from "ran and found nothing".
+  const startedAt = Date.now()
 
   try {
     const supabase = createServerClient()
@@ -33,6 +38,12 @@ async function handleRequest(request: NextRequest) {
 
     if (error) {
       console.error('[source-detection] Supabase error:', error)
+      await logCronJob({
+        jobName: 'source_detection',
+        status: 'error',
+        errorMessage: `fetch posts failed: ${error.message}`,
+        executionTimeMs: Date.now() - startedAt,
+      })
       return NextResponse.json(
         { error: 'Failed to fetch posts', detail: error.message },
         { status: 500 }
@@ -40,6 +51,13 @@ async function handleRequest(request: NextRequest) {
     }
 
     if (!posts || posts.length === 0) {
+      await logCronJob({
+        jobName: 'source_detection',
+        status: 'success',
+        storiesProcessed: 0,
+        errorMessage: 'no posts in the 48h window',
+        executionTimeMs: Date.now() - startedAt,
+      })
       return NextResponse.json({
         postsAnalysed: 0,
         clustersFound: 0,
@@ -84,6 +102,15 @@ async function handleRequest(request: NextRequest) {
       }
     }
 
+    // storiesProcessed is posts UPDATED, not posts read — a run that reads 200
+    // and writes 0 is the signal that matters here.
+    await logCronJob({
+      jobName: 'source_detection',
+      status: 'success',
+      storiesProcessed: postsUpdated,
+      errorMessage: `analysed=${posts.length} clusters=${clusters.size}`,
+      executionTimeMs: Date.now() - startedAt,
+    })
     return NextResponse.json({
       postsAnalysed: posts.length,
       clustersFound: clusters.size,
@@ -91,6 +118,12 @@ async function handleRequest(request: NextRequest) {
     })
   } catch (err) {
     console.error('[source-detection] Unexpected error:', err)
+    await logCronJob({
+      jobName: 'source_detection',
+      status: 'error',
+      errorMessage: err instanceof Error ? err.message : String(err),
+      executionTimeMs: Date.now() - startedAt,
+    })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { generateDigestContent } from '@/lib/email/digest-content'
 import { renderDigestEmail } from '@/lib/email/digest-template'
 import { listContacts, sendBatchEmails, sendEmail } from '@/lib/email/resend'
+import { logCronJob } from '@/lib/cron-logging'
 
 /**
  * POST /api/cron/digest
@@ -24,6 +25,8 @@ import { listContacts, sendBatchEmails, sendEmail } from '@/lib/email/resend'
  * }
  */
 export async function POST(request: Request) {
+  const startedAt = Date.now()
+
   try {
     // Verify cron secret (Vercel sends this header for cron jobs)
     const authHeader = request.headers.get('authorization')
@@ -36,6 +39,13 @@ export async function POST(request: Request) {
     // 1. Generate content
     const content = await generateDigestContent()
     if (!content) {
+      await logCronJob({
+        jobName: 'digest',
+        status: 'success',
+        storiesProcessed: 0,
+        errorMessage: 'no stories in the last 24h — skipped',
+        executionTimeMs: Date.now() - startedAt,
+      })
       return NextResponse.json({
         success: true,
         message: 'No stories in the last 24h — digest skipped.',
@@ -52,6 +62,13 @@ export async function POST(request: Request) {
     const activeSubscribers = contacts.filter((c) => !c.unsubscribed)
 
     if (activeSubscribers.length === 0) {
+      await logCronJob({
+        jobName: 'digest',
+        status: 'success',
+        storiesProcessed: 0,
+        errorMessage: 'no active subscribers — generated but not sent',
+        executionTimeMs: Date.now() - startedAt,
+      })
       return NextResponse.json({
         success: true,
         message: 'No active subscribers — digest generated but not sent.',
@@ -88,6 +105,13 @@ export async function POST(request: Request) {
       totalSent += batch.length
     }
 
+    await logCronJob({
+      jobName: 'digest',
+      status: 'success',
+      storiesProcessed: totalSent,
+      errorMessage: null,
+      executionTimeMs: Date.now() - startedAt,
+    })
     return NextResponse.json({
       success: true,
       message: `Breakfast digest sent to ${totalSent} subscribers.`,
@@ -97,6 +121,12 @@ export async function POST(request: Request) {
     })
   } catch (error: any) {
     console.error('Digest cron error:', error)
+    await logCronJob({
+      jobName: 'digest',
+      status: 'error',
+      errorMessage: error?.message ? String(error.message) : String(error),
+      executionTimeMs: Date.now() - startedAt,
+    })
     return NextResponse.json(
       { error: 'Digest failed', details: error?.message },
       { status: 500 }
