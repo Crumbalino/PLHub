@@ -140,7 +140,7 @@ export default async function TottenhamSnapshotPage() {
           now={now}
         />,
         phase === 'PRE' ? (
-          <RefereeBlock key="referee" referee={snapshot.referee} />
+          <RefereeBlock key="referee" referee={snapshot.referee} club={entity.name} />
         ) : null,
         <KeyData key="key-data" data={snapshot.key_data ?? []} />,
         <LeagueTable key="table" table={snapshot.table} />,

@@ -25,6 +25,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
 import * as footballdata from '@/lib/sources/footballdata'
+import * as footballdataco from '@/lib/sources/footballdataco'
 import * as fpl from '@/lib/sources/fpl'
 import * as pulselive from '@/lib/sources/pulselive'
 import { getFanPulse } from '@/lib/sources/reddit'
@@ -209,12 +210,23 @@ export async function GET(
         ? { ...xg }
         : {}
 
-    // §7.5 is PRE-only. The name is all this build can prove: card averages and
-    // the club record need accumulated fixture history, and the one interesting
-    // fact is hand-written per official. Until those exist the client should
-    // treat a name-only referee as not renderable.
+    // §7.5 is PRE-only. The appointment comes from pulselive, the statistics
+    // from football-data.co.uk, and every figure carries the provenance record
+    // that licenses it — a metric with no definition never gets this far.
+    //
+    // The one interesting fact is still hand-written per official and there is
+    // nowhere to write it yet, so it stays null. Nothing else here is invented:
+    // no rating, no bias score, no judgement of an official's performance.
     const refereeName =
       phase === 'PRE' && team ? await pulselive.getUpcomingReferee(team.pulse_id) : null
+
+    const refereeStats = refereeName
+      ? await footballdataco.getRefereeStats(
+          refereeName,
+          footballdataco.csvClubName(entity),
+          now
+        )
+      : null
 
     const payload = {
       entity: {
@@ -229,7 +241,16 @@ export async function GET(
       availability:
         bootstrap && team ? fpl.buildAvailability(bootstrap, team.id, now) : [],
       referee: refereeName
-        ? { name: refereeName, cards_per_game: null, club_record: null, fact: null }
+        ? {
+            name: refereeName,
+            // §15: absent rather than zero. Each is null when the source has
+            // nothing, and each carries its own source, formula and period.
+            season: refereeStats?.season ?? null,
+            career: refereeStats?.career ?? null,
+            club_record: refereeStats?.club_record ?? null,
+            // Hand-written per official. No store for it yet.
+            fact: null,
+          }
         : null,
       key_data: bootstrap && team ? fpl.buildKeyData(bootstrap, team.id, played) : [],
 

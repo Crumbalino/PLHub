@@ -95,10 +95,36 @@ export interface Numbers {
   xg_against?: number
 }
 
+/** A value and the record that licenses it — see src/lib/provenance.ts. */
+export interface Provenanced<T> {
+  value: T
+  provenance: {
+    source_name: string
+    source_url: string
+    formula: string
+    coverage_period: string
+  }
+}
+
+export interface RefereeScope {
+  matches: Provenanced<number> | null
+  yellows: Provenanced<number> | null
+  reds: Provenanced<number> | null
+  cards_per_game: Provenanced<number> | null
+}
+
+export interface RefereeClubRecord {
+  won: number
+  drawn: number
+  lost: number
+  matches: number
+}
+
 export interface Referee {
   name: string
-  cards_per_game: number | null
-  club_record: string | null
+  season: RefereeScope | null
+  career: RefereeScope | null
+  club_record: Provenanced<RefereeClubRecord> | null
   fact: string | null
 }
 
@@ -539,17 +565,65 @@ export function Availability({ rows, now }: { rows: AvailabilityRow[]; now: numb
  * yet, so those lines are absent rather than invented — and if there is no
  * appointment either, the block does not render at all.
  */
-export function RefereeBlock({ referee }: { referee: Referee | null }) {
+/** "5W 2D 3L in 10" — §7.5's form. */
+function recordLabel(r: RefereeClubRecord): string {
+  return `${r.won}W ${r.drawn}D ${r.lost}L in ${r.matches}`
+}
+
+export function RefereeBlock({
+  referee,
+  club,
+}: {
+  referee: Referee | null
+  club: string
+}) {
   if (!referee?.name) return null
+
+  const cardsPerGame = referee.career?.cards_per_game ?? null
+  const careerMatches = referee.career?.matches ?? null
+  const record = referee.club_record ?? null
 
   return (
     <Block title="The referee">
-      <p style={{ fontSize: t.type.size.lg, lineHeight: t.type.leading.lg, fontWeight: t.type.weight.medium }}>{referee.name}</p>
-      {referee.cards_per_game !== null && (
-        <Meta>{referee.cards_per_game} cards per game</Meta>
+      <p
+        style={{
+          fontSize: t.type.size.lg,
+          lineHeight: t.type.leading.lg,
+          fontWeight: t.type.weight.medium,
+        }}
+      >
+        {referee.name}
+      </p>
+
+      {/* Each line renders only if its own figure resolved to a provenance
+          record. A statistic with no definition never arrives, so there is
+          nothing here to guard against beyond null — §15. */}
+      {cardsPerGame && <Meta>{cardsPerGame.value.toFixed(1)} cards per game</Meta>}
+
+      {careerMatches && (
+        <Meta>
+          {careerMatches.value} matches, {cardsPerGame?.provenance.coverage_period}
+        </Meta>
       )}
-      {referee.club_record && <Meta>Tottenham record: {referee.club_record}</Meta>}
-      {referee.fact && <p style={{ marginTop: t.space[2], fontSize: t.type.size.sm, lineHeight: t.type.leading.sm }}>{referee.fact}</p>}
+
+      {record && (
+        <Meta>
+          {club} record: {recordLabel(record.value)}
+        </Meta>
+      )}
+
+      {/* §7.5's one interesting fact. Hand-written, nullable, and null. */}
+      {referee.fact && (
+        <p
+          style={{
+            marginTop: t.space[2],
+            fontSize: t.type.size.sm,
+            lineHeight: t.type.leading.sm,
+          }}
+        >
+          {referee.fact}
+        </p>
+      )}
     </Block>
   )
 }

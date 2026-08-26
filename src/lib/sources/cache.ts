@@ -70,6 +70,15 @@ export interface FetchOptions {
   timeoutMs?: number
   /** Override the cache key. Defaults to the URL. */
   key?: string
+  /**
+   * How to read the body. Defaults to JSON.
+   *
+   * 'text' returns the raw string, for sources that are not JSON —
+   * football-data.co.uk serves CSV. The caching, single-flight and fail-soft
+   * behaviour is identical either way, which is the point of putting it here
+   * rather than writing a second fetcher.
+   */
+  parse?: 'json' | 'text'
 }
 
 /**
@@ -111,7 +120,7 @@ export async function fetchJson<T>(url: string, opts: FetchOptions): Promise<T |
         return null
       }
 
-      const body = JSON.parse(text) as T
+      const body = (opts.parse === 'text' ? text : JSON.parse(text)) as T
       cacheSet(key, body, opts.ttlMs)
       return body
     } catch (err) {
