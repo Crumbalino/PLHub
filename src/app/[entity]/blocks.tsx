@@ -685,7 +685,9 @@ export function LeagueTable({
     <Block title="Table">
       <table className="w-full tabular-nums" style={{ fontSize: t.type.size.sm, lineHeight: t.type.leading.sm }}>
         <caption className="sr-only">
-          Premier League table, Tottenham and the clubs either side
+          {table.highlight
+            ? 'Premier League table, the highlighted club and those either side'
+            : 'Premier League table, the top of the division'}
         </caption>
         <thead>
           <tr className="text-left uppercase" style={{ fontFamily: t.type.family.mono, fontSize: t.type.size.xs, letterSpacing: t.type.tracking.wide, opacity: t.colour.text.step.faint }}>

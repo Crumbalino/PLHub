@@ -17,7 +17,7 @@ import {
   availabilityLine,
   daysSince,
   type AvailabilityRow,
-} from '@/app/tottenham/blocks'
+} from '@/app/[entity]/blocks'
 
 const NOW = Date.parse('2026-08-25T12:00:00Z')
 const DAY = 86_400_000

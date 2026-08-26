@@ -24,6 +24,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { CLUBS_BY_SLUG } from '@/lib/clubs'
+import { isEntity, isHomepageEntity } from '@/lib/entities'
 import * as footballdata from '@/lib/sources/footballdata'
 import * as footballdataco from '@/lib/sources/footballdataco'
 import * as fpl from '@/lib/sources/fpl'
@@ -32,8 +33,15 @@ import { getFanPulse } from '@/lib/sources/reddit'
 
 export const dynamic = 'force-dynamic'
 
-/** §17 step 5 — ship Tottenham. One real page, used for a week. */
-const SUPPORTED = new Set(['tottenham'])
+/**
+ * §17 step 6 — twenty clubs plus the league entity.
+ *
+ * The list comes from the entity registry rather than being written again here.
+ * A promoted club is added in one place.
+ */
+function supported(entity: string): boolean {
+  return isEntity(entity)
+}
 
 /** FPL only carries the Premier League. */
 const COMPETITION = 'Premier League'
@@ -121,6 +129,18 @@ async function buildMatch(
 /**
  * §7.9 — the cross-pollination block. Same engine, opponent entity, four
  * fields. `story` needs clustering, so it stays empty in this build.
+ *
+ * THE RECURSION. §7.9 says this calls the engine for the opponent entity, and
+ * the opponent's snapshot has a next opponent of its own — which is usually us.
+ * Two clubs playing each other would resolve each other forever. `resolveDepth`
+ * stops it: the opponent is resolved at depth 1, and depth 1 does not resolve a
+ * next opponent at all.
+ *
+ * It is also why the opponent is resolved from the FPL data already in hand
+ * rather than over HTTP. Twenty pages each making a second snapshot request
+ * would double the traffic to every upstream to read four fields that the
+ * bootstrap and fixture payloads — already fetched, already cached — contain.
+ * Same engine, same functions, no round trip.
  */
 function buildNextOpponent(
   bootstrap: fpl.FplBootstrap,
@@ -159,11 +179,13 @@ export async function GET(
 ) {
   const entity = (params.entity ?? '').toLowerCase()
 
-  if (!SUPPORTED.has(entity)) {
+  if (!supported(entity)) {
     return NextResponse.json(
       {
         error: 'Unsupported entity',
-        detail: `This build ships ${[...SUPPORTED].join(', ')} only (PAGE_SPEC §17 step 5).`,
+        detail:
+          'No such entity. Twenty clubs and premier-league have pages ' +
+          '(PAGE_SPEC §1).',
       },
       { status: 404 }
     )
@@ -196,8 +218,10 @@ export async function GET(
         ? buildMatch(bootstrap, fixtures, team, phase, now)
         : Promise.resolve(null),
       club?.subreddit ? getFanPulse(club.subreddit) : Promise.resolve(null),
-      footballdata.getTable(entity),
-      footballdata.getNumbers(entity),
+      // §7.7 — the league entity has no position to sit in the middle of, so
+      // it shows the top six instead of a window around itself.
+      isHomepageEntity(entity) ? footballdata.getTopOfTable(6) : footballdata.getTable(entity),
+      isHomepageEntity(entity) ? Promise.resolve(null) : footballdata.getNumbers(entity),
     ])
 
     // §7.10 — the standings row carries everything but expected goals, which
@@ -231,7 +255,8 @@ export async function GET(
     const payload = {
       entity: {
         slug: entity,
-        name: club?.name ?? entity,
+        // §1's route table: the league entity is titled The Football Hub.
+        name: isHomepageEntity(entity) ? 'The Football Hub' : (club?.name ?? entity),
         badge: club?.badgeUrl ?? null,
         accent: club?.primaryColor ?? null,
       },
@@ -254,8 +279,8 @@ export async function GET(
         : null,
       key_data: bootstrap && team ? fpl.buildKeyData(bootstrap, team.id, played) : [],
 
-      // §7.7 — three above, the club, three below. football-data.org.
-      table: table ?? { rows: [], highlight: entity },
+      // §7.7 — three above, the club, three below; top six for the league.
+      table: table ?? { rows: [], highlight: isHomepageEntity(entity) ? null : entity },
       form: fixtures && team ? fpl.deriveForm(fixtures, team.id, now) : [],
       next_opponent:
         bootstrap && fixtures && team
@@ -269,7 +294,10 @@ export async function GET(
       // §12 clustering. Empty by design — §17 step 1.
       big_story: null,
       developing: [],
-      around_the_league: [],
+      // §7.14 — never on the league entity, whose whole centre is already
+      // cross-league. Empty everywhere else too until clustering exists, but
+      // the rule is encoded now so it survives the centre column being built.
+      around_the_league: isHomepageEntity(entity) ? [] : [],
 
       // YouTube API + the §7.15 creator whitelist, block 15.
       worth_your_time: [],
