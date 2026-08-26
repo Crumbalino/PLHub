@@ -285,6 +285,175 @@ export function refereeKeyCollisions(names: string[]): Record<string, string[]> 
 }
 
 // ---------------------------------------------------------------------------
+// Identity — auditing the surname-plus-initial key
+// ---------------------------------------------------------------------------
+
+/**
+ * Years of separation between two clusters of spellings before a key is treated
+ * as ambiguous.
+ *
+ * Audited across the whole archive on 26 August 2026: all 27 multi-spelling
+ * keys are one person each. The archive changed its own naming convention —
+ * "Mike Dean" in 2000/01, "M. L. Dean" in 2001/02, "M Dean" from 2002/03 — so
+ * a key with three spellings is the expected shape, not a warning.
+ *
+ * The largest separation measured was 4.54 years, and it is not a real gap:
+ * both endpoints are single-match typos ("[mojibake]M Atkinson", "Mn Atkinson")
+ * sitting inside "M Atkinson"'s continuous 2004–2022 range. Five years is
+ * therefore above every gap the real data produces, while still catching two
+ * officials whose careers did not overlap.
+ */
+export const AMBIGUITY_GAP_YEARS = 5
+
+export interface Spelling {
+  raw: string
+  matches: number
+  seasons: string[]
+  first: string | null
+  last: string | null
+}
+
+export interface SpellingGroup {
+  key: string
+  spellings: Spelling[]
+  /** Date ranges that do not overlap and are not within the tolerance. */
+  clusters: Array<{ first: string; last: string; spellings: string[] }>
+  /** Largest gap between clusters, in years. */
+  gapYears: number
+  ambiguous: boolean
+}
+
+/** Every raw spelling behind each key, with the dates it appears on. */
+export function spellingsByKey(rows: MatchRow[]): Map<string, Spelling[]> {
+  const acc = new Map<string, Map<string, { n: number; seasons: Set<string>; dates: string[] }>>()
+  for (const r of rows) {
+    if (!r.referee) continue
+    const key = refereeKey(r.referee)
+    if (!key) continue
+    if (!acc.has(key)) acc.set(key, new Map())
+    const byRaw = acc.get(key)!
+    if (!byRaw.has(r.referee)) byRaw.set(r.referee, { n: 0, seasons: new Set(), dates: [] })
+    const e = byRaw.get(r.referee)!
+    e.n++
+    e.seasons.add(r.season)
+    if (r.iso) e.dates.push(r.iso)
+  }
+
+  const out = new Map<string, Spelling[]>()
+  for (const [key, byRaw] of acc) {
+    const spellings: Spelling[] = [...byRaw.entries()]
+      .map(([raw, e]) => {
+        const dates = e.dates.sort()
+        return {
+          raw,
+          matches: e.n,
+          seasons: [...e.seasons].sort(),
+          first: dates[0] ?? null,
+          last: dates[dates.length - 1] ?? null,
+        }
+      })
+      .sort((a, b) => (a.first ?? '').localeCompare(b.first ?? ''))
+    out.set(key, spellings)
+  }
+  return out
+}
+
+const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000
+
+/**
+ * Group a key's spellings into clusters of overlapping date ranges.
+ *
+ * Interval merging, not gaps between consecutive spellings. A one-match typo in
+ * 2009 sitting inside another spelling's 2004–2022 range is the same person,
+ * and a consecutive-gap test reads that as a four-year break. Overlap does not.
+ */
+function clusterSpellings(spellings: Spelling[], gapYears: number) {
+  const dated = spellings.filter((s) => s.first && s.last)
+  if (!dated.length) return []
+
+  const sorted = [...dated].sort((a, b) => (a.first as string).localeCompare(b.first as string))
+  const clusters: Array<{ first: string; last: string; spellings: string[] }> = []
+
+  for (const s of sorted) {
+    const current = clusters[clusters.length - 1]
+    const gap = current
+      ? (new Date(s.first as string).getTime() - new Date(current.last).getTime()) / YEAR_MS
+      : Infinity
+    if (current && gap <= gapYears) {
+      current.last = current.last > (s.last as string) ? current.last : (s.last as string)
+      current.spellings.push(s.raw)
+    } else {
+      clusters.push({ first: s.first as string, last: s.last as string, spellings: [s.raw] })
+    }
+  }
+  return clusters
+}
+
+/**
+ * The identity audit. One entry per key that has more than one spelling.
+ *
+ * `ambiguous` is the only field that changes behaviour: a key with two clusters
+ * of spellings separated by more than `AMBIGUITY_GAP_YEARS` may be two
+ * different officials sharing a surname and an initial, and a surname-plus-
+ * initial key cannot tell them apart.
+ */
+export function auditRefereeIdentities(
+  rows: MatchRow[],
+  gapYears = AMBIGUITY_GAP_YEARS
+): SpellingGroup[] {
+  const groups: SpellingGroup[] = []
+  for (const [key, spellings] of spellingsByKey(rows)) {
+    if (spellings.length < 2) continue
+    const clusters = clusterSpellings(spellings, gapYears)
+    let gap = 0
+    for (let i = 1; i < clusters.length; i++) {
+      const g =
+        (new Date(clusters[i].first).getTime() - new Date(clusters[i - 1].last).getTime()) / YEAR_MS
+      if (g > gap) gap = g
+    }
+    groups.push({
+      key,
+      spellings,
+      clusters,
+      gapYears: Math.round(gap * 100) / 100,
+      ambiguous: clusters.length > 1,
+    })
+  }
+  return groups.sort((a, b) => a.key.localeCompare(b.key))
+}
+
+/**
+ * Keys whose identity cannot be resolved, and whose matches must therefore not
+ * be attributed to anyone.
+ *
+ * A false merge silently credits one official with another's matches, cards and
+ * dismissals — a claim about a named person's conduct built from someone else's
+ * record. An incomplete career total is a smaller error than a wrong one, so an
+ * ambiguous key contributes nothing rather than contributing to a guess.
+ *
+ * Currently empty against the live archive. The mechanism exists so that a
+ * future season introducing a genuine collision is excluded and logged rather
+ * than silently merged.
+ */
+export function ambiguousRefereeKeys(
+  rows: MatchRow[],
+  gapYears = AMBIGUITY_GAP_YEARS
+): Set<string> {
+  const ambiguous = new Set<string>()
+  for (const group of auditRefereeIdentities(rows, gapYears)) {
+    if (!group.ambiguous) continue
+    ambiguous.add(group.key)
+    console.error(
+      `[football-data.co.uk] identity ambiguous for "${group.key}" — ` +
+        `${group.clusters.length} date ranges ${group.gapYears}y apart ` +
+        `(${group.clusters.map((c) => `${c.first}..${c.last}: ${c.spellings.join('/')}`).join(' | ')}). ` +
+        'Matches not attributed.'
+    )
+  }
+  return ambiguous
+}
+
+// ---------------------------------------------------------------------------
 // Aggregation — pure
 // ---------------------------------------------------------------------------
 
@@ -309,10 +478,21 @@ export interface ClubRecord {
   matches: number
 }
 
-/** Rows an official took charge of. Seasons with no Referee column yield none. */
-export function refereeMatches(rows: MatchRow[], name: string): MatchRow[] {
+/**
+ * Rows an official took charge of. Seasons with no Referee column yield none.
+ *
+ * `ambiguous` excludes keys the audit could not resolve to one person. Passing
+ * it is how a possible false merge becomes an incomplete record instead of a
+ * wrong one.
+ */
+export function refereeMatches(
+  rows: MatchRow[],
+  name: string,
+  ambiguous?: Set<string>
+): MatchRow[] {
   const key = refereeKey(name)
   if (!key) return []
+  if (ambiguous?.has(key)) return []
   return rows.filter((r) => r.referee && refereeKey(r.referee) === key)
 }
 
@@ -568,7 +748,7 @@ export async function getRefereeStats(
   const rows = allRows(archive)
   if (!rows.length) return null
 
-  const mine = refereeMatches(rows, name)
+  const mine = refereeMatches(rows, name, ambiguousRefereeKeys(rows))
   if (!mine.length) return null
 
   const refreshed = new Date(now).toISOString()

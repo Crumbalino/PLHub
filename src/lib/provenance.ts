@@ -27,15 +27,25 @@
 export const CURRENT_SEASON = '2026/27'
 
 /**
- * First season included in a career figure.
+ * First season a referee figure can cover.
  *
- * football-data.co.uk carries E0 back to 1993/94. This window is shorter on
- * purpose: it is thirteen seasons of CSVs per cold read, and it covers the full
- * Premier League career of every official currently on the list. An official
- * who took charge of matches before it has a career number that starts here,
- * which is exactly what `coverage_period` exists to say out loud.
+ * NOT the first season of the archive, and the difference is the correction.
+ * football-data.co.uk publishes E0 back to 1993/94, and the backfill reads all
+ * 34 files — but the seven oldest carry only Div, Date, HomeTeam, AwayTeam,
+ * FTHG, FTAG and FTR. No Referee column, no card columns. Measured, not
+ * assumed: the Referee column first appears in 2000/01.
+ *
+ * So MATCH coverage reaches 1993/94 and REFEREE coverage starts 2000/01. Those
+ * are different claims and conflating them would have a career figure implying
+ * seven seasons it cannot see. Every definition below is a referee metric, so
+ * every one of them starts here.
+ *
+ * This was '2014/15' — the window the first implementation actually loaded. The
+ * backfill widened the data and left this behind, which is the kind of stale
+ * default that turns a provenance record into decoration.
  */
-export const CAREER_FROM_SEASON = '2014/15'
+export const CAREER_FROM_SEASON = '2000/01'
+
 
 const CAREER_COVERAGE = `Premier League, ${CAREER_FROM_SEASON} to ${CURRENT_SEASON}`
 const SEASON_COVERAGE = `Premier League, ${CURRENT_SEASON}`

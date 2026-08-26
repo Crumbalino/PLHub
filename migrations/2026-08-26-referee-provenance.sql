@@ -2,9 +2,13 @@
 -- Referee provenance, officials, appointments, KMI incidents
 -- Target: LIVE Supabase schema as of 26 August 2026.
 --
--- NOT APPLIED. Written, not run. Apply it deliberately and re-read the live
--- schema afterwards rather than trusting this file — migrations/, docs and
--- CLAUDE.md have each been wrong about production before.
+-- APPLIED 26 August 2026. The career coverage strings were corrected from
+-- 2014/15 to 2000/01 afterwards — see
+-- migrations/2026-08-26-referee-coverage-correction.sql, which is the statement
+-- to run against a database that already has this one.
+--
+-- Re-read the live schema after applying rather than trusting this file —
+-- migrations/, docs and CLAUDE.md have each been wrong about production before.
 --
 -- Order matters and is the order of the build brief: the provenance contract
 -- exists before anything that would need it.
@@ -39,7 +43,7 @@ CREATE TABLE IF NOT EXISTS metric_definitions (
   source_url       TEXT        NOT NULL,
   -- How the number is produced, in terms a reader could reproduce.
   formula          TEXT        NOT NULL,
-  -- Stated in full. A career figure that starts in 2014/15 says so here.
+  -- Stated in full. A career figure that starts in 2000/01 says so here.
   coverage_period  TEXT        NOT NULL,
   -- False for a figure read straight from the source, true for one we derive.
   calculated       BOOLEAN     NOT NULL DEFAULT TRUE,
@@ -60,27 +64,27 @@ VALUES
   ('referee.matches.career', 'football-data.co.uk',
    'https://www.football-data.co.uk/englandm.php',
    'Count of rows across all loaded E0 seasons where Referee matches the official.',
-   'Premier League, 2014/15 to 2026/27', TRUE),
+   'Premier League, 2000/01 to 2026/27', TRUE),
 
   ('referee.yellow_cards.season', 'football-data.co.uk',
    'https://www.football-data.co.uk/englandm.php',
-   'Sum of HY + AY over the official''s matches.',
+   'Sum of HY + AY over the official’s matches.',
    'Premier League, 2026/27', TRUE),
 
   ('referee.yellow_cards.career', 'football-data.co.uk',
    'https://www.football-data.co.uk/englandm.php',
-   'Sum of HY + AY over the official''s matches, all loaded seasons.',
-   'Premier League, 2014/15 to 2026/27', TRUE),
+   'Sum of HY + AY over the official’s matches, all loaded seasons.',
+   'Premier League, 2000/01 to 2026/27', TRUE),
 
   ('referee.red_cards.season', 'football-data.co.uk',
    'https://www.football-data.co.uk/englandm.php',
-   'Sum of HR + AR over the official''s matches.',
+   'Sum of HR + AR over the official’s matches.',
    'Premier League, 2026/27', TRUE),
 
   ('referee.red_cards.career', 'football-data.co.uk',
    'https://www.football-data.co.uk/englandm.php',
-   'Sum of HR + AR over the official''s matches, all loaded seasons.',
-   'Premier League, 2014/15 to 2026/27', TRUE),
+   'Sum of HR + AR over the official’s matches, all loaded seasons.',
+   'Premier League, 2000/01 to 2026/27', TRUE),
 
   ('referee.cards_per_game.season', 'football-data.co.uk',
    'https://www.football-data.co.uk/englandm.php',
@@ -90,12 +94,12 @@ VALUES
   ('referee.cards_per_game.career', 'football-data.co.uk',
    'https://www.football-data.co.uk/englandm.php',
    'Sum of HY + AY + HR + AR divided by matches refereed, all loaded seasons. A second yellow is counted by the source as both a yellow and a red, and is not deduplicated here.',
-   'Premier League, 2014/15 to 2026/27', TRUE),
+   'Premier League, 2000/01 to 2026/27', TRUE),
 
   ('referee.club_record.career', 'football-data.co.uk',
    'https://www.football-data.co.uk/englandm.php',
-   'Wins, draws and losses for one club in matches refereed by the official, from the FTR column, read from the club''s side.',
-   'Premier League, 2014/15 to 2026/27', TRUE)
+   'Wins, draws and losses for one club in matches refereed by the official, from the FTR column, read from the club’s side.',
+   'Premier League, 2000/01 to 2026/27', TRUE)
 ON CONFLICT (metric_key) DO UPDATE SET
   source_name     = EXCLUDED.source_name,
   source_url      = EXCLUDED.source_url,
