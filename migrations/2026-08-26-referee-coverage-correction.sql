@@ -5,6 +5,12 @@
 -- it is safe to run once or ten times and leaves the live table byte-identical
 -- to src/lib/provenance.ts.
 --
+-- ── SELECT ALL BEFORE RUNNING ───────────────────────────────────────────────
+-- The editor executes only the highlighted text when there is a selection.
+-- Press Cmd+A / Ctrl+A first. The block at the end of this file raises an
+-- exception if the update did not land, so a run that reports success has
+-- actually worked — and a partial run fails loudly instead of looking fine.
+--
 -- TWO THINGS DRIFTED, both caught by src/lib/__tests__/live-schema.test.ts:
 --
 -- 1. COVERAGE. The five career rows said 2014/15. Referee data starts 2000/01.
@@ -80,7 +86,38 @@ ON CONFLICT (metric_key) DO UPDATE SET
   coverage_period = EXCLUDED.coverage_period,
   calculated      = EXCLUDED.calculated;
 
--- Verify: nine rows, five career at 2000/01, four season at 2026/27, no 2014/15.
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Verification that cannot be mistaken for success.
+--
+-- Raises if any row still carries the old span, or if the count is wrong. If
+-- this file reports success, the correction is applied.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+DO $$
+DECLARE
+  stale INTEGER;
+  total INTEGER;
+BEGIN
+  SELECT COUNT(*) INTO stale
+  FROM metric_definitions
+  WHERE coverage_period LIKE '%2014/15%';
+
+  SELECT COUNT(*) INTO total FROM metric_definitions;
+
+  IF stale > 0 THEN
+    RAISE EXCEPTION
+      'Correction did not apply: % row(s) still carry 2014/15. Did the whole file run?', stale;
+  END IF;
+
+  IF total <> 9 THEN
+    RAISE EXCEPTION
+      'Expected 9 metric definitions, found %. The live table does not match provenance.ts.', total;
+  END IF;
+
+  RAISE NOTICE 'Correction applied: 9 definitions, no row carries 2014/15.';
+END $$;
+
+-- For the eye, after the check above has already passed or failed.
 SELECT metric_key, coverage_period
 FROM metric_definitions
 ORDER BY metric_key;
