@@ -31,7 +31,7 @@
 import { test, describe, before } from 'node:test'
 import assert from 'node:assert/strict'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { definedMetricKeys } from '@/lib/provenance'
+import { METRIC_DEFINITIONS, definedMetricKeys } from '@/lib/provenance'
 
 const LIVE_TIMEOUT = 30_000
 
@@ -192,6 +192,37 @@ describe('live schema', { concurrency: false }, () => {
       `in metric_definitions but not declared in provenance.ts: ${missingFromCode.join(', ')}`
     )
     assert.deepEqual(live, code)
+  })
+
+  /**
+   * Keys matching is not enough. A coverage period corrected in the code and
+   * not in the database leaves every key present and every published figure
+   * claiming a span the durable record contradicts — which is exactly what
+   * happened when the backfill widened the data from 2014/15 to 2000/01.
+   */
+  test('every live coverage period matches the code', { timeout: LIVE_TIMEOUT }, () => {
+    if (!configured) return
+    const byKey = new Map(metrics.map((r) => [r.metric_key, r]))
+    const drift: string[] = []
+    for (const d of METRIC_DEFINITIONS) {
+      const live = byKey.get(d.metric_key)
+      if (!live) continue
+      if (live.coverage_period !== d.coverage_period) {
+        drift.push(`${d.metric_key}: database "${live.coverage_period}" vs code "${d.coverage_period}"`)
+      }
+    }
+    assert.deepEqual(drift, [], `coverage period drift:\n  ${drift.join('\n  ')}`)
+  })
+
+  test('every live source and formula matches the code', { timeout: LIVE_TIMEOUT }, () => {
+    if (!configured) return
+    const byKey = new Map(metrics.map((r) => [r.metric_key, r]))
+    for (const d of METRIC_DEFINITIONS) {
+      const live = byKey.get(d.metric_key)
+      if (!live) continue
+      assert.equal(live.source_name, d.source_name, d.metric_key)
+      assert.equal(live.formula, d.formula, d.metric_key)
+    }
   })
 
   test('no live definition has a blank source, formula or period', { timeout: LIVE_TIMEOUT }, () => {

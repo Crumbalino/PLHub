@@ -17,7 +17,11 @@ import {
 } from '@/lib/provenance'
 import {
   ARCHIVE_FROM_SEASON,
+  allRows,
+  ambiguousRefereeKeys,
   archiveSeasons,
+  auditRefereeIdentities,
+  fetchArchive,
   backfillReport,
   clubRecord,
   coveragePeriod,
@@ -601,6 +605,216 @@ describe('live: the archive backfill', { concurrency: false }, () => {
     const collisions = refereeKeyCollisions(names)
     for (const [key, raw] of Object.entries(collisions)) {
       console.log(`[backfill] key ${key} shared by: ${raw.join(', ')}`)
+    }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Identity resolution — the audit
+// ---------------------------------------------------------------------------
+
+describe('identity resolution', () => {
+  const row = (referee: string, iso: string, season: string): MatchRow => ({
+    season,
+    date: '',
+    iso,
+    homeTeam: 'A',
+    awayTeam: 'B',
+    result: 'H',
+    referee,
+    yellows: 1,
+    reds: 0,
+  })
+
+  /** The archive's own naming convention changed. Three spellings, one person. */
+  test('spellings of one person are not ambiguous', () => {
+    const rows = [
+      row('Mike Dean', '2000-09-09', '2000/01'),
+      row('M. L. Dean', '2001-09-29', '2001/02'),
+      row('M Dean', '2002-08-24', '2002/03'),
+      row('M Dean', '2022-05-22', '2021/22'),
+    ]
+    const audit = auditRefereeIdentities(rows)
+    assert.equal(audit.length, 1)
+    assert.equal(audit[0].spellings.length, 3)
+    assert.equal(audit[0].ambiguous, false)
+    assert.equal(ambiguousRefereeKeys(rows).size, 0)
+  })
+
+  /** A typo inside another spelling's range is the same person, not a gap. */
+  test('a one-match typo nested inside a long range does not split a person', () => {
+    const rows = [
+      row('M Atkinson', '2004-09-18', '2004/05'),
+      row('Mn Atkinson', '2009-11-08', '2009/10'),
+      row('M Atkinson', '2022-05-22', '2021/22'),
+    ]
+    assert.equal(auditRefereeIdentities(rows)[0].ambiguous, false)
+    assert.equal(ambiguousRefereeKeys(rows).size, 0)
+  })
+
+  /** The failure the key cannot see: two officials, one key, decades apart. */
+  test('two officials sharing a key decades apart are flagged', () => {
+    const rows = [
+      row('M Dean', '1995-08-19', '1995/96'),
+      row('M Dean', '1996-05-04', '1996/97'),
+      row('Mike Dean', '2010-08-21', '2010/11'),
+      row('Mike Dean', '2021-05-18', '2020/21'),
+    ]
+    const audit = auditRefereeIdentities(rows)
+    assert.equal(audit[0].ambiguous, true)
+    assert.equal(audit[0].clusters.length, 2)
+    assert.ok(audit[0].gapYears > 5)
+    assert.ok(ambiguousRefereeKeys(rows).has('dean|m'))
+  })
+
+  /** A false positive is worse than an incomplete record. */
+  test('an ambiguous key attributes nothing', () => {
+    const rows = [
+      row('M Dean', '1995-08-19', '1995/96'),
+      row('Mike Dean', '2010-08-21', '2010/11'),
+    ]
+    const ambiguous = ambiguousRefereeKeys(rows)
+    assert.deepEqual(refereeMatches(rows, 'Mike Dean', ambiguous), [])
+    // Without the guard the same call would merge both officials.
+    assert.equal(refereeMatches(rows, 'Mike Dean').length, 2)
+  })
+
+  test('a key with one spelling is never audited or excluded', () => {
+    const rows = [row('M Oliver', '2010-08-21', '2010/11')]
+    assert.deepEqual(auditRefereeIdentities(rows), [])
+    assert.equal(ambiguousRefereeKeys(rows).size, 0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Coverage defaults — referee data starts 2000/01, not 1993/94
+// ---------------------------------------------------------------------------
+
+describe('coverage defaults', () => {
+  test('the referee window starts 2000/01, not the archive start', () => {
+    assert.equal(CAREER_FROM_SEASON, '2000/01')
+    assert.notEqual(CAREER_FROM_SEASON, ARCHIVE_FROM_SEASON)
+    assert.equal(ARCHIVE_FROM_SEASON, '1993/94')
+  })
+
+  test('every career definition claims 2000/01, not 2014/15', () => {
+    for (const d of METRIC_DEFINITIONS) {
+      if (!d.metric_key.endsWith('.career')) continue
+      assert.ok(
+        d.coverage_period.includes('2000/01'),
+        `${d.metric_key} claims "${d.coverage_period}"`
+      )
+      assert.ok(!d.coverage_period.includes('2014/15'), d.metric_key)
+    }
+  })
+
+  test('the migration seeds the corrected span', () => {
+    const sql = fs.readFileSync(
+      path.join(process.cwd(), 'migrations/2026-08-26-referee-provenance.sql'),
+      'utf8'
+    )
+    assert.ok(!/'Premier League, 2014\/15 to 2026\/27'/.test(sql))
+    assert.ok(/'Premier League, 2000\/01 to 2026\/27'/.test(sql))
+  })
+
+  test('a correction migration exists for the already-applied schema', () => {
+    const sql = fs.readFileSync(
+      path.join(process.cwd(), 'migrations/2026-08-26-referee-coverage-correction.sql'),
+      'utf8'
+    )
+    // A full re-assert of all nine rows rather than a targeted UPDATE, so
+    // running it leaves the live table identical to the code whatever state it
+    // was in, and running it twice changes nothing.
+    assert.match(sql, /INSERT INTO metric_definitions/)
+    assert.match(sql, /ON CONFLICT \(metric_key\) DO UPDATE/)
+    assert.match(sql, /Premier League, 2000\/01 to 2026\/27/)
+    assert.ok(!sql.includes('2014/15 to 2026/27'))
+    for (const key of definedMetricKeys()) {
+      assert.ok(sql.includes(`'${key}'`), `${key} missing from the correction`)
+    }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// LIVE — the audit and per-official coverage
+// ---------------------------------------------------------------------------
+
+describe('live: identity audit', { concurrency: false }, () => {
+  let rows: MatchRow[] = []
+
+  before(async () => {
+    cacheClear()
+    rows = allRows(await fetchArchive())
+    const audit = auditRefereeIdentities(rows)
+    console.log(`\n[audit] ${audit.length} keys with more than one spelling`)
+    for (const g of audit) {
+      const flag = g.ambiguous ? ' *** AMBIGUOUS ***' : ''
+      console.log(`[audit]   ${g.key} — ${g.spellings.length} spellings, largest cluster gap ${g.gapYears}y${flag}`)
+      for (const s of g.spellings) {
+        console.log(`[audit]       ${JSON.stringify(s.raw).padEnd(24)} ${String(s.matches).padStart(4)} matches  ${s.first} → ${s.last}`)
+      }
+    }
+    console.log(`[audit] ambiguous keys excluded from attribution: ${ambiguousRefereeKeys(rows).size}`)
+  }, { timeout: 600_000 })
+
+  test('the archive loaded', { timeout: LIVE_TIMEOUT }, () => {
+    assert.ok(rows.length > 10_000, `${rows.length} rows`)
+  })
+
+  /**
+   * The finding. All 27 are one person each: the archive wrote "Mike Dean" in
+   * 2000/01, "M. L. Dean" in 2001/02 and "M Dean" from 2002/03. If this ever
+   * fails, a key has genuinely become two people and its matches stop being
+   * attributed until someone resolves it by hand.
+   */
+  test('no key is ambiguous across the whole archive', { timeout: LIVE_TIMEOUT }, () => {
+    const flagged = auditRefereeIdentities(rows).filter((g) => g.ambiguous)
+    assert.deepEqual(
+      flagged.map((g) => g.key),
+      [],
+      `ambiguous keys: ${flagged.map((g) => `${g.key} (${g.gapYears}y)`).join(', ')}`
+    )
+  })
+
+  test('every multi-spelling key has overlapping date ranges', { timeout: LIVE_TIMEOUT }, () => {
+    for (const g of auditRefereeIdentities(rows)) {
+      assert.equal(g.clusters.length, 1, `${g.key} has ${g.clusters.length} date clusters`)
+    }
+  })
+
+  /** Requirement 3: the span is the official's, not the archive's. */
+  test('coverage is per official, not the scanned span', { timeout: LIVE_TIMEOUT }, async () => {
+    const oliver = await getRefereeStats('Michael Oliver', 'Tottenham')
+    const barrott = await getRefereeStats('Sam Barrott', 'Tottenham')
+    if (!oliver?.career.matches || !barrott?.career.matches) return
+
+    const a = oliver.career.matches.provenance.coverage_period
+    const b = barrott.career.matches.provenance.coverage_period
+    assert.notEqual(a, b, 'two officials with different careers report the same span')
+    // Neither may claim the whole window unless they worked it.
+    assert.notEqual(a, `Premier League, ${CAREER_FROM_SEASON} to ${CURRENT_SEASON}`)
+    console.log(`[coverage] Michael Oliver: ${a}`)
+    console.log(`[coverage] Sam Barrott:    ${b}`)
+  })
+
+  /** And per metric: a club record spans only the matches against that club. */
+  test('coverage is per metric within one official', { timeout: LIVE_TIMEOUT }, async () => {
+    const s = await getRefereeStats('Michael Oliver', 'Tottenham')
+    if (!s?.career.matches || !s.club_record) return
+    const all = s.career.matches.provenance.coverage_period
+    const vsClub = s.club_record.provenance.coverage_period
+    assert.notEqual(all, vsClub, 'the club record claims the same span as every match')
+    console.log(`[coverage] all matches: ${all}`)
+    console.log(`[coverage] vs Tottenham: ${vsClub}`)
+  })
+
+  /** The correction: no referee figure may claim a season with no Referee column. */
+  test('no figure claims a season before the Referee column exists', { timeout: LIVE_TIMEOUT }, async () => {
+    const s = await getRefereeStats('Michael Oliver', 'Tottenham')
+    for (const p of [s?.career.matches, s?.career.cards_per_game, s?.club_record]) {
+      if (!p) continue
+      const first = /(\d{4})\/\d{2}/.exec(p.provenance.coverage_period)?.[1]
+      assert.ok(Number(first) >= 2000, `claims ${p.provenance.coverage_period}`)
     }
   })
 })
