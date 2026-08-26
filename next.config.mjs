@@ -36,6 +36,31 @@ const nextConfig = {
         destination: 'https://thefootballhub.uk/:path*',
         permanent: true, // 308
       },
+      // Clubs are canonical at the root — PAGE_SPEC §1, THE_FOOTBALL_HUB §5.
+      // Twenty clubs answered at both /tottenham and /clubs/tottenham, which is
+      // duplicate content on twenty pages and leaves Google to pick a canonical
+      // for us.
+      //
+      // A redirect rather than a 404: the /clubs/* URLs are indexed, and a
+      // redirect passes the accumulated signal to the root slug where a 404
+      // discards it.
+      //
+      // 301, not `permanent: true`, which Next emits as 308. Both are permanent
+      // and Google treats them alike, but 301 is the conventional signal for a
+      // moved page and what SEO tooling reports on. The host rule above stays
+      // 308 — it is a host swap, not a page move.
+      //
+      // ONE WILDCARD RULE, NOT TWENTY EXPLICIT ONES. Enumerating the clubs here
+      // would be a fourth club list in this repo, and the three that already
+      // exist have drifted from each other twice. The cost is that a relegated
+      // club's old URL redirects to a root slug that 404s — /clubs/leicester ->
+      // /leicester -> 404. That is a hop to the same destination a direct 404
+      // would reach, and it is worth one hop to avoid another list.
+      {
+        source: '/clubs/:slug',
+        destination: '/:slug',
+        statusCode: 301,
+      },
     ]
   },
   images: {

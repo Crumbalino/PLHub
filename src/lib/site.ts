@@ -24,7 +24,7 @@ if (!url) {
 /** Public origin, no trailing slash. e.g. https://thefootballhub.uk */
 export const SITE_URL = url.replace(/\/+$/, '')
 
-/** Absolute URL for a site-relative path. `abs('/clubs/arsenal')`. */
+/** Absolute URL for a site-relative path. `abs('/arsenal')`. */
 export function abs(path: string): string {
   return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`
 }
