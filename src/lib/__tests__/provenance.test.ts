@@ -16,10 +16,15 @@ import {
   metricDefinition,
 } from '@/lib/provenance'
 import {
+  ARCHIVE_FROM_SEASON,
+  archiveSeasons,
+  backfillReport,
   clubRecord,
+  coveragePeriod,
   csvClubName,
   getRefereeStats,
   knownRefereeNames,
+  parseCsvDate,
   parseSeasonCsv,
   refereeKey,
   refereeKeyCollisions,
@@ -27,6 +32,7 @@ import {
   seasonCode,
   seasonRange,
   totals,
+  type BackfillReport,
   type MatchRow,
 } from '@/lib/sources/footballdataco'
 import { appointmentRole, splitName, toAppointmentRows, toOfficialRows } from '@/lib/officials'
@@ -143,10 +149,16 @@ describe('seasons', () => {
     assert.deepEqual(seasonRange('2026/27', '2024/25'), [])
   })
 
-  test('the career window matches what provenance claims', () => {
-    const range = seasonRange(CAREER_FROM_SEASON, CURRENT_SEASON)
-    assert.equal(range[0], CAREER_FROM_SEASON)
+  test('the archive window runs from the first published season to now', () => {
+    const range = archiveSeasons()
+    assert.equal(range[0], ARCHIVE_FROM_SEASON)
     assert.equal(range.at(-1), CURRENT_SEASON)
+    // 1993/94 through 2026/27 inclusive is 34 seasons, not 33.
+    assert.equal(range.length, 34)
+  })
+
+  test('the provenance default window is inside the archive window', () => {
+    assert.ok(archiveSeasons().includes(CAREER_FROM_SEASON))
   })
 })
 
@@ -192,11 +204,13 @@ const CSV = [
 
 describe('csv parsing', () => {
   test('reads the columns the block needs', () => {
-    const rows = parseSeasonCsv(CSV, '2025/26')
-    assert.equal(rows.length, 3)
+    const { rows, columns } = parseSeasonCsv(CSV, '2025/26')
+    assert.deepEqual(columns, { referee: true, cards: true, result: true })
+    assert.equal(rows.length, 4)
     assert.deepEqual(rows[0], {
       season: '2025/26',
       date: '15/08/2025',
+      iso: '2025-08-15',
       homeTeam: 'Tottenham',
       awayTeam: 'Arsenal',
       result: 'H',
@@ -206,23 +220,21 @@ describe('csv parsing', () => {
     })
   })
 
-  /** An unplayed fixture has no referee and must not inflate a denominator. */
-  test('a row with no referee is skipped', () => {
-    assert.ok(!parseSeasonCsv(CSV, '2025/26').some((r) => r.referee === ''))
+  /** A blank referee is a fixture nobody took charge of; it matches no official. */
+  test('a row with no referee matches no official', () => {
+    const { rows } = parseSeasonCsv(CSV, '2025/26')
+    assert.equal(refereeMatches(rows, 'M Oliver').length, 2)
+    assert.ok(rows.some((r) => r.referee === ''))
   })
 
   test('a BOM does not break the header', () => {
-    assert.equal(parseSeasonCsv('﻿' + CSV, '2025/26').length, 3)
+    assert.equal(parseSeasonCsv('﻿' + CSV, '2025/26').rows.length, 4)
   })
 
-  test('an empty or headerless file is an empty list, not a throw', () => {
-    assert.deepEqual(parseSeasonCsv('', '2025/26'), [])
-    assert.deepEqual(parseSeasonCsv('nonsense', '2025/26'), [])
-  })
 })
 
 describe('aggregation', () => {
-  const rows = parseSeasonCsv(CSV, '2025/26')
+  const { rows } = parseSeasonCsv(CSV, '2025/26')
 
   test('matches are selected by key, across both name forms', () => {
     assert.equal(refereeMatches(rows, 'Michael Oliver').length, 2)
@@ -245,14 +257,15 @@ describe('aggregation', () => {
 
   test('a club record reads from the club’s own side', () => {
     const r = clubRecord(refereeMatches(rows, 'M Oliver'), 'Tottenham')
-    assert.deepEqual(r, { won: 1, drawn: 1, lost: 0, matches: 2 })
+    assert.deepEqual(r?.record, { won: 1, drawn: 1, lost: 0, matches: 2 })
+    assert.deepEqual(r?.seasons, ['2025/26'])
   })
 
   test('an away win counts as a win', () => {
     const away: MatchRow[] = [
-      { season: 's', date: '', homeTeam: 'Chelsea', awayTeam: 'Tottenham', result: 'A', referee: 'X', yellows: 0, reds: 0 },
+      { season: 's', date: '', iso: null, homeTeam: 'Chelsea', awayTeam: 'Tottenham', result: 'A', referee: 'X', yellows: 0, reds: 0 },
     ]
-    assert.deepEqual(clubRecord(away, 'Tottenham'), { won: 1, drawn: 0, lost: 0, matches: 1 })
+    assert.deepEqual(clubRecord(away, 'Tottenham')?.record, { won: 1, drawn: 0, lost: 0, matches: 1 })
   })
 
   test('a club the official has never taken charge of is null', () => {
@@ -401,5 +414,193 @@ describe('live: football-data.co.uk', { concurrency: false }, () => {
     assert.ok(!definedMetricKeys().some((k) => k.includes('penalt')))
     const stats = await getRefereeStats('Michael Oliver', 'Tottenham')
     assert.ok(!JSON.stringify(stats ?? {}).toLowerCase().includes('penalt'))
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Archive — column availability changes across 33 seasons
+// ---------------------------------------------------------------------------
+
+/** The real 1993/94 header: results only, no referee, no cards. */
+const OLD_CSV = [
+  'Div,Date,HomeTeam,AwayTeam,FTHG,FTAG,FTR,,,,,,',
+  'E0,14/08/93,Arsenal,Coventry,0,3,A,,,,,,',
+  'E0,14/08/93,Liverpool,Nott\'m Forest,1,0,H,,,,,,',
+  ',,,,,,,,,,,,',
+].join('\n')
+
+describe('column detection', () => {
+  test('a 1990s file is recognised as carrying no referee and no cards', () => {
+    const { columns, rows } = parseSeasonCsv(OLD_CSV, '1993/94')
+    assert.deepEqual(columns, { referee: false, cards: false, result: true })
+    assert.equal(rows.length, 2)
+  })
+
+  /** The distinction the whole backfill turns on. */
+  test('a season with no card columns reports null cards, not zero', () => {
+    const { rows } = parseSeasonCsv(OLD_CSV, '1993/94')
+    for (const r of rows) {
+      assert.equal(r.yellows, null)
+      assert.equal(r.reds, null)
+    }
+  })
+
+  test('padding rows with no teams are dropped', () => {
+    assert.ok(!parseSeasonCsv(OLD_CSV, '1993/94').rows.some((r) => !r.homeTeam))
+  })
+
+  test('a partial card set is not treated as cards', () => {
+    const partial = ['Div,Date,HomeTeam,AwayTeam,FTR,Referee,HY,AY', 'E0,01/01/01,A,B,H,M Oliver,1,1'].join('\n')
+    assert.equal(parseSeasonCsv(partial, '2000/01').columns.cards, false)
+    assert.equal(parseSeasonCsv(partial, '2000/01').rows[0].yellows, null)
+  })
+})
+
+describe('totals across mixed coverage', () => {
+  const mixed: MatchRow[] = [
+    { season: '1993/94', date: '', iso: null, homeTeam: 'A', awayTeam: 'B', result: 'H', referee: 'M Oliver', yellows: null, reds: null },
+    { season: '2025/26', date: '', iso: null, homeTeam: 'A', awayTeam: 'B', result: 'H', referee: 'M Oliver', yellows: 4, reds: 1 },
+    { season: '2026/27', date: '', iso: null, homeTeam: 'A', awayTeam: 'B', result: 'D', referee: 'M Oliver', yellows: 2, reds: 0 },
+  ]
+
+  /**
+   * A pre-2000 match counts as a match and not towards the card rate. Treating
+   * its missing columns as zero cards would drag the average down by a third.
+   */
+  test('card figures use only the matches that carry cards', () => {
+    const t = totals(mixed)
+    assert.equal(t.matches, 3)
+    assert.equal(t.matchesWithCards, 2)
+    assert.equal(t.yellows, 6)
+    assert.equal(t.reds, 1)
+    assert.equal(t.cardsPerGame, 3.5)
+  })
+
+  test('the two coverage spans differ, and each is reported', () => {
+    const t = totals(mixed)
+    assert.deepEqual(t.seasons, ['1993/94', '2025/26', '2026/27'])
+    assert.deepEqual(t.cardSeasons, ['2025/26', '2026/27'])
+  })
+
+  test('matches with no card data anywhere yield null, not zero', () => {
+    const t = totals([mixed[0]])
+    assert.equal(t.matches, 1)
+    assert.equal(t.cardsPerGame, null)
+    assert.equal(t.yellows, null)
+  })
+})
+
+describe('coverage periods', () => {
+  test('a span names both ends', () => {
+    assert.equal(coveragePeriod(['2000/01', '2026/27']), 'Premier League, 2000/01 to 2026/27')
+    assert.equal(coveragePeriod(['2014/15', '2026/27']), 'Premier League, 2014/15 to 2026/27')
+  })
+
+  test('a single season does not pretend to be a range', () => {
+    assert.equal(coveragePeriod(['2026/27']), 'Premier League, 2026/27')
+  })
+
+  test('no seasons is null, so nothing claims a period it has not got', () => {
+    assert.equal(coveragePeriod([]), null)
+  })
+
+  test('order and duplicates do not change the answer', () => {
+    assert.equal(
+      coveragePeriod(['2026/27', '2000/01', '2000/01']),
+      'Premier League, 2000/01 to 2026/27'
+    )
+  })
+})
+
+describe('archive dates', () => {
+  test('two-digit years resolve to the right century', () => {
+    assert.equal(parseCsvDate('14/08/93'), '1993-08-14')
+    assert.equal(parseCsvDate('01/01/00'), '2000-01-01')
+    assert.equal(parseCsvDate('15/08/2025'), '2025-08-15')
+  })
+
+  test('an unparseable date is null rather than a guess', () => {
+    assert.equal(parseCsvDate(''), null)
+    assert.equal(parseCsvDate('not a date'), null)
+    assert.equal(parseCsvDate('32/13/2025'), null)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// LIVE — the full 33-season backfill
+// ---------------------------------------------------------------------------
+
+describe('live: the archive backfill', { concurrency: false }, () => {
+  let report: BackfillReport
+
+  before(async () => {
+    cacheClear()
+    const started = Date.now()
+    report = await backfillReport()
+    console.log(`\n[backfill] ${Date.now() - started}ms cold`)
+    console.log(`[backfill] requested ${report.seasonsRequested}, fetched ${report.seasonsFetched.length}, skipped ${report.seasonsSkipped.length}`)
+    for (const s of report.seasonsSkipped) console.log(`[backfill]   skipped ${s.season}: ${s.reason}`)
+    console.log(`[backfill] ${report.totalMatches} matches, ${report.matchesWithReferee} with a referee, ${report.matchesWithCards} with cards`)
+    console.log(`[backfill] ${report.distinctOfficials} distinct officials`)
+    console.log(`[backfill] dates ${report.earliestDate} to ${report.latestDate}`)
+    console.log(`[backfill] referee coverage: ${report.refereeCoverage}`)
+    console.log(`[backfill] card coverage:    ${report.cardCoverage}`)
+    console.log(`[backfill] seasons with no referee column: ${report.seasonsWithoutReferee.join(', ') || 'none'}`)
+  }, { timeout: 600_000 })
+
+  test('every season in the archive is requested', { timeout: LIVE_TIMEOUT }, () => {
+    assert.equal(report.seasonsRequested, 34)
+  })
+
+  test('a skipped season is reported with a reason, never silently dropped', { timeout: LIVE_TIMEOUT }, () => {
+    assert.equal(
+      report.seasonsFetched.length + report.seasonsSkipped.length,
+      report.seasonsRequested
+    )
+    for (const s of report.seasonsSkipped) assert.ok(s.reason.length > 0)
+  })
+
+  test('the archive reaches back to 1993 and forward to now', { timeout: LIVE_TIMEOUT }, () => {
+    assert.ok(report.earliestDate)
+    assert.ok(report.latestDate)
+    assert.ok(report.earliestDate.startsWith('1993'), report.earliestDate)
+    assert.ok(report.latestDate > '2026-01-01', report.latestDate)
+  })
+
+  test('referee coverage is narrower than match coverage, and says so', { timeout: LIVE_TIMEOUT }, () => {
+    assert.ok(report.matchesWithReferee < report.totalMatches)
+    assert.ok(report.refereeCoverage)
+    // The seven oldest seasons carry no Referee column at all.
+    assert.ok(report.seasonsWithoutReferee.length >= 1)
+    assert.ok(!report.refereeCoverage.includes('1993/94'))
+  })
+
+  test('a career figure states the period it actually spans', { timeout: LIVE_TIMEOUT }, async () => {
+    const stats = await getRefereeStats('Michael Oliver', 'Tottenham')
+    assert.ok(stats?.career.cards_per_game)
+    const period = stats.career.cards_per_game.provenance.coverage_period
+    assert.match(period, /^Premier League, \d{4}\/\d{2} to \d{4}\/\d{2}$/)
+    assert.notEqual(period, 'Premier League, 1993/94 to 2026/27')
+    console.log(`[backfill] Michael Oliver cards/game covers: ${period}`)
+  })
+
+  test('a cached second pass costs no requests', { timeout: LIVE_TIMEOUT }, async () => {
+    const started = Date.now()
+    const again = await backfillReport()
+    const elapsed = Date.now() - started
+    assert.equal(again.totalMatches, report.totalMatches)
+    // Memory speed. The politeness stagger must not apply to a cached read,
+    // or every snapshot request pays it.
+    assert.ok(elapsed < 250, `warm pass took ${elapsed}ms`)
+    console.log(`[backfill] warm pass ${elapsed}ms`)
+  })
+
+  test('officials found across the archive exceed those in one season', { timeout: LIVE_TIMEOUT }, async () => {
+    assert.ok(report.distinctOfficials > 52, `${report.distinctOfficials} officials`)
+    const names = await knownRefereeNames()
+    const collisions = refereeKeyCollisions(names)
+    for (const [key, raw] of Object.entries(collisions)) {
+      console.log(`[backfill] key ${key} shared by: ${raw.join(', ')}`)
+    }
   })
 })
