@@ -264,6 +264,20 @@ export async function getTable(
   return { rows: window, highlight: slug }
 }
 
+/**
+ * §7.7 — the top of the table, for an entity with no position of its own.
+ *
+ * The league entity cannot have three above and three below it, so it shows the
+ * top six instead. Nothing is highlighted, because there is no club to mark.
+ */
+export async function getTopOfTable(
+  count = 6
+): Promise<{ rows: TableRow[]; highlight: string | null } | null> {
+  const rows = await getFullTable()
+  if (!rows?.length) return null
+  return { rows: rows.slice(0, count), highlight: null }
+}
+
 /** §7.10 — position, points, goal difference, goals scored, goals conceded. */
 export async function getNumbers(slug: string): Promise<TableNumbers | null> {
   const rows = await getFullTable()

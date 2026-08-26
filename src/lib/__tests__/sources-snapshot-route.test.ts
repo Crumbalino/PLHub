@@ -15,6 +15,7 @@ import { test, describe, before } from 'node:test'
 import assert from 'node:assert/strict'
 import { GET } from '@/app/api/v1/snapshot/[entity]/route'
 import { cacheClear } from '@/lib/sources/cache'
+import { RESERVED_SLUGS, entitySlugs } from '@/lib/entities'
 
 const LIVE_TIMEOUT = 60_000
 
@@ -295,11 +296,20 @@ describe('live: snapshot route', { concurrency: false }, () => {
 })
 
 describe('live: entity gating', () => {
-  test('an unsupported club 404s with a reason', { timeout: LIVE_TIMEOUT }, async () => {
-    const res = await request('arsenal')
-    assert.equal(res.status, 404)
-    const body = (await res.json()) as Payload
-    assert.match(String(body.detail), /tottenham/)
+  /** §17 step 6 — twenty clubs and the league, not one club. */
+  test('every entity answers, and none is a special case', { timeout: 180_000 }, async () => {
+    const failures: string[] = []
+    for (const slug of entitySlugs()) {
+      const res = await request(slug)
+      if (res.status !== 200) failures.push(`${slug} -> ${res.status}`)
+    }
+    assert.deepEqual(failures, [], `entities not answering 200: ${failures.join(', ')}`)
+  })
+
+  test('a reserved slug is not an entity', { timeout: LIVE_TIMEOUT }, async () => {
+    for (const slug of RESERVED_SLUGS) {
+      assert.equal((await request(slug)).status, 404, slug)
+    }
   })
 
   test('an unknown slug 404s rather than 500s', { timeout: LIVE_TIMEOUT }, async () => {
@@ -312,5 +322,39 @@ describe('live: entity gating', () => {
 
   test('entity matching is case-insensitive', { timeout: LIVE_TIMEOUT }, async () => {
     assert.equal((await request('Tottenham')).status, 200)
+  })
+
+  /** §7.7 — the league has no position, so it shows the top six. */
+  test('the league entity returns the top of the table, unhighlighted', { timeout: LIVE_TIMEOUT }, async () => {
+    const res = await request('premier-league')
+    assert.equal(res.status, 200)
+    const body = (await res.json()) as Payload
+    const entity = body.entity as Payload
+    assert.equal(entity.slug, 'premier-league')
+    assert.equal(entity.name, 'The Football Hub')
+
+    const table = body.table as { rows: unknown[]; highlight: string | null }
+    if (table.rows.length) {
+      assert.equal(table.highlight, null, 'the league is not a club to highlight')
+      assert.ok(table.rows.length <= 6, `${table.rows.length} rows, expected at most six`)
+    }
+  })
+
+  /** §7.14 — never on the league entity. */
+  test('around the league does not render on the league entity', { timeout: LIVE_TIMEOUT }, async () => {
+    const body = (await (await request('premier-league')).json()) as Payload
+    assert.deepEqual(body.around_the_league, [])
+  })
+
+  /** §7.9 — the opponent must not resolve an opponent of its own. */
+  test('next opponent does not recurse', { timeout: LIVE_TIMEOUT }, async () => {
+    const body = (await (await request('tottenham')).json()) as Payload
+    const next = body.next_opponent as Payload | null
+    if (!next) return
+    assert.ok(!('next_opponent' in next), 'the opponent carries an opponent of its own')
+    assert.deepEqual(
+      Object.keys(next).sort(),
+      ['badge', 'form', 'missing', 'name', 'slug', 'story']
+    )
   })
 })

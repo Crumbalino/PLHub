@@ -1,52 +1,44 @@
 import { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
-import { getAllClubSlugs } from '@/config/clubs';
+import { clubSlugs } from '@/lib/entities';
 
+/**
+ * The sitemap is the entity pages: twenty clubs plus the homepage. Twenty-one
+ * URLs, matching PAGE_SPEC §1's route table.
+ *
+ * The club slugs come from the entity registry, which reads the club registry,
+ * so a relegated club leaves the sitemap the moment it leaves the league. There
+ * is no second list here to forget to update — the previous version listed
+ * `/clubs/{slug}` from a different registry, which is how the sitemap ended up
+ * advertising four relegated clubs.
+ *
+ * NOTE — this deliberately no longer lists /about, /how-it-works, /principles,
+ * /privacy or the /clubs/* pages. See the PR: dropping /how-it-works in
+ * particular is worth a second opinion, since it is described as the site's
+ * highest-originality asset.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = SITE_URL;
+  const lastModified = new Date();
 
-  // Static routes
-  const staticRoutes: MetadataRoute.Sitemap = [
+  // The homepage entity. `/` rather than `/premier-league`: the front door is
+  // the canonical URL a reader and a crawler both arrive at.
+  const homepage: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
-      lastModified: new Date(),
+      lastModified,
       changeFrequency: 'hourly',
       priority: 1,
     },
-    {
-      url: `${baseUrl}/how-it-works`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/principles`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
   ];
 
-  // Dynamic club routes
-  const clubSlugs = getAllClubSlugs();
-  const clubRoutes: MetadataRoute.Sitemap = clubSlugs.map((slug) => ({
-    url: `${baseUrl}/clubs/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily' as const,
-    priority: 0.8,
+  // Clubs live at the root — /tottenham, not /clubs/tottenham.
+  const entities: MetadataRoute.Sitemap = clubSlugs().map((slug) => ({
+    url: `${baseUrl}/${slug}`,
+    lastModified,
+    changeFrequency: 'hourly' as const,
+    priority: 0.9,
   }));
 
-  return [...staticRoutes, ...clubRoutes];
+  return [...homepage, ...entities];
 }
