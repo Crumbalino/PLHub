@@ -10,8 +10,8 @@ export default function ClubNav() {
   // Determine the current value based on pathname
   let currentValue = '/'
   for (const club of CLUBS) {
-    if (pathname === `/clubs/${club.slug}`) {
-      currentValue = `/clubs/${club.slug}`
+    if (pathname === `/${club.slug}`) {
+      currentValue = `/${club.slug}`
       break
     }
   }
@@ -38,7 +38,7 @@ export default function ClubNav() {
           >
             <option value="/">All Clubs</option>
             {CLUBS.map((club) => (
-              <option key={club.slug} value={`/clubs/${club.slug}`}>
+              <option key={club.slug} value={`/${club.slug}`}>
                 {club.name}
               </option>
             ))}

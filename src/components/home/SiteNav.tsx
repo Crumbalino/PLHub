@@ -32,7 +32,7 @@ export default function SiteNav({ clubs }: { clubs: NavClub[] }) {
           <ul className="tfh-nav-clubs">
             {clubs.map((c) => (
               <li key={c.slug}>
-                <a href={`/clubs/${c.slug}`}>{c.name}</a>
+                <a href={`/${c.slug}`}>{c.name}</a>
               </li>
             ))}
           </ul>

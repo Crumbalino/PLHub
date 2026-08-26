@@ -28,7 +28,7 @@ export default function ClubSelector({ currentSlug }: ClubSelectorProps) {
     if (slug === '') {
       window.location.href = '/'
     } else {
-      window.location.href = `/clubs/${slug}`
+      window.location.href = `/${slug}`
     }
   }
 
