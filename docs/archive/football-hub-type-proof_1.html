@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Football Hub Type Proof</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Atkinson+Hyperlegible+Next:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@400;600;700&display=swap">
+<style>
+/* ══ Sheet chrome ══════════════════════════════════════════════════════════
+   Deliberately single-theme: the specimens are dark-canvas by definition,
+   so the surround is a neutral graphite that frames both panels identically
+   and casts no hue onto either. Chrome type is IBM Plex — a third family,
+   so neither candidate's voice leaks into the labels.                       */
+
+:root{
+  --sheet:#16191f; --sheet-2:#1c2027; --sheet-rule:#2a2f38;
+  --sheet-ink:#e7eaef; --sheet-ink-60:rgba(231,234,239,.60);
+  --sheet-ink-40:rgba(231,234,239,.40);
+  --tag-a:#7fb2ff;   /* control  */
+  --tag-b:#ffc46b;   /* candidate */
+  --tag-c:#8fd6a8;   /* revised  */
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--sheet); color:var(--sheet-ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.sheet{max-width:1680px;margin:0 auto;padding:40px 28px 72px;}
+
+.mono{font-family:"IBM Plex Mono",ui-monospace,"SFMono-Regular",monospace;}
+
+/* ── Masthead ── */
+.mast{border-bottom:1px solid var(--sheet-rule);padding-bottom:26px;margin-bottom:34px;}
+.kicker{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--sheet-ink-40);margin:0 0 14px;
+}
+.mast h1{
+  font-size:31px;font-weight:600;letter-spacing:-.02em;line-height:1.15;
+  margin:0 0 12px;max-width:22ch;text-wrap:balance;
+}
+.question{
+  font-size:16px;line-height:1.55;color:var(--sheet-ink-60);
+  margin:0;max-width:66ch;
+}
+.question em{color:var(--sheet-ink);font-style:normal;font-weight:500;}
+
+.vars{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;
+}
+.var{
+  border:1px solid var(--sheet-rule);border-radius:2px;
+  padding:5px 9px;color:var(--sheet-ink-60);background:var(--sheet-2);
+}
+.var b{color:var(--sheet-ink);font-weight:500;}
+.var.held{opacity:.72;}
+.var.varied{border-color:#4a5568;color:var(--sheet-ink);}
+
+/* ── Bands ── */
+.band{margin-bottom:44px;}
+.band-head{
+  display:flex;align-items:baseline;gap:14px;
+  border-bottom:1px solid var(--sheet-rule);padding-bottom:9px;margin-bottom:18px;
+}
+.band-head h2{
+  font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  margin:0;color:var(--sheet-ink);
+}
+.band-head .note{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;color:var(--sheet-ink-40);
+}
+
+.rail{overflow-x:auto;padding-bottom:12px;}
+.pair{display:flex;gap:28px;align-items:flex-start;width:max-content;}
+
+.frame{display:flex;flex-direction:column;gap:9px;}
+.cap{display:flex;align-items:center;gap:9px;}
+.dot{width:7px;height:7px;border-radius:50%;flex:none;}
+.dot.a{background:var(--tag-a);} .dot.b{background:var(--tag-b);} .dot.c{background:var(--tag-c);}
+.cap-name{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;color:var(--sheet-ink);letter-spacing:.01em;
+}
+.cap-sub{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;color:var(--sheet-ink-40);
+}
+
+/* ══ Specimen shell ════════════════════════════════════════════════════════
+   Frame chrome only. Everything inside .screen is shared between variants. */
+.shell{
+  background:#05070C;border:1px solid var(--sheet-rule);
+  border-radius:3px;overflow:hidden;
+}
+.w-desktop{width:768px;}
+.w-mobile{width:390px;}
+
+/* ══ THE SCREEN — shared structure ═════════════════════════════════════════
+   Spacing, layout and colour are declared HERE, once, and are therefore
+   provably identical in both variants. Variants override font vars only.  */
+
+.screen{
+  --canvas:#05070C;
+  --ink:#F2F6FA;
+  --rule:#1B2430;
+  --ink-72:rgba(242,246,250,.72);
+  --ink-52:rgba(242,246,250,.52);
+  --ink-38:rgba(242,246,250,.38);
+
+  background:var(--canvas);color:var(--ink);
+  padding:22px 20px 26px;
+  display:flex;flex-direction:column;gap:26px;
+}
+
+.screen .crumb{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+.screen .crumb .sep{color:var(--ink-38);}
+.screen .crumb-item{color:var(--ink-52);}
+.screen .crumb-item.is-current{color:var(--ink);}
+
+.screen .hero{
+  display:flex;flex-direction:column;gap:9px;
+  padding-bottom:22px;border-bottom:1px solid var(--rule);
+}
+.screen .hero .h1{margin:0;max-width:20ch;text-wrap:balance;}
+.screen .hero p{margin:0;}
+.screen .dim{color:var(--ink-72);}
+.screen .strong{color:var(--ink);}
+
+.screen .fixture{
+  border:1px solid var(--rule);border-radius:3px;
+  padding:15px 16px 16px;display:flex;flex-direction:column;gap:12px;
+}
+.screen .fixture-top{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.screen .fixture-teams{display:flex;align-items:center;gap:12px;}
+.screen .side{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+.screen .side-right{text-align:right;}
+.screen .vs{
+  flex:none;padding:4px 10px;border:1px solid var(--rule);border-radius:3px;
+  color:var(--ink-38);
+}
+.screen .fixture p{margin:0;}
+
+.screen .lead{display:flex;flex-direction:column;gap:11px;}
+.screen .lead-head{margin:0;text-wrap:balance;}
+.screen .lead p{margin:0;}
+
+.screen .avail{
+  display:flex;flex-direction:column;gap:10px;
+  padding:15px 16px 16px;border:1px solid var(--rule);border-radius:3px;
+}
+.screen .av-table{width:100%;border-collapse:collapse;}
+.screen .av-table th{
+  text-align:left;padding:0 0 7px;border-bottom:1px solid var(--rule);
+  color:var(--ink-38);font-weight:400;
+}
+.screen .av-table td{padding:7px 0;border-bottom:1px solid var(--rule);}
+.screen .av-table tr:last-child td{border-bottom:0;}
+.screen .av-status{color:var(--ink-72);width:34%;}
+.screen .av-num{text-align:right;color:var(--ink-52);width:16%;}
+
+.screen .feed{display:flex;flex-direction:column;gap:20px;}
+.screen .story{
+  display:flex;flex-direction:column;gap:9px;
+  padding-top:20px;border-top:1px solid var(--rule);
+}
+.screen .story:first-child{padding-top:0;border-top:0;}
+.screen .story-head{margin:0;text-wrap:balance;}
+.screen .story p{margin:0;}
+
+/* ── Role → font var wiring (shared; values supplied per variant) ── */
+.screen .h1{
+  font-family:var(--f-read);font-size:var(--h1-size);font-weight:var(--h1-w);
+  letter-spacing:var(--h1-ls);line-height:var(--h1-lh);
+}
+.screen .fixture-name{
+  font-family:var(--f-read);font-size:var(--fix-size);font-weight:var(--fix-w);
+  line-height:1.2;letter-spacing:var(--fix-ls);
+}
+.screen .lead-head{
+  font-family:var(--f-read);font-size:var(--lead-size);font-weight:var(--lead-w);
+  line-height:var(--lead-lh);letter-spacing:var(--lead-ls);
+}
+.screen .story-head{
+  font-family:var(--f-read);font-size:var(--head-size);font-weight:var(--head-w);
+  line-height:var(--head-lh);letter-spacing:var(--head-ls);
+}
+.screen .body{
+  font-family:var(--f-read);font-size:var(--body-size);font-weight:400;
+  line-height:var(--body-lh);
+}
+.screen .meta,.screen .crumb{
+  font-family:var(--f-meta);font-size:var(--meta-size);font-weight:var(--meta-w);
+  letter-spacing:var(--meta-ls);text-transform:var(--meta-case);line-height:1.45;
+  color:var(--ink-52);
+}
+.screen .label{
+  font-family:var(--f-mono);font-size:var(--label-size);font-weight:var(--label-w);
+  letter-spacing:var(--label-ls);text-transform:var(--label-case);
+  color:var(--ink-38);
+}
+.screen .form,.screen .vs,.screen .av-table{
+  font-family:var(--f-mono);font-variant-numeric:var(--num);
+}
+.screen .form{font-size:var(--form-size);letter-spacing:var(--form-ls);color:var(--ink-38);}
+.screen .vs{font-size:var(--vs-size);letter-spacing:var(--vs-ls);}
+.screen .av-table{font-size:var(--avail-size);line-height:1.5;}
+
+/* ══ VARIANT A — control: exactly what ships today ═════════════════════════ */
+.v-control{
+  --f-read:"Sora",sans-serif;
+  --f-mono:"JetBrains Mono","Consolas",monospace;
+  --f-meta:"Sora",sans-serif;
+  --num:normal;
+
+  --h1-size:36px; --h1-w:700; --h1-ls:0; --h1-lh:1.11;
+  --fix-size:15px; --fix-w:700; --fix-ls:0;
+  --lead-size:16px; --lead-w:600; --lead-lh:1.35; --lead-ls:0;
+  --head-size:16px; --head-w:600; --head-lh:1.35; --head-ls:0;
+  --body-size:14px; --body-lh:1.72;
+  --meta-size:11px; --meta-w:700; --meta-ls:.04em; --meta-case:uppercase;
+  --label-size:9px; --label-w:600; --label-ls:2px; --label-case:uppercase;
+  --form-size:8px; --form-ls:1.5px;
+  --vs-size:10px; --vs-ls:2px;
+  --avail-size:12px;
+}
+.v-control.w-mobile{ --h1-size:30px; --h1-lh:1.2; }
+/* everything else in the control is a fixed px value in the source —
+   the control has no responsive type below the h1. */
+
+/* ══ VARIANT B — candidate: recovered v1 Tottenham direction ═══════════════ */
+.v-candidate{
+  --f-read:"Atkinson Hyperlegible Next",sans-serif;
+  --f-mono:"Atkinson Hyperlegible Mono",ui-monospace,monospace;
+  --f-meta:"Atkinson Hyperlegible Mono",ui-monospace,monospace;
+  --num:tabular-nums;
+
+  --h1-size:44px; --h1-w:300; --h1-ls:-.035em; --h1-lh:1.04;
+  --fix-size:25px; --fix-w:700; --fix-ls:-.01em;
+  --lead-size:29px; --lead-w:700; --lead-lh:1.15; --lead-ls:-.015em;
+  --head-size:20px; --head-w:700; --head-lh:1.28; --head-ls:-.01em;
+  --body-size:17px; --body-lh:1.6;
+  --meta-size:12.5px; --meta-w:400; --meta-ls:.005em; --meta-case:lowercase;
+  --label-size:11px; --label-w:500; --label-ls:.06em; --label-case:lowercase;
+  --form-size:11px; --form-ls:.14em;
+  --vs-size:12.5px; --vs-ls:.04em;
+  --avail-size:13px;
+}
+.v-candidate.w-mobile{
+  --h1-size:29px;
+  --fix-size:22px;
+  --lead-size:23px;
+  --head-size:18px;
+  --body-size:16px;
+  --meta-size:11px;
+}
+
+/* ══ VARIANT C — Atkinson revised: weight correction only ══════════════════
+   Every var below is copy-pasted from .v-candidate. The ONLY values that
+   differ are --h1-w, --fix-w, --lead-w, --head-w (700/300 → 600/400).
+   Sizes, tracking, line-height, mono roles and mobile overrides are
+   untouched — this variant answers a weight question, nothing else.       */
+.v-revised{
+  --f-read:"Atkinson Hyperlegible Next",sans-serif;
+  --f-mono:"Atkinson Hyperlegible Mono",ui-monospace,monospace;
+  --f-meta:"Atkinson Hyperlegible Mono",ui-monospace,monospace;
+  --num:tabular-nums;
+
+  --h1-size:44px; --h1-w:400; --h1-ls:-.035em; --h1-lh:1.04;
+  --fix-size:25px; --fix-w:600; --fix-ls:-.01em;
+  --lead-size:29px; --lead-w:600; --lead-lh:1.15; --lead-ls:-.015em;
+  --head-size:20px; --head-w:600; --head-lh:1.28; --head-ls:-.01em;
+  --body-size:17px; --body-lh:1.6;
+  --meta-size:12.5px; --meta-w:400; --meta-ls:.005em; --meta-case:lowercase;
+  --label-size:11px; --label-w:500; --label-ls:.06em; --label-case:lowercase;
+  --form-size:11px; --form-ls:.14em;
+  --vs-size:12.5px; --vs-ls:.04em;
+  --avail-size:13px;
+}
+.v-revised.w-mobile{
+  --h1-size:29px;
+  --fix-size:22px;
+  --lead-size:23px;
+  --head-size:18px;
+  --body-size:16px;
+  --meta-size:11px;
+}
+
+/* ══ Spec table ════════════════════════════════════════════════════════════ */
+.spec{margin-top:8px;}
+.spec-wrap{overflow-x:auto;border:1px solid var(--sheet-rule);border-radius:3px;}
+table.spec-table{
+  border-collapse:collapse;width:100%;min-width:760px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;
+}
+table.spec-table th,table.spec-table td{
+  padding:9px 14px;text-align:left;border-bottom:1px solid var(--sheet-rule);
+  white-space:nowrap;
+}
+table.spec-table thead th{
+  background:var(--sheet-2);color:var(--sheet-ink-60);
+  font-weight:500;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+}
+table.spec-table tbody tr:last-child td{border-bottom:0;}
+table.spec-table .role{color:var(--sheet-ink);}
+table.spec-table .a{color:var(--tag-a);}
+table.spec-table .b{color:var(--tag-b);}
+table.spec-table .num{font-variant-numeric:tabular-nums;}
+
+.foot{
+  margin-top:34px;padding-top:20px;border-top:1px solid var(--sheet-rule);
+  display:flex;flex-wrap:wrap;gap:26px;
+}
+.foot div{max-width:44ch;}
+.foot h3{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--sheet-ink-40);margin:0 0 8px;font-weight:600;
+}
+.foot p{margin:0;font-size:13.5px;line-height:1.6;color:var(--sheet-ink-60);}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <header class="mast">
+    <p class="kicker">Football Hub · club page · typography proof</p>
+    <h1>Does the Atkinson hierarchy read calmer?</h1>
+    <p class="question">
+      Same page, same words, same spacing, same colour. The only thing that moves is the
+      type. Read each pair at normal distance and answer one question:
+      <em>is the candidate more legible, more distinctive and calmer than what ships today?</em>
+    </p>
+    <div class="vars">
+      <span class="var held">held&nbsp;<b>content</b></span>
+      <span class="var held">held&nbsp;<b>spacing</b></span>
+      <span class="var held">held&nbsp;<b>layout</b></span>
+      <span class="var held">held&nbsp;<b>canvas #05070C</b></span>
+      <span class="var held">held&nbsp;<b>ink #F2F6FA</b></span>
+      <span class="var held">held&nbsp;<b>hairline #1B2430</b></span>
+      <span class="var varied">varied&nbsp;<b>typeface + type scale</b></span>
+    </div>
+  </header>
+
+  
+  <section class="band">
+    <div class="band-head">
+      <h2>Desktop</h2>
+      <span class="note">768px column · rendered 1:1, no scaling</span>
+    </div>
+    <div class="rail">
+      <div class="pair">
+        <div class="frame">
+          <div class="cap">
+            <span class="dot a"></span>
+            <span class="cap-name">Control</span>
+            <span class="cap-sub">Sora + JetBrains Mono · shipping today</span>
+          </div>
+          <div class="shell w-desktop">
+    <div class="screen v-control w-desktop">
+      <nav class="crumb"><span class="crumb-item">PLHub</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item">Clubs</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item is-current">Tottenham Hotspur</span></nav>
+
+      <header class="hero">
+        <h1 class="h1">Tottenham Hotspur Transfer News</h1>
+        <p class="meta">TOT · Founded 1882 · London</p>
+        <p class="body dim">Manager: <span class="strong">Roberto De Zerbi</span></p>
+        <p class="body dim">Transfer stories that mention Tottenham Hotspur, gathered from published football coverage and updated through the day.</p>
+      </header>
+
+      <section class="fixture">
+        <div class="fixture-top">
+          <span class="label">Next Up</span>
+          <span class="meta">Sat 30 Aug · 15:00</span>
+        </div>
+        <div class="fixture-teams">
+          <div class="side">
+            <div class="fixture-name">Tottenham Hotspur</div>
+            <div class="form">W D W L W</div>
+          </div>
+          <div class="vs">vs</div>
+          <div class="side side-right">
+            <div class="fixture-name">Aston Villa</div>
+            <div class="form">L W W D L</div>
+          </div>
+        </div>
+        <p class="meta">Tottenham Hotspur Stadium</p>
+      </section>
+
+      <article class="lead">
+        <h2 class="lead-head">De Zerbi names an unchanged back four for the third week running</h2>
+        <p class="body">Three matches into the season the shape has not moved. The same back four has started every league fixture, and the substitutions have come almost exclusively in midfield and attack. Whether that is conviction or a shortage of fit defenders is the question the next fortnight will answer.</p>
+        <p class="meta">The Guardian · 2h ago · TOT</p>
+      </article>
+
+      <section class="avail">
+        <span class="label">Availability</span>
+        <table class="av-table">
+          <thead>
+            <tr>
+              <th class="av-name">Player</th>
+              <th class="av-status">Status</th>
+              <th class="av-num">Missed</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td class="av-name">Cristian Romero</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Micky van de Ven</td>
+            <td class="av-status">Late check</td>
+            <td class="av-num">2</td>
+          </tr>
+          <tr>
+            <td class="av-name">Dejan Kulusevski</td>
+            <td class="av-status">Doubt</td>
+            <td class="av-num">11</td>
+          </tr>
+          <tr>
+            <td class="av-name">Guglielmo Vicario</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Rodrigo Bentancur</td>
+            <td class="av-status">Suspended</td>
+            <td class="av-num">1</td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="feed">
+        <article class="story">
+          <h3 class="story-head">What the fixture list looks like before the November international break</h3>
+          <p class="body">Six league games, two of them away at sides that finished above Spurs last season, and a European tie sandwiched between them.</p>
+          <p class="meta">BBC Sport · 5h ago · TOT · AVL</p>
+        </article>
+        <article class="story">
+          <h3 class="story-head">Academy minutes are up, and the numbers behind it are less dramatic than they look</h3>
+          <p class="body">Four graduates have appeared this season against two at the same point last year. Most of those minutes arrived after the seventy-fifth minute with the game already settled.</p>
+          <p class="meta">Sky Sports · 9h ago · TOT</p>
+        </article>
+      </div>
+    </div>
+          </div>
+        </div>
+        <div class="frame">
+          <div class="cap">
+            <span class="dot b"></span>
+            <span class="cap-name">Candidate</span>
+            <span class="cap-sub">Atkinson Hyperlegible Next + Mono · recovered v1</span>
+          </div>
+          <div class="shell w-desktop">
+    <div class="screen v-candidate w-desktop">
+      <nav class="crumb"><span class="crumb-item">PLHub</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item">Clubs</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item is-current">Tottenham Hotspur</span></nav>
+
+      <header class="hero">
+        <h1 class="h1">Tottenham Hotspur Transfer News</h1>
+        <p class="meta">TOT · Founded 1882 · London</p>
+        <p class="body dim">Manager: <span class="strong">Roberto De Zerbi</span></p>
+        <p class="body dim">Transfer stories that mention Tottenham Hotspur, gathered from published football coverage and updated through the day.</p>
+      </header>
+
+      <section class="fixture">
+        <div class="fixture-top">
+          <span class="label">Next Up</span>
+          <span class="meta">Sat 30 Aug · 15:00</span>
+        </div>
+        <div class="fixture-teams">
+          <div class="side">
+            <div class="fixture-name">Tottenham Hotspur</div>
+            <div class="form">W D W L W</div>
+          </div>
+          <div class="vs">vs</div>
+          <div class="side side-right">
+            <div class="fixture-name">Aston Villa</div>
+            <div class="form">L W W D L</div>
+          </div>
+        </div>
+        <p class="meta">Tottenham Hotspur Stadium</p>
+      </section>
+
+      <article class="lead">
+        <h2 class="lead-head">De Zerbi names an unchanged back four for the third week running</h2>
+        <p class="body">Three matches into the season the shape has not moved. The same back four has started every league fixture, and the substitutions have come almost exclusively in midfield and attack. Whether that is conviction or a shortage of fit defenders is the question the next fortnight will answer.</p>
+        <p class="meta">The Guardian · 2h ago · TOT</p>
+      </article>
+
+      <section class="avail">
+        <span class="label">Availability</span>
+        <table class="av-table">
+          <thead>
+            <tr>
+              <th class="av-name">Player</th>
+              <th class="av-status">Status</th>
+              <th class="av-num">Missed</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td class="av-name">Cristian Romero</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Micky van de Ven</td>
+            <td class="av-status">Late check</td>
+            <td class="av-num">2</td>
+          </tr>
+          <tr>
+            <td class="av-name">Dejan Kulusevski</td>
+            <td class="av-status">Doubt</td>
+            <td class="av-num">11</td>
+          </tr>
+          <tr>
+            <td class="av-name">Guglielmo Vicario</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Rodrigo Bentancur</td>
+            <td class="av-status">Suspended</td>
+            <td class="av-num">1</td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="feed">
+        <article class="story">
+          <h3 class="story-head">What the fixture list looks like before the November international break</h3>
+          <p class="body">Six league games, two of them away at sides that finished above Spurs last season, and a European tie sandwiched between them.</p>
+          <p class="meta">BBC Sport · 5h ago · TOT · AVL</p>
+        </article>
+        <article class="story">
+          <h3 class="story-head">Academy minutes are up, and the numbers behind it are less dramatic than they look</h3>
+          <p class="body">Four graduates have appeared this season against two at the same point last year. Most of those minutes arrived after the seventy-fifth minute with the game already settled.</p>
+          <p class="meta">Sky Sports · 9h ago · TOT</p>
+        </article>
+      </div>
+    </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="band">
+    <div class="band-head">
+      <h2>Mobile</h2>
+      <span class="note">390px column · rendered 1:1, no scaling</span>
+    </div>
+    <div class="rail">
+      <div class="pair">
+        <div class="frame">
+          <div class="cap">
+            <span class="dot a"></span>
+            <span class="cap-name">Control</span>
+            <span class="cap-sub">Sora + JetBrains Mono · shipping today</span>
+          </div>
+          <div class="shell w-mobile">
+    <div class="screen v-control w-mobile">
+      <nav class="crumb"><span class="crumb-item">PLHub</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item">Clubs</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item is-current">Tottenham Hotspur</span></nav>
+
+      <header class="hero">
+        <h1 class="h1">Tottenham Hotspur Transfer News</h1>
+        <p class="meta">TOT · Founded 1882 · London</p>
+        <p class="body dim">Manager: <span class="strong">Roberto De Zerbi</span></p>
+        <p class="body dim">Transfer stories that mention Tottenham Hotspur, gathered from published football coverage and updated through the day.</p>
+      </header>
+
+      <section class="fixture">
+        <div class="fixture-top">
+          <span class="label">Next Up</span>
+          <span class="meta">Sat 30 Aug · 15:00</span>
+        </div>
+        <div class="fixture-teams">
+          <div class="side">
+            <div class="fixture-name">Tottenham Hotspur</div>
+            <div class="form">W D W L W</div>
+          </div>
+          <div class="vs">vs</div>
+          <div class="side side-right">
+            <div class="fixture-name">Aston Villa</div>
+            <div class="form">L W W D L</div>
+          </div>
+        </div>
+        <p class="meta">Tottenham Hotspur Stadium</p>
+      </section>
+
+      <article class="lead">
+        <h2 class="lead-head">De Zerbi names an unchanged back four for the third week running</h2>
+        <p class="body">Three matches into the season the shape has not moved. The same back four has started every league fixture, and the substitutions have come almost exclusively in midfield and attack. Whether that is conviction or a shortage of fit defenders is the question the next fortnight will answer.</p>
+        <p class="meta">The Guardian · 2h ago · TOT</p>
+      </article>
+
+      <section class="avail">
+        <span class="label">Availability</span>
+        <table class="av-table">
+          <thead>
+            <tr>
+              <th class="av-name">Player</th>
+              <th class="av-status">Status</th>
+              <th class="av-num">Missed</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td class="av-name">Cristian Romero</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Micky van de Ven</td>
+            <td class="av-status">Late check</td>
+            <td class="av-num">2</td>
+          </tr>
+          <tr>
+            <td class="av-name">Dejan Kulusevski</td>
+            <td class="av-status">Doubt</td>
+            <td class="av-num">11</td>
+          </tr>
+          <tr>
+            <td class="av-name">Guglielmo Vicario</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Rodrigo Bentancur</td>
+            <td class="av-status">Suspended</td>
+            <td class="av-num">1</td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="feed">
+        <article class="story">
+          <h3 class="story-head">What the fixture list looks like before the November international break</h3>
+          <p class="body">Six league games, two of them away at sides that finished above Spurs last season, and a European tie sandwiched between them.</p>
+          <p class="meta">BBC Sport · 5h ago · TOT · AVL</p>
+        </article>
+        <article class="story">
+          <h3 class="story-head">Academy minutes are up, and the numbers behind it are less dramatic than they look</h3>
+          <p class="body">Four graduates have appeared this season against two at the same point last year. Most of those minutes arrived after the seventy-fifth minute with the game already settled.</p>
+          <p class="meta">Sky Sports · 9h ago · TOT</p>
+        </article>
+      </div>
+    </div>
+          </div>
+        </div>
+        <div class="frame">
+          <div class="cap">
+            <span class="dot b"></span>
+            <span class="cap-name">Candidate</span>
+            <span class="cap-sub">Atkinson Hyperlegible Next + Mono · recovered v1</span>
+          </div>
+          <div class="shell w-mobile">
+    <div class="screen v-candidate w-mobile">
+      <nav class="crumb"><span class="crumb-item">PLHub</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item">Clubs</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item is-current">Tottenham Hotspur</span></nav>
+
+      <header class="hero">
+        <h1 class="h1">Tottenham Hotspur Transfer News</h1>
+        <p class="meta">TOT · Founded 1882 · London</p>
+        <p class="body dim">Manager: <span class="strong">Roberto De Zerbi</span></p>
+        <p class="body dim">Transfer stories that mention Tottenham Hotspur, gathered from published football coverage and updated through the day.</p>
+      </header>
+
+      <section class="fixture">
+        <div class="fixture-top">
+          <span class="label">Next Up</span>
+          <span class="meta">Sat 30 Aug · 15:00</span>
+        </div>
+        <div class="fixture-teams">
+          <div class="side">
+            <div class="fixture-name">Tottenham Hotspur</div>
+            <div class="form">W D W L W</div>
+          </div>
+          <div class="vs">vs</div>
+          <div class="side side-right">
+            <div class="fixture-name">Aston Villa</div>
+            <div class="form">L W W D L</div>
+          </div>
+        </div>
+        <p class="meta">Tottenham Hotspur Stadium</p>
+      </section>
+
+      <article class="lead">
+        <h2 class="lead-head">De Zerbi names an unchanged back four for the third week running</h2>
+        <p class="body">Three matches into the season the shape has not moved. The same back four has started every league fixture, and the substitutions have come almost exclusively in midfield and attack. Whether that is conviction or a shortage of fit defenders is the question the next fortnight will answer.</p>
+        <p class="meta">The Guardian · 2h ago · TOT</p>
+      </article>
+
+      <section class="avail">
+        <span class="label">Availability</span>
+        <table class="av-table">
+          <thead>
+            <tr>
+              <th class="av-name">Player</th>
+              <th class="av-status">Status</th>
+              <th class="av-num">Missed</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td class="av-name">Cristian Romero</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Micky van de Ven</td>
+            <td class="av-status">Late check</td>
+            <td class="av-num">2</td>
+          </tr>
+          <tr>
+            <td class="av-name">Dejan Kulusevski</td>
+            <td class="av-status">Doubt</td>
+            <td class="av-num">11</td>
+          </tr>
+          <tr>
+            <td class="av-name">Guglielmo Vicario</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Rodrigo Bentancur</td>
+            <td class="av-status">Suspended</td>
+            <td class="av-num">1</td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="feed">
+        <article class="story">
+          <h3 class="story-head">What the fixture list looks like before the November international break</h3>
+          <p class="body">Six league games, two of them away at sides that finished above Spurs last season, and a European tie sandwiched between them.</p>
+          <p class="meta">BBC Sport · 5h ago · TOT · AVL</p>
+        </article>
+        <article class="story">
+          <h3 class="story-head">Academy minutes are up, and the numbers behind it are less dramatic than they look</h3>
+          <p class="body">Four graduates have appeared this season against two at the same point last year. Most of those minutes arrived after the seventy-fifth minute with the game already settled.</p>
+          <p class="meta">Sky Sports · 9h ago · TOT</p>
+        </article>
+      </div>
+    </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="band-head">
+      <h2>Atkinson revised</h2>
+      <span class="note">weight correction only · desktop 768px, mobile 390px · rendered 1:1</span>
+    </div>
+    <div class="rail">
+      <div class="pair">
+        <div class="frame">
+          <div class="cap">
+            <span class="dot c"></span>
+            <span class="cap-name">Desktop</span>
+            <span class="cap-sub">h1 400 · fixture/lead/headline 600 · body 400 · mono unchanged</span>
+          </div>
+          <div class="shell w-desktop">
+    <div class="screen v-revised w-desktop">
+      <nav class="crumb"><span class="crumb-item">PLHub</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item">Clubs</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item is-current">Tottenham Hotspur</span></nav>
+
+      <header class="hero">
+        <h1 class="h1">Tottenham Hotspur Transfer News</h1>
+        <p class="meta">TOT · Founded 1882 · London</p>
+        <p class="body dim">Manager: <span class="strong">Roberto De Zerbi</span></p>
+        <p class="body dim">Transfer stories that mention Tottenham Hotspur, gathered from published football coverage and updated through the day.</p>
+      </header>
+
+      <section class="fixture">
+        <div class="fixture-top">
+          <span class="label">Next Up</span>
+          <span class="meta">Sat 30 Aug · 15:00</span>
+        </div>
+        <div class="fixture-teams">
+          <div class="side">
+            <div class="fixture-name">Tottenham Hotspur</div>
+            <div class="form">W D W L W</div>
+          </div>
+          <div class="vs">vs</div>
+          <div class="side side-right">
+            <div class="fixture-name">Aston Villa</div>
+            <div class="form">L W W D L</div>
+          </div>
+        </div>
+        <p class="meta">Tottenham Hotspur Stadium</p>
+      </section>
+
+      <article class="lead">
+        <h2 class="lead-head">De Zerbi names an unchanged back four for the third week running</h2>
+        <p class="body">Three matches into the season the shape has not moved. The same back four has started every league fixture, and the substitutions have come almost exclusively in midfield and attack. Whether that is conviction or a shortage of fit defenders is the question the next fortnight will answer.</p>
+        <p class="meta">The Guardian · 2h ago · TOT</p>
+      </article>
+
+      <section class="avail">
+        <span class="label">Availability</span>
+        <table class="av-table">
+          <thead>
+            <tr>
+              <th class="av-name">Player</th>
+              <th class="av-status">Status</th>
+              <th class="av-num">Missed</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td class="av-name">Cristian Romero</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Micky van de Ven</td>
+            <td class="av-status">Late check</td>
+            <td class="av-num">2</td>
+          </tr>
+          <tr>
+            <td class="av-name">Dejan Kulusevski</td>
+            <td class="av-status">Doubt</td>
+            <td class="av-num">11</td>
+          </tr>
+          <tr>
+            <td class="av-name">Guglielmo Vicario</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Rodrigo Bentancur</td>
+            <td class="av-status">Suspended</td>
+            <td class="av-num">1</td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="feed">
+        <article class="story">
+          <h3 class="story-head">What the fixture list looks like before the November international break</h3>
+          <p class="body">Six league games, two of them away at sides that finished above Spurs last season, and a European tie sandwiched between them.</p>
+          <p class="meta">BBC Sport · 5h ago · TOT · AVL</p>
+        </article>
+        <article class="story">
+          <h3 class="story-head">Academy minutes are up, and the numbers behind it are less dramatic than they look</h3>
+          <p class="body">Four graduates have appeared this season against two at the same point last year. Most of those minutes arrived after the seventy-fifth minute with the game already settled.</p>
+          <p class="meta">Sky Sports · 9h ago · TOT</p>
+        </article>
+      </div>
+    </div>
+          </div>
+        </div>
+        <div class="frame">
+          <div class="cap">
+            <span class="dot c"></span>
+            <span class="cap-name">Mobile · 390px</span>
+            <span class="cap-sub">h1 400 · fixture/lead/headline 600 · body 400 · mono unchanged</span>
+          </div>
+          <div class="shell w-mobile">
+    <div class="screen v-revised w-mobile">
+      <nav class="crumb"><span class="crumb-item">PLHub</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item">Clubs</span><span class="sep" aria-hidden="true">/</span><span class="crumb-item is-current">Tottenham Hotspur</span></nav>
+
+      <header class="hero">
+        <h1 class="h1">Tottenham Hotspur Transfer News</h1>
+        <p class="meta">TOT · Founded 1882 · London</p>
+        <p class="body dim">Manager: <span class="strong">Roberto De Zerbi</span></p>
+        <p class="body dim">Transfer stories that mention Tottenham Hotspur, gathered from published football coverage and updated through the day.</p>
+      </header>
+
+      <section class="fixture">
+        <div class="fixture-top">
+          <span class="label">Next Up</span>
+          <span class="meta">Sat 30 Aug · 15:00</span>
+        </div>
+        <div class="fixture-teams">
+          <div class="side">
+            <div class="fixture-name">Tottenham Hotspur</div>
+            <div class="form">W D W L W</div>
+          </div>
+          <div class="vs">vs</div>
+          <div class="side side-right">
+            <div class="fixture-name">Aston Villa</div>
+            <div class="form">L W W D L</div>
+          </div>
+        </div>
+        <p class="meta">Tottenham Hotspur Stadium</p>
+      </section>
+
+      <article class="lead">
+        <h2 class="lead-head">De Zerbi names an unchanged back four for the third week running</h2>
+        <p class="body">Three matches into the season the shape has not moved. The same back four has started every league fixture, and the substitutions have come almost exclusively in midfield and attack. Whether that is conviction or a shortage of fit defenders is the question the next fortnight will answer.</p>
+        <p class="meta">The Guardian · 2h ago · TOT</p>
+      </article>
+
+      <section class="avail">
+        <span class="label">Availability</span>
+        <table class="av-table">
+          <thead>
+            <tr>
+              <th class="av-name">Player</th>
+              <th class="av-status">Status</th>
+              <th class="av-num">Missed</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td class="av-name">Cristian Romero</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Micky van de Ven</td>
+            <td class="av-status">Late check</td>
+            <td class="av-num">2</td>
+          </tr>
+          <tr>
+            <td class="av-name">Dejan Kulusevski</td>
+            <td class="av-status">Doubt</td>
+            <td class="av-num">11</td>
+          </tr>
+          <tr>
+            <td class="av-name">Guglielmo Vicario</td>
+            <td class="av-status">Available</td>
+            <td class="av-num">0</td>
+          </tr>
+          <tr>
+            <td class="av-name">Rodrigo Bentancur</td>
+            <td class="av-status">Suspended</td>
+            <td class="av-num">1</td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="feed">
+        <article class="story">
+          <h3 class="story-head">What the fixture list looks like before the November international break</h3>
+          <p class="body">Six league games, two of them away at sides that finished above Spurs last season, and a European tie sandwiched between them.</p>
+          <p class="meta">BBC Sport · 5h ago · TOT · AVL</p>
+        </article>
+        <article class="story">
+          <h3 class="story-head">Academy minutes are up, and the numbers behind it are less dramatic than they look</h3>
+          <p class="body">Four graduates have appeared this season against two at the same point last year. Most of those minutes arrived after the seventy-fifth minute with the game already settled.</p>
+          <p class="meta">Sky Sports · 9h ago · TOT</p>
+        </article>
+      </div>
+    </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band spec">
+    <div class="band-head">
+      <h2>Scale</h2>
+      <span class="note">desktop / mobile, in px</span>
+    </div>
+    <div class="spec-wrap">
+      <table class="spec-table">
+        <thead>
+          <tr><th>Role</th><th>Control</th><th>Candidate</th></tr>
+        </thead>
+        <tbody><tr><td class="role">h1</td><td class="a">Sora 700 · 36 / 30 · ls 0 · lh 1.11</td><td class="b">Atkinson Next 300 · 44 / 29 · ls −0.035em · lh 1.04</td></tr><tr><td class="role">fixture</td><td class="a">Sora 700 · 15 / 15</td><td class="b">Atkinson Next 700 · 25 / 22</td></tr><tr><td class="role">story lead</td><td class="a">Sora 600 · 16 / 16 · lh 1.35</td><td class="b">Atkinson Next 700 · 29 / 23 · lh 1.15</td></tr><tr><td class="role">story headline</td><td class="a">Sora 600 · 16 / 16 · lh 1.35</td><td class="b">Atkinson Next 700 · 20 / 18 · lh 1.28</td></tr><tr><td class="role">body</td><td class="a">Sora 400 · 14 / 14 · lh 1.72</td><td class="b">Atkinson Next 400 · 17 / 16 · lh 1.60</td></tr><tr><td class="role">metadata</td><td class="a">Sora 700 · 11 · UPPERCASE · ls .04em</td><td class="b">Atkinson Mono 400 · 12.5 / 11 · lowercase</td></tr><tr><td class="role">section label</td><td class="a">JetBrains Mono 600 · 9 · UPPERCASE · ls 2px</td><td class="b">Atkinson Mono 500 · 11 · lowercase · ls .06em</td></tr><tr><td class="role">availability</td><td class="a">JetBrains Mono 400 · 12 · lining figures</td><td class="b">Atkinson Mono 400 · 13 · tabular figures</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>
+      <h3>What to look at</h3>
+      <p>The control has almost no responsive type — only the h1 changes below 640px.
+      The candidate re-sizes six roles. That is the structural difference; the rest is voice.</p>
+    </div>
+    <div>
+      <h3>Where they diverge most</h3>
+      <p>Body goes 14 → 17 and metadata leaves uppercase Sora for lowercase mono. Those two
+      moves, not the h1, are what change how the page feels at reading distance.</p>
+    </div>
+    <div>
+      <h3>Standing</h3>
+      <p>Static proof only. Nothing in the app, its tokens, routes or docs was touched.
+      Editorial copy and availability figures are placeholder specimen data, not live.</p>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<!-- saved from url=(0054)https://a.claude.ai/isolated-segment.html?v=9e459970cb -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <!-- Segment snippet from https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/quickstart/ -->
+    <!-- Modified to allow custom CDN hostname and removed unused methods -->
+    <script type="text/javascript" async="" src="./js"></script><script type="text/javascript" async="" src="./js(1)"></script><script async="" src="./js(2)"></script><script type="text/javascript" async="" data-global-segment-analytics-key="analytics" src="./analytics.min.js"></script><script>
+      !(function () {
+        var i = "analytics",
+          analytics = (window[i] = window[i] || []);
+        if (!analytics.initialize)
+          if (analytics.invoked)
+            window.console &&
+              console.error &&
+              console.error("Segment snippet included twice.");
+          else {
+            analytics.invoked = !0;
+            analytics.methods = ["identify", "track", "ready"];
+            analytics.factory = function (e) {
+              return function () {
+                if (window[i].initialized)
+                  return window[i][e].apply(window[i], arguments);
+                var n = Array.prototype.slice.call(arguments);
+                if (["track", "identify"].indexOf(e) > -1) {
+                  var c = document.querySelector("link[rel='canonical']");
+                  n.push({
+                    __t: "bpc",
+                    c: (c && c.getAttribute("href")) || void 0,
+                    p: location.pathname,
+                    u: location.href,
+                    s: location.search,
+                    t: document.title,
+                    r: document.referrer,
+                  });
+                }
+                n.unshift(e);
+                analytics.push(n);
+                return analytics;
+              };
+            };
+            for (var n = 0; n < analytics.methods.length; n++) {
+              var key = analytics.methods[n];
+              analytics[key] = analytics.factory(key);
+            }
+            analytics.SNIPPET_VERSION = "5.2.1";
+          }
+      })();
+    </script>
+    <script>
+      (function () {
+        // Debug logging function
+        function logDebug(message, ...args) {
+          console.debug("[IsolatedSegment]", message, ...args);
+        }
+
+        // Keep sending ready message until we get init response
+        let readyInterval = null;
+
+        // --- pixel telemetry -------------------------------------------
+        // Observability for vendor pixel network requests. Two
+        // independent counters, no correlation:
+        //  - pixel_attempt:  posted at each vendor call site in track()
+        //  - pixel_observed: posted per classified beacon seen by a
+        //                    PerformanceObserver on resource timings
+        // A blocked/failed vendor (ad-blocker, CSP, DNS, SDK didn't
+        // load) shows up as attempt-without-observed in aggregate. The
+        // resource URL is used only for vendor classification here and
+        // is never sent to the parent.
+        //
+        // Cross-origin caveat: pixel endpoints (facebook.com/tr,
+        // doubleclick.net, googleadservices.com) do not send
+        // Timing-Allow-Origin, so responseStatus is zeroed for most
+        // entries; http_status is only populated when the browser
+        // actually exposes it.
+        var pixelFirePixelIds = {}; // vendor → configured pixel/tag ID
+
+        // Patterns match only the conversion beacons, not loader /
+        // aux / config requests (e.g. gtag/destination,
+        // conversion_async.js). gtag typically fans one conversion
+        // out to several of these endpoints; each is reported as its
+        // own pixel_observed — attempt and observed counts are not
+        // expected to be 1:1 per event, only comparable in aggregate.
+        var PIXEL_FIRE_PATTERNS = [
+          { match: "facebook.com/tr", vendor: "facebook" },
+          { match: "googleadservices.com/pagead/conversion/", vendor: "google_ads" },
+          { match: "google.com/pagead/", vendor: "google_ads" },
+          { match: "googleads.g.doubleclick.net/pagead/", vendor: "google_ads" },
+          { match: "fls.doubleclick.net/", vendor: "floodlight" },
+          { match: "ad.doubleclick.net/activity", vendor: "floodlight" },
+          { match: "ad.doubleclick.net/ddm/activity", vendor: "floodlight" },
+        ];
+
+        function classifyPixelResource(url) {
+          for (var i = 0; i < PIXEL_FIRE_PATTERNS.length; i++) {
+            if (url.indexOf(PIXEL_FIRE_PATTERNS[i].match) !== -1) {
+              return PIXEL_FIRE_PATTERNS[i];
+            }
+          }
+          return null;
+        }
+
+        function sendPixelTelemetry(payload) {
+          if (window.isolatedSegment && window.isolatedSegment.sendMessage) {
+            window.isolatedSegment.sendMessage(payload);
+          }
+        }
+
+        function pixelAttempt(pixel) {
+          if (!pixel) return;
+          sendPixelTelemetry({ type: "pixel_attempt", pixel: pixel });
+        }
+
+        function pixelObserved(entry, cls) {
+          var pixel = pixelFirePixelIds[cls.vendor];
+          if (!pixel) return;
+          var payload = {
+            type: "pixel_observed",
+            pixel: pixel,
+            duration_ms: Math.round(entry.duration || 0),
+          };
+          var status = entry.responseStatus;
+          if (typeof status === "number" && status > 0) {
+            payload.http_status = status;
+          }
+          sendPixelTelemetry(payload);
+        }
+
+        function startPixelFireObserver() {
+          if (typeof PerformanceObserver === "undefined") return;
+          try {
+            var po = new PerformanceObserver(function (list) {
+              var entries = list.getEntries();
+              for (var i = 0; i < entries.length; i++) {
+                var cls = classifyPixelResource(entries[i].name);
+                if (cls) try { pixelObserved(entries[i], cls); } catch {}
+              }
+            });
+            po.observe({ type: "resource", buffered: true });
+          } catch (e) {
+            logDebug("pixel telemetry PerformanceObserver unavailable", {
+              error: String(e),
+            });
+          }
+        }
+        // --- end pixel telemetry ---------------------------------------
+
+        /* The values of this mapping must match the values in the Facebook CAPI destinations in Segment
+           See go/segment -> Destinations -> Facebook Conversions API -> Mappings
+           We have to do this mapping because the Facebook Pixel integration from Segment does not support
+           event renaming on the client side
+        */
+        const FB_EVENT_MAPPING = {
+          "onboarding.started": "Started Onboarding",
+          "extended_onboarding.started": "Started Onboarding",
+          "extended_onboarding.completed": "CompleteRegistration",
+          "chat.conversation.first_conversation_created": "NewConversation",
+          payment_state_success: "Purchase",
+        };
+
+        // Floodlight activity tag resolver: returns the CM360 send_to string
+        // for an event, or null if the event has no Floodlight conversion.
+        // Format: DC-ADVERTISER_ID/activity_group/activity_tag+counting_method
+        function resolveFloodlightSendTo(event, properties) {
+          var props = properties || {};
+          switch (event) {
+            case "extended_onboarding.completed":
+              // CM360: Onboarding Completed [production]
+              return "DC-15684265/check0/onboa000+unique";
+            case "payment_state_success":
+              if (props.product_capability === "claude_pro") {
+                // CM360: Purchased Pro [production]
+                return "DC-15684265/check0/purch00+unique";
+              }
+              if (props.product_capability === "claude_max") {
+                if (props.rate_limit_tier === "default_claude_max_20x") {
+                  // CM360: Purchased Max 20x [production]
+                  return "DC-15684265/check0/purch001+unique";
+                }
+                // CM360: Purchased Max 5x [production]
+                return "DC-15684265/check0/purch000+unique";
+              }
+              return null;
+            default:
+              return null;
+          }
+        }
+
+        // Google Ads conversion resolver: returns the conversion params for
+        // an event, or null. Format: AW-CONVERSION_ID/CONVERSION_LABEL
+        function resolveGoogleAdsConversion(event, properties) {
+          switch (event) {
+            case "extended_onboarding.completed":
+              // Google Ads: Sign-up
+              return {
+                send_to: "AW-16632748715/vj71CLSLlPwbEKu1jvs9",
+                value: 1.0,
+                currency: "USD",
+              };
+            case "payment_state_success":
+              // Google Ads: Purchase. transaction_id is omitted when no real
+              // value exists — Google Ads dedupes on it, so passing "" would
+              // collapse all such conversions into one.
+              var purchase = {
+                send_to: "AW-16632748715/H4ugCKmKh_wbEKu1jvs9",
+                value: 1.0,
+                currency: "USD",
+              };
+              if (properties && properties.invoice_created_ts) {
+                purchase.transaction_id = String(
+                  properties.invoice_created_ts,
+                );
+              }
+              return purchase;
+            default:
+              return null;
+          }
+        }
+
+        // Google Ads MCC-account conversion resolver. Parallel to
+        // resolveGoogleAdsConversion above — dual-fires to the MCC
+        // (manager) account while the legacy direct account is still
+        // live, so either side can be removed independently once the
+        // migration settles. Purchase-only for now.
+        function resolveGoogleAdsMccConversion(event, properties) {
+          switch (event) {
+            case "payment_state_success":
+              // Google Ads (MCC): Purchase. transaction_id mirrors the
+              // legacy account's dedup key (invoice_created_ts) so both
+              // accounts dedupe identically; may switch to external_id
+              // once that value is available client-side. Omitted when
+              // absent — Google Ads dedupes on it, so an empty string
+              // would collapse all such conversions into one.
+              var purchase = {
+                send_to: "AW-11477462985/5dbtCKe7qbccEMnf8OAq",
+                value: 1.0,
+                currency: "USD",
+              };
+              if (properties && properties.invoice_created_ts) {
+                purchase.transaction_id = String(
+                  properties.invoice_created_ts,
+                );
+              }
+              return purchase;
+            default:
+              return null;
+          }
+        }
+
+        // Initialize gtag.js directly (no GTM container)
+        function initGtag(measurementId, floodlightId, mccMeasurementId) {
+          if (!measurementId && !floodlightId && !mccMeasurementId) {
+            logDebug("No measurement or Floodlight ID provided, skipping gtag");
+            return;
+          }
+
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function () {
+            window.dataLayer.push(arguments);
+          };
+
+          // Set default consent to granted since the parent only renders
+          // this iframe when marketing consent is already granted
+          window.gtag("consent", "default", {
+            ad_personalization: "granted",
+            ad_user_data: "granted",
+            ad_storage: "granted",
+            analytics_storage: "granted",
+            functionality_storage: "granted",
+            personalization_storage: "granted",
+            security_storage: "granted",
+          });
+          window.gtag("js", new Date());
+
+          // Load the gtag.js script using whichever ID is available
+          var primaryId = measurementId || floodlightId || mccMeasurementId;
+          var scriptTag = document.createElement("script");
+          scriptTag.async = true;
+          scriptTag.src =
+            "https://www.googletagmanager.com/gtag/js?id=" + primaryId;
+          var firstTag = document.getElementsByTagName("script")[0];
+          firstTag.parentNode.insertBefore(scriptTag, firstTag);
+
+          // Configure measurement ID (Google Ads / GA4)
+          if (measurementId) {
+            window.gtag("config", measurementId, { send_page_view: false });
+          }
+
+          // Configure Floodlight (CM360)
+          if (floodlightId) {
+            window.gtag("config", floodlightId, { send_page_view: false, allow_enhanced_conversions: true });
+          }
+
+          // Configure Google Ads MCC (manager) account — dual-fired
+          // alongside measurementId during the account migration.
+          if (mccMeasurementId) {
+            window.gtag("config", mccMeasurementId, { send_page_view: false });
+          }
+
+          logDebug("gtag.js loaded", { measurementId, floodlightId, mccMeasurementId });
+        }
+
+        // Create isolated segment object on window
+        window.isolatedSegment = {
+          initialized: false,
+          writeKey: null,
+          segmentCdnHost: null,
+
+          // Initialize the isolated segment instance
+          init: function (
+            writeKey,
+            segmentCdnHost,
+            gtagMeasurementId,
+            floodlightId,
+            gtagMccMeasurementId,
+          ) {
+            logDebug("init called", {
+              writeKey: writeKey?.substring(0, 10) + "...",
+              segmentCdnHost,
+              gtagMeasurementId,
+              gtagMccMeasurementId,
+              floodlightId,
+              alreadyInitialized: this.initialized,
+            });
+
+            if (this.initialized) {
+              logDebug("Already initialized, skipping");
+              return;
+            }
+
+            this.writeKey = writeKey;
+            this.segmentCdnHost = segmentCdnHost;
+
+            try {
+              logDebug("Loading analytics via analytics.js");
+
+              // Set custom CDN host if provided
+              if (segmentCdnHost) {
+                // Override the analytics.load function to use custom CDN
+                const originalLoad = window.analytics.load;
+                window.analytics.load = function (key, options) {
+                  const script = document.createElement("script");
+                  script.type = "text/javascript";
+                  script.async = true;
+                  script.setAttribute(
+                    "data-global-segment-analytics-key",
+                    "analytics",
+                  );
+                  script.src =
+                    "https://" +
+                    segmentCdnHost +
+                    "/analytics.js/v1/" +
+                    key +
+                    "/analytics.min.js";
+                  const firstScript =
+                    document.getElementsByTagName("script")[0];
+                  firstScript.parentNode.insertBefore(script, firstScript);
+                  window.analytics._loadOptions = options;
+                };
+              }
+
+              // Configure analytics options
+              const loadOptions = {
+                disableClientPersistence: true, // Prevent Segment from setting ajs_anonymous_id cookie
+                integrations: {
+                  All: false,
+                  "Segment.io": false,
+                  "Facebook Pixel": true,
+                },
+              };
+
+              // Load analytics
+              window.analytics.load(writeKey, loadOptions);
+
+              // Initialize gtag.js if measurement ID or Floodlight ID provided
+              if (gtagMeasurementId || floodlightId || gtagMccMeasurementId) {
+                initGtag(gtagMeasurementId, floodlightId, gtagMccMeasurementId);
+              }
+
+              this.initialized = true;
+
+              // pixel telemetry: record configured pixel IDs for each
+              // vendor, then start watching resource timings. FB emits
+              // the constant "fb" rather than the numeric pixel id —
+              // the real id lives in Segment's destination config (not
+              // ours), so the parent cannot ground-truth it.
+              // Both Google Ads accounts (legacy + MCC) fire to the
+              // same googleadservices.com/doubleclick endpoints, so
+              // the resource-timing observer cannot tell their
+              // beacons apart. They share one telemetry bucket; the
+              // representative ID is whichever is configured (legacy
+              // first, falling back to MCC) so this survives either
+              // account's removal.
+              if (gtagMeasurementId || gtagMccMeasurementId) {
+                pixelFirePixelIds.google_ads =
+                  gtagMeasurementId || gtagMccMeasurementId;
+              }
+              if (floodlightId) {
+                pixelFirePixelIds.floodlight = floodlightId;
+              }
+              pixelFirePixelIds.facebook = "fb";
+              startPixelFireObserver();
+
+              logDebug("Analytics loaded successfully", {
+                hasAnalytics: !!window.analytics,
+                hasGtag: typeof window.gtag === "function",
+              });
+
+              // Clear the ready interval
+              if (readyInterval) {
+                clearInterval(readyInterval);
+                readyInterval = null;
+              }
+
+              // Send confirmation back to parent
+              this.sendMessage({
+                type: "segment_initialized",
+                success: true,
+              });
+            } catch (error) {
+              logDebug("Failed to initialize analytics", {
+                error: error.message,
+              });
+              this.sendMessage({
+                type: "segment_initialized",
+                success: false,
+                error: error.message,
+              });
+            }
+          },
+
+          track: async function (event, properties, options) {
+            logDebug("track called", {
+              event,
+              properties,
+              initialized: this.initialized,
+              hasAnalytics: !!window.analytics,
+              hasGtag: typeof window.gtag === "function",
+            });
+
+            if (!this.initialized) {
+              logDebug("Track skipped - not initialized");
+              return;
+            }
+
+            // Fire gtag conversions first — gtag() is synchronous (just
+            // pushes to dataLayer) and has no dependency on Segment. Doing it
+            // before the FB await means a hung Segment promise can't block it.
+            if (typeof window.gtag === "function") {
+              var floodlightSendTo = resolveFloodlightSendTo(
+                event,
+                properties,
+              );
+              if (floodlightSendTo) {
+                try { pixelAttempt(pixelFirePixelIds.floodlight); } catch {}
+                window.gtag("event", "conversion", {
+                  send_to: floodlightSendTo,
+                });
+                logDebug("Track completed for Floodlight", {
+                  event,
+                  send_to: floodlightSendTo,
+                });
+              }
+
+              var googleAdsConversion = resolveGoogleAdsConversion(
+                event,
+                properties,
+              );
+              if (googleAdsConversion) {
+                try { pixelAttempt(pixelFirePixelIds.google_ads); } catch {}
+                window.gtag("event", "conversion", googleAdsConversion);
+                logDebug("Track completed for Google Ads", {
+                  event,
+                  send_to: googleAdsConversion.send_to,
+                });
+              }
+
+              var googleAdsMccConversion = resolveGoogleAdsMccConversion(
+                event,
+                properties,
+              );
+              if (googleAdsMccConversion) {
+                try { pixelAttempt(pixelFirePixelIds.google_ads); } catch {}
+                window.gtag("event", "conversion", googleAdsMccConversion);
+                logDebug("Track completed for Google Ads (MCC)", {
+                  event,
+                  send_to: googleAdsMccConversion.send_to,
+                });
+              }
+            }
+
+            // Get the remapped Facebook event name
+            const fbEventName = FB_EVENT_MAPPING[event] || event;
+
+            if (window.analytics) {
+              try { pixelAttempt(pixelFirePixelIds.facebook); } catch {}
+              try {
+                // Track with Facebook event name for Facebook Pixel only
+                await window.analytics.track(fbEventName, properties || {}, {
+                  ...(options || {}),
+                  integrations: {
+                    All: false,
+                    "Facebook Pixel": true,
+                  },
+                });
+                logDebug("Track completed for Facebook Pixel", {
+                  originalEvent: event,
+                  fbEventName,
+                });
+              } catch (e) {
+                logDebug("Track failed for Facebook Pixel", {
+                  originalEvent: event,
+                  error: String(e),
+                });
+              }
+            }
+          },
+
+          identify: async function (userId, traits, options) {
+            logDebug("identify called", {
+              userId,
+              traits,
+              initialized: this.initialized,
+              hasAnalytics: !!window.analytics,
+            });
+
+            if (!this.initialized) {
+              logDebug("Identify skipped - not initialized");
+              return;
+            }
+
+            // Set user_data for Enhanced Conversions (CM360/SA360).
+            // gtag normalizes and SHA-256 hashes the email client-side
+            // before sending — raw email never leaves the browser unhashed.
+            if (typeof window.gtag === "function" && traits && traits.email) {
+              window.gtag("set", "user_data", { email: traits.email });
+              logDebug("gtag user_data set for Enhanced Conversions");
+            }
+
+            if (!window.analytics) {
+              logDebug("Identify skipped for Segment - no analytics");
+              return;
+            }
+
+            try {
+              await window.analytics.identify(
+                userId,
+                traits || {},
+                options || {},
+              );
+              logDebug("Identify completed", { userId });
+            } catch (e) {
+              logDebug("Identify failed for Segment", {
+                userId,
+                error: String(e),
+              });
+            }
+          },
+
+          // Send messages to parent window
+          sendMessage: function (data) {
+            // Only log sendMessage for non-ready messages after initialization
+            if (data.type !== "iframe_ready") {
+              logDebug("sendMessage called", { data });
+            }
+            if (window.parent && window.parent !== window) {
+              try {
+                window.parent.postMessage(
+                  {
+                    source: "isolated-segment",
+                    ...data,
+                  },
+                  "*",
+                );
+                if (data.type !== "iframe_ready") {
+                  logDebug("Message sent to parent", { type: data.type });
+                }
+              } catch (error) {
+                logDebug("Failed to send message to parent", { error });
+              }
+            }
+          },
+        };
+
+        // Listen for messages from parent
+        function handleMessage(event) {
+          // Security check: validate the origin is from the same base domain
+          // Allow both same-origin (for localhost) and parent domain (for a.subdomain setup)
+          const currentOrigin = window.location.origin;
+          const currentHostname = window.location.hostname;
+          const eventHostname = new URL(event.origin).hostname;
+
+          // Extract base domain (remove 'a.' prefix if present)
+          const baseDomain = currentHostname.startsWith("a.")
+            ? currentHostname.substring(2)
+            : currentHostname;
+          const eventBaseDomain = eventHostname.startsWith("a.")
+            ? eventHostname.substring(2)
+            : eventHostname;
+
+          // Allow messages from same origin or from parent domain
+          const isValidOrigin =
+            event.origin === currentOrigin || eventBaseDomain === baseDomain;
+
+          if (!isValidOrigin) {
+            logDebug("Message rejected - invalid origin", {
+              expected: currentOrigin,
+              expectedBaseDomain: baseDomain,
+              received: event.origin,
+              receivedBaseDomain: eventBaseDomain,
+            });
+            return;
+          }
+
+          const data = event.data;
+
+          if (data.target !== "isolated-segment") {
+            logDebug("Message not for isolated-segment, ignoring", {
+              target: data.target,
+            });
+            return;
+          }
+
+          // Full-payload logging only AFTER the namespace check: other
+          // buses' messages cross this frame too — notably the ATM init,
+          // which carries the per-session envelope auth token — and
+          // vendor scripts run here, so nothing that isn't ours gets its
+          // payload echoed to the console.
+          logDebug("Message received from parent", {
+            origin: event.origin,
+            data: event.data,
+          });
+
+          logDebug("Processing message", { type: data.type });
+
+          switch (data.type) {
+            case "init":
+              // Don't log before init is called
+              window.isolatedSegment.init(
+                data.writeKey,
+                data.cdnHost,
+                data.gtagMeasurementId,
+                data.floodlightId,
+                data.gtagMccMeasurementId,
+              );
+              break;
+
+            case "track":
+              logDebug("Handling track message", { event: data.event });
+              window.isolatedSegment.track(
+                data.event,
+                data.properties,
+                data.options,
+              );
+              break;
+
+            case "identify":
+              logDebug("Handling identify message", { userId: data.userId });
+              window.isolatedSegment.identify(data.userId, data.traits);
+              break;
+
+            default:
+              logDebug("Unknown message type", { type: data.type });
+              break;
+          }
+        }
+
+        window.addEventListener("message", handleMessage);
+
+        function sendReadyMessage() {
+          logDebug("Sending iframe_ready message");
+          if (!window.isolatedSegment.initialized) {
+            window.isolatedSegment.sendMessage({
+              type: "iframe_ready",
+              timestamp: new Date().toISOString(),
+            });
+          } else if (readyInterval) {
+            clearInterval(readyInterval);
+            readyInterval = null;
+          }
+        }
+
+        // Notify parent that iframe is ready after DOM is loaded
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", function () {
+            sendReadyMessage();
+            // Keep sending every 500ms until initialized
+            readyInterval = setInterval(sendReadyMessage, 500);
+          });
+        } else {
+          // DOM is already loaded
+          sendReadyMessage();
+          // Keep sending every 500ms until initialized
+          readyInterval = setInterval(sendReadyMessage, 500);
+        }
+      })();
+    </script>
+    <script>
+      (function () {
+        // --- ATM (Ant Tag Manager) consumer ---------------------------
+        // Receiving endpoint for the parent-page atmBridge feeder
+        // (packages/antalytics-react/src/atmBridge.ts). This is a
+        // PARALLEL listener to the isolated-segment handler above — the
+        // two buses share the frame but nothing else: different target
+        // namespace ("atm-bridge"), own origin gate, own handshake. No
+        // vendor adapters yet: envelopes are validated and kept in a
+        // bounded dev-visible sink (window.atmConsumer.received +
+        // console.debug), so the wiring is demonstrable end-to-end.
+        function logDebug(message, ...args) {
+          console.debug("[AtmConsumer]", message, ...args);
+        }
+
+        // Window.parent is a [Replaceable] attribute: any in-frame vendor
+        // script can assign window.parent = window and then self-post a
+        // GENUINE (isTrusted, same-origin) message whose source equals the
+        // replaced value — so every sender comparison and outbound post
+        // below uses this eval-time capture, never a live window.parent
+        // read. LOAD-BEARING ORDER: this inline script MUST stay ahead of
+        // any third-party script tag in this document — the capture is
+        // genuine only because it runs before vendor code can touch the
+        // global. (Verified at introduction: the only earlier inline
+        // blocks are this page's own first-party Segment shim and legacy
+        // handler; vendor bundles load asynchronously after.)
+        var realParent = window.parent;
+
+        // The wire protocol with the parent-page bridge: target
+        // namespaces the bus (this and the legacy isolated-segment
+        // listener ignore each other's messages by it); the three types
+        // are the event envelope and the two handshake legs (iframe
+        // announces ready until the parent acks init). These mirror the
+        // ATM_BRIDGE_* constants exported from
+        // packages/antalytics-react/src/atmBridge.ts — duplicated as
+        // literals because this standalone page has no build step to
+        // import through; the cross-side agreement is pinned by
+        // apps/claude-ai/src/atmConsumer.test.ts, which drives
+        // THIS script with the bridge package's exported constants.
+        var MESSAGE_TARGET = "atm-bridge";
+        // v2: the envelope is a resolved instruction — it carries the
+        // event's destination list (with per-destination enriched
+        // values) and this side executes it with NO config of its own.
+        // The version lives in the type string: a v1-only consumer
+        // would drop v2 envelopes as an unknown type and vice versa, so
+        // the two sides can land and roll independently.
+        var EVENT_MESSAGE_TYPE = "atm.analytics_event.v2";
+        var READY_MESSAGE_TYPE = "atm.ready.v1";
+        var INIT_MESSAGE_TYPE = "atm.init.v1";
+        // iframe → parent: one rejected-message count (enum only, no
+        // content) — this sandboxed page has no Datadog SDK, so the
+        // parent emits to RUM on our behalf. Mirrors
+        // ATM_BRIDGE_METRIC_MESSAGE_TYPE in atmBridge.ts; the reason
+        // values mirror ATM_CONSUMER_REJECT_REASONS and the parent
+        // drops anything outside that closed set.
+        var METRIC_MESSAGE_TYPE = "atm.metric.v1";
+        // Defensive cap on a v2 envelope's destination list. The bridge
+        // can only produce as many entries as the event's config
+        // declares (single digits); a forged message could send
+        // thousands. Generous multiple of any plausible config size.
+        var DESTINATIONS_MAX = 32;
+        var RECEIVED_MAX = 50;
+        // Reject-metric posts are capped per page load: enough to see a
+        // real probe or contract break in RUM, bounded if something
+        // spams forged messages at the frame.
+        var METRICS_MAX = 100;
+        // Closure-local on purpose: this is the cap's authoritative
+        // state, and the other scripts in this frame are exactly the
+        // untrusted code the cap bounds — a window-global counter would
+        // hand them the reset knob. The dev-visible mirror below is a
+        // getter-only, non-configurable view of this variable.
+        var metricsPosted = 0;
+        // Stop announcing after ~30s: if the parent hasn't acked by then,
+        // its ATM handler isn't mounted this page load (flag off or old
+        // parent) and never will be — the feeder gate is captured at the
+        // provider's one-shot init, so a mid-session flip only takes
+        // effect on the next load, which boots a fresh frame anyway.
+        var READY_MAX_ATTEMPTS = 60;
+        var readyAttempts = 0;
+
+        var readyInterval = null;
+        // Outbound origin pin (the bus spec pins BOTH directions; the
+        // legacy isolated-segment sendMessage's "*" is deliberately not
+        // copied). Before any inbound message exists, the parent origin
+        // is derived from our own hostname: this frame is served from
+        // a.<parent-domain>, so stripping the "a." prefix names the only
+        // parent the deployment embeds us under (same-origin dev keeps
+        // location.origin). After a validated init arrives, we pin to
+        // that event's exact origin instead.
+        var parentOrigin = (function () {
+          var host = window.location.hostname;
+          if (host.indexOf("a.") === 0) {
+            return window.location.protocol + "//" + host.substring(2) +
+              (window.location.port ? ":" + window.location.port : "");
+          }
+          return window.location.origin;
+        })();
+
+        window.atmConsumer = {
+          received: [],
+        };
+        // Dev-visible, tamper-resistant mirrors of the consumer's
+        // security-relevant state: getter-only and non-configurable, so
+        // frame scripts can read but cannot write or redefine them — and
+        // even replacing window.atmConsumer wholesale cannot touch the
+        // closure variables the enforcement paths read.
+        Object.defineProperty(window.atmConsumer, "initialized", {
+          enumerable: true,
+          get: function () {
+            return initialized;
+          },
+        });
+        Object.defineProperty(window.atmConsumer, "metricsPosted", {
+          enumerable: true,
+          get: function () {
+            return metricsPosted;
+          },
+        });
+
+        // Per-session envelope auth token, learned ONLY from a validated
+        // init (authenticated by origin gate + sender check). Envelopes
+        // must carry it; before init none exists, so pre-init envelopes
+        // are dropped — the parent sends init before it flushes any
+        // envelope, and postMessage order is preserved, so nothing
+        // legitimate is lost. (Keep doc
+        // security/aki-security-index/products/claude-ai-web.md §6 /
+        // CLAU-AI-WEB-06: privileged channels authenticate messages
+        // with per-session tokens; the envelope carries routing
+        // authority, so the origin gate alone is not the whole gate.)
+        var sessionToken = null;
+
+        // First-init latch, closure-local for the same reason as
+        // sessionToken and metricsPosted: it enforces the token-binding
+        // property (CLAU-AI-WEB-06 — the token stays bound to the
+        // handshake that earned it), and in-frame vendor scripts are
+        // exactly the code that must not be able to reset it. The
+        // dev-visible window.atmConsumer.initialized is a getter-only
+        // mirror of this variable.
+        var initialized = false;
+
+        // Report one reject to the parent for Datadog emission (see
+        // METRIC_MESSAGE_TYPE above). Counts only — the rejected
+        // message's content never rides along. Uses the same outbound
+        // origin pin as the ready loop: before init that is the derived
+        // parent origin; a page load whose parent has no ATM handler
+        // mounted simply drops these, which is the fail-safe direction.
+        function postMetric(reason) {
+          if (metricsPosted >= METRICS_MAX) {
+            return;
+          }
+          metricsPosted += 1;
+          try {
+            realParent.postMessage(
+              { source: MESSAGE_TARGET, type: METRIC_MESSAGE_TYPE, metric: reason },
+              parentOrigin,
+            );
+          } catch (e) {
+            logDebug("Failed to post metric to parent", { error: String(e) });
+          }
+        }
+
+        // Same base-domain rule as the isolated-segment gate above, with
+        // the two defects traced there guarded: a non-string or opaque
+        // "null" origin is rejected before new URL() can throw. One
+        // deliberate tightening over the legacy gate (security review on
+        // the enrichment change): a CROSS-origin embedder must also be
+        // https on this frame's own port — hostname alone is not a trust
+        // boundary (an http origin is MITM-forgeable; a different port is
+        // a different server). With scheme and port pinned, the
+        // base-domain branch accepts effectively one origin: the parent
+        // this deployment embeds us under — the same a.-strip rule the
+        // outbound parentOrigin pin uses — while keeping it working at
+        // any subdomain depth. The same-origin first branch is an exact
+        // match and does not require https, so local dev is unaffected.
+        function isAllowedOrigin(origin) {
+          if (typeof origin !== "string" || origin === "null" || origin === "") {
+            return false;
+          }
+          if (origin === window.location.origin) {
+            return true;
+          }
+          var originUrl;
+          try {
+            originUrl = new URL(origin);
+          } catch (e) {
+            return false;
+          }
+          if (
+            originUrl.protocol !== "https:" ||
+            originUrl.port !== window.location.port
+          ) {
+            return false;
+          }
+          var originHostname = originUrl.hostname;
+          var currentHostname = window.location.hostname;
+          var baseDomain = currentHostname.indexOf("a.") === 0
+            ? currentHostname.substring(2)
+            : currentHostname;
+          var originBaseDomain = originHostname.indexOf("a.") === 0
+            ? originHostname.substring(2)
+            : originHostname;
+          return originBaseDomain === baseDomain;
+        }
+
+        // Envelope contract (v2, the resolved instruction):
+        // {event_name, event_id, event_timestamp, destinations} — the
+        // three strings non-empty and length-capped as before, and
+        // `destinations` a REQUIRED array (possibly empty, length-capped)
+        // of {destination, value?} entries: destination a non-empty
+        // length-capped string (NOT validated against any vendor list —
+        // this side deliberately has no config; adapters each look up
+        // their own name and unknown names are inert), value optional
+        // but a finite number when present (absent = count-only). A
+        // malformed envelope — missing or non-array destinations, a bad
+        // entry shape, a non-finite value — is rejected whole: the
+        // parent-side bridge never produces those shapes, so they can
+        // only be forged or corrupted messages. (Shape checks are not
+        // provenance: a WELL-formed instruction from the allowed
+        // embedder origin passes — and routing is part of what it
+        // dictates. The gate above pins scheme, port, and base domain,
+        // so that origin is effectively the one canonical parent; the
+        // remaining per-message source/proven-origin pinning is tracked
+        // for the adapter slice, where values become monetarily
+        // consequential.) Accepted instructions are cached on the
+        // stored envelope — nothing consumes them yet; the vendor
+        // adapters will execute them when they land. Reject-and-log
+        // anything else — adapters must never see a shape the
+        // parent-side bridge doesn't produce.
+        function validateEnvelope(event) {
+          if (typeof event !== "object" || event === null || Array.isArray(event)) {
+            return null;
+          }
+          var name = event.event_name;
+          var id = event.event_id;
+          var timestamp = event.event_timestamp;
+          if (
+            typeof name !== "string" || name.length === 0 || name.length > 200 ||
+            typeof id !== "string" || id.length === 0 || id.length > 128 ||
+            typeof timestamp !== "string" || timestamp.length === 0 || timestamp.length > 64
+          ) {
+            return null;
+          }
+          // dedupe_id is optional (present exactly when the parent's
+          // config declared an extraction for this event), but when
+          // present it must be a valid id: the parent suppresses the
+          // whole firing rather than send a bad one, so a malformed
+          // value here is a contract violation and rejects the
+          // envelope — firing an un-deduplicable pixel would
+          // double-count against the conversion's server-side twin.
+          var dedupeId = event.dedupe_id;
+          if (
+            dedupeId !== undefined &&
+            (typeof dedupeId !== "string" || dedupeId.length === 0 || dedupeId.length > 128)
+          ) {
+            return null;
+          }
+          var destinations = event.destinations;
+          if (!Array.isArray(destinations) || destinations.length > DESTINATIONS_MAX) {
+            return null;
+          }
+          var cleanDestinations = [];
+          for (var i = 0; i < destinations.length; i++) {
+            var entry = destinations[i];
+            if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+              return null;
+            }
+            var destination = entry.destination;
+            if (
+              typeof destination !== "string" ||
+              destination.length === 0 ||
+              destination.length > 64
+            ) {
+              return null;
+            }
+            var value = entry.value;
+            if (value === undefined) {
+              cleanDestinations.push({ destination: destination });
+            } else if (typeof value === "number" && isFinite(value)) {
+              cleanDestinations.push({ destination: destination, value: value });
+            } else {
+              return null;
+            }
+          }
+          var clean = {
+            event_name: name,
+            event_id: id,
+            event_timestamp: timestamp,
+            destinations: cleanDestinations,
+          };
+          if (dedupeId !== undefined) {
+            clean.dedupe_id = dedupeId;
+          }
+          return clean;
+        }
+
+        function handleAtmMessage(event) {
+          // Guard non-object data first: the legacy handler throws on
+          // string/null data; this one must not.
+          var data = event.data;
+          if (typeof data !== "object" || data === null || data.target !== MESSAGE_TARGET) {
+            return;
+          }
+          // Origin, source, and token are all forgeable from inside this
+          // frame: MessageEventInit accepts any origin string and any
+          // source (including the real window.parent). isTrusted is the
+          // one field a script cannot mint — browser-delivered postMessage
+          // events always carry true, constructor-built events always
+          // false — so synthetic in-frame dispatches bail here before they
+          // can reach the first-init latch (CLAU-AI-WEB-06).
+          if (event.isTrusted === false) {
+            logDebug("Message rejected - synthetic (untrusted) event");
+            postMetric("untrusted_event");
+            return;
+          }
+          if (!isAllowedOrigin(event.origin)) {
+            logDebug("Message rejected - invalid origin", { received: event.origin });
+            postMetric("invalid_origin");
+            return;
+          }
+          if (data.type === INIT_MESSAGE_TYPE) {
+            // First-init latch: the parent posts init exactly once per
+            // frame instance (remounts boot a fresh consumer), so a
+            // later init can only be another script at an allowed
+            // origin trying to swap in its own session token
+            // (CLAU-AI-WEB-06) — the token must stay bound to the
+            // handshake that earned it.
+            if (initialized) {
+              logDebug("Init rejected - already initialized");
+              postMetric("init_duplicate");
+              return;
+            }
+            // Strictness on the trust-establishing message: origin alone
+            // can be shared by sibling frames; the browser-set source
+            // must be the embedding parent itself.
+            if (event.source !== realParent) {
+              logDebug("Init rejected - sender is not the parent window");
+              postMetric("init_bad_sender");
+              return;
+            }
+            // The init must carry the session token the parent minted;
+            // an init without one is not something the parent produces.
+            if (
+              typeof data.token !== "string" ||
+              data.token.length === 0 ||
+              data.token.length > 128
+            ) {
+              logDebug("Init rejected - missing or malformed session token");
+              postMetric("init_bad_token");
+              return;
+            }
+            sessionToken = data.token;
+            initialized = true;
+            // Pin all further outbound to the proven parent origin.
+            parentOrigin = event.origin;
+            if (readyInterval) {
+              clearInterval(readyInterval);
+              readyInterval = null;
+            }
+            logDebug("Initialized by parent", { parentOrigin: parentOrigin });
+            return;
+          }
+          if (data.type === EVENT_MESSAGE_TYPE) {
+            // Same sender strictness as init (CLAU-AI-WEB-06: every
+            // handler validates event.source, not just origin — and the
+            // envelope now carries routing authority). This closes the
+            // carried-forward review item that deferred the envelope
+            // source check to the adapter slice.
+            if (event.source !== realParent) {
+              logDebug("Envelope rejected - sender is not the parent window");
+              postMetric("envelope_bad_sender");
+              return;
+            }
+            // Per-session token: only the parent that completed the
+            // handshake can have it. No token has been learned before
+            // init, so pre-init envelopes drop here.
+            if (sessionToken === null || data.token !== sessionToken) {
+              logDebug("Envelope rejected - missing or wrong session token");
+              postMetric("envelope_bad_token");
+              return;
+            }
+            var envelope = validateEnvelope(data.event);
+            if (envelope === null) {
+              logDebug("Envelope rejected - invalid shape", { type: data.type });
+              postMetric("envelope_invalid_shape");
+              return;
+            }
+            // Dev-visible sink (bounded). The adapter/config router that
+            // routes envelopes to vendors arrives with vendor onboarding.
+            window.atmConsumer.received.push(envelope);
+            if (window.atmConsumer.received.length > RECEIVED_MAX) {
+              window.atmConsumer.received.splice(
+                0,
+                window.atmConsumer.received.length - RECEIVED_MAX,
+              );
+            }
+            logDebug("Envelope received", envelope);
+            return;
+          }
+          logDebug("Unknown message type", { type: data.type });
+          postMetric("unknown_type");
+        }
+
+        window.addEventListener("message", handleAtmMessage);
+
+        function sendReadyMessage() {
+          if (initialized || readyAttempts >= READY_MAX_ATTEMPTS) {
+            if (readyInterval) {
+              clearInterval(readyInterval);
+              readyInterval = null;
+            }
+            return;
+          }
+          readyAttempts += 1;
+          try {
+            realParent.postMessage(
+              { source: MESSAGE_TARGET, type: READY_MESSAGE_TYPE },
+              parentOrigin,
+            );
+          } catch (e) {
+            logDebug("Failed to post ready to parent", { error: String(e) });
+          }
+        }
+
+        function startReadyLoop() {
+          sendReadyMessage();
+          readyInterval = setInterval(sendReadyMessage, 500);
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", startReadyLoop);
+        } else {
+          startReadyLoop();
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <h1 hidden="">Isolated Segment</h1>
+  
+
+</body></html>

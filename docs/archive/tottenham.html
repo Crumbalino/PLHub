@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<!--
+  THE FOOTBALL HUB — Tottenham reference page
+  v1.0 · 26 August 2026
+
+  STATUS: reference implementation, not a governing document.
+  THE_FOOTBALL_HUB.md and PAGE_SPEC.md govern. This page shows the
+  design system resolved in context. If they disagree, the docs win
+  and this file gets regenerated.
+
+  SYSTEM AS BUILT
+    Ground    #05070C   not pure black - halation
+    Ink       #F2F6FA   18.56:1 - the ONLY text colour
+    Amber     #F0A32A   9.57:1  - means "this moved", nothing else
+    Green     #22E08A   11.61:1 - CONFIRMED only
+    Hairline  #1B2430   1px rules, never text
+
+    No grey. No dim tier. No tinted neutrals.
+    Hierarchy = size, weight, case, letterspacing, sans/mono switch.
+
+    Type      Atkinson Hyperlegible Next + Atkinson Hyperlegible Mono
+    h1        44/300/-0.035em desktop, 29px mobile
+    body      17px/1.6, 16px mobile
+    label     mono 11px/500/0.2em/caps
+    data      mono 13px tabular
+    Edges     square, 2px max. Min font 11px. Min touch 44px.
+
+  NOT YET RESOLVED
+    Wordmark lockup beyond the header treatment
+    Club accent - PAGE_SPEC 14 has a per-club accent that conflicts
+      with "amber means one thing". Badge active state only, proposed.
+    Motion, loading and empty states
+    Light mode for the email
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tottenham · The Football Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@300;400;500;600;700&family=Atkinson+Hyperlegible+Next:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#05070C; --line:#1B2430; --ink:#F2F6FA;
+    --amber:#F0A32A; --green:#22E08A;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--ground);color:var(--ink);
+    font-family:"Atkinson Hyperlegible Next",Arial,sans-serif;-webkit-font-smoothing:antialiased;
+    font-size:17px;line-height:1.6}
+  .mono{font-family:"Atkinson Hyperlegible Mono",monospace}
+  a{color:inherit;text-decoration:none}
+
+  /* header */
+  .masthead{border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--ground);z-index:10}
+  .mastinner{max-width:1240px;margin:0 auto;padding:14px 20px}
+  .toprow{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+  .wordmark{font-size:20px;font-weight:800;letter-spacing:-.045em;line-height:1}
+  .wordmark .sl{color:var(--amber)}
+  nav{display:flex;gap:20px;font-family:"Atkinson Hyperlegible Mono",monospace;font-size:11px;
+    font-weight:500;letter-spacing:.18em;text-transform:uppercase}
+  .badges{display:flex;gap:5px;margin-top:12px;overflow-x:auto;padding-bottom:2px}
+  .badge{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:10.5px;font-weight:600;
+    letter-spacing:.06em;padding:5px 7px;border:1px solid var(--line);white-space:nowrap;
+    min-width:40px;text-align:center}
+  .badge.on{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+
+  /* page head */
+  .pagehead{max-width:1240px;margin:0 auto;padding:34px 20px 22px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  h1{font-size:44px;font-weight:300;letter-spacing:-.035em;line-height:1.04;margin:0}
+  .updated{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:12px}
+
+  /* grid */
+  .grid{max-width:1240px;margin:0 auto;padding:0 20px 70px;display:grid;grid-template-columns:1fr}
+  @media(min-width:1024px){
+    .grid{grid-template-columns:250px minmax(0,1fr) 290px;gap:40px}
+    .col-left{order:1}.col-mid{order:2}.col-right{order:3}
+  }
+  @media(min-width:640px) and (max-width:1023px){
+    .grid{grid-template-columns:minmax(0,1fr) 280px;gap:32px}
+    .col-mid{order:1}.col-right{order:2}.col-left{order:3;grid-column:1/-1}
+  }
+  @media(max-width:639px){ .col-right{order:1}.col-mid{order:2}.col-left{order:3} }
+
+  /* blocks */
+  .block{padding:26px 0;border-bottom:1px solid var(--line)}
+  .lab{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:11px;font-weight:500;
+    letter-spacing:.2em;text-transform:uppercase;margin:0 0 14px}
+  .lab.amber{color:var(--amber)}
+
+  .row{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:13px;
+    display:flex;justify-content:space-between;gap:14px;padding:5px 0}
+  .row .r{text-align:right;flex:0 0 auto;font-variant-numeric:tabular-nums}
+
+  .kick{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;display:flex;justify-content:space-between;margin-bottom:12px}
+  .fixture{font-size:25px;font-weight:700;letter-spacing:-.02em;line-height:1.14;margin:0 0 10px}
+  .fixmeta{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:12.5px;line-height:1.7}
+
+  .big-h{font-size:29px;font-weight:700;letter-spacing:-.025em;line-height:1.14;margin:0 0 12px}
+  .bones{font-size:17px;line-height:1.6;margin:0 0 14px}
+  .story{padding:18px 0;border-top:1px solid var(--line)}
+  .story-h{font-size:20px;font-weight:700;letter-spacing:-.015em;line-height:1.22;margin:0 0 7px}
+  .story-b{font-size:16px;line-height:1.55;margin:0 0 10px}
+  .outlets{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:12px;
+    display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .count{color:var(--amber)}
+  .cat{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:10.5px;font-weight:600;
+    letter-spacing:.18em;text-transform:uppercase;margin:0 0 8px}
+
+  .conf-row{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:13px;
+    display:flex;justify-content:space-between;gap:14px;padding:7px 0;align-items:baseline}
+  .official{color:var(--green);font-size:10.5px;font-weight:600;letter-spacing:.16em;
+    text-transform:uppercase;flex:0 0 auto}
+
+  table{width:100%;border-collapse:collapse;
+    font-family:"Atkinson Hyperlegible Mono",monospace;font-size:13px}
+  td{padding:5px 0}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;padding-left:8px}
+  tr.here td{font-weight:700;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+
+  .form{display:flex;gap:6px;font-family:"Atkinson Hyperlegible Mono",monospace;
+    font-size:14px;font-weight:700;letter-spacing:.14em}
+
+  .wyt{padding:14px 0;border-top:1px solid var(--line)}
+  .wyt:first-of-type{border-top:0;padding-top:0}
+  .worth{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:11px;font-weight:500;
+    letter-spacing:.16em;text-transform:uppercase;margin:0 0 6px}
+  .wyt-t{font-size:17px;font-weight:700;line-height:1.3;letter-spacing:-.01em;margin:0 0 5px}
+  .wyt-m{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:12px;margin:0}
+
+  .ref-name{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 12px}
+  .ref-fact{font-size:16px;line-height:1.55;margin:14px 0 0;padding-top:14px;border-top:1px solid var(--line)}
+
+  .kd{padding:9px 0}
+  .kd-l{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:10.5px;font-weight:500;
+    letter-spacing:.16em;text-transform:uppercase;margin:0 0 3px}
+  .kd-v{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .kd-v span{font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:400;font-size:14px}
+
+  .opp-name{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 12px}
+  .opp-link{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:12px;
+    letter-spacing:.1em;margin-top:14px;display:block;text-align:right}
+
+  .signoff{padding:34px 0 0;text-align:center}
+  .signoff-l{font-size:20px;font-weight:300;letter-spacing:-.02em;margin:0 0 10px}
+  .signoff-s{font-family:"Atkinson Hyperlegible Mono",monospace;font-size:12px;margin:0}
+
+  .footnote{max-width:1240px;margin:0 auto;padding:0 20px 60px}
+  .footnote-in{border-top:1px solid var(--line);padding-top:20px;
+    font-family:"Atkinson Hyperlegible Mono",monospace;font-size:12px;line-height:1.75}
+  .footnote-in b{color:var(--amber);font-weight:600}
+
+  @media(max-width:639px){
+    h1{font-size:29px}
+    .big-h{font-size:23px}
+    .story-h{font-size:18px}
+    .bones{font-size:16px}
+    .fixture{font-size:22px}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="mastinner">
+    <div class="toprow">
+      <div class="wordmark">thefootball<span class="sl">/</span>hub</div>
+      <nav><a>Football</a><a>My clubs</a><a>Transfers</a><a>Matches</a><a>Search</a></nav>
+    </div>
+    <div class="badges">
+      <span class="badge">ARS</span><span class="badge">AVL</span><span class="badge">BOU</span>
+      <span class="badge">BRE</span><span class="badge">BHA</span><span class="badge">CHE</span>
+      <span class="badge">COV</span><span class="badge">CRY</span><span class="badge">EVE</span>
+      <span class="badge">FUL</span><span class="badge">HUL</span><span class="badge">LEE</span>
+      <span class="badge">LIV</span><span class="badge">MCI</span><span class="badge">MUN</span>
+      <span class="badge">NEW</span><span class="badge">NFO</span><span class="badge">SUN</span>
+      <span class="badge on">TOT</span><span class="badge">WHU</span>
+    </div>
+  </div>
+</header>
+
+<div class="pagehead">
+  <h1>Tottenham Hotspur</h1>
+  <div class="updated mono">Updated 14 minutes ago</div>
+</div>
+
+<div class="grid">
+
+  <!-- LEFT -->
+  <div class="col-left">
+    <div class="block">
+      <p class="lab">Table</p>
+      <table>
+        <tr><td>2</td><td>Liverpool</td><td class="num">7</td><td class="num">+9</td><td class="num">17</td></tr>
+        <tr><td>3</td><td>Arsenal</td><td class="num">7</td><td class="num">+7</td><td class="num">16</td></tr>
+        <tr><td>4</td><td>Newcastle</td><td class="num">7</td><td class="num">+6</td><td class="num">16</td></tr>
+        <tr class="here"><td>5</td><td>Tottenham</td><td class="num">7</td><td class="num">+5</td><td class="num">15</td></tr>
+        <tr><td>6</td><td>Man City</td><td class="num">7</td><td class="num">+4</td><td class="num">14</td></tr>
+        <tr><td>7</td><td>Chelsea</td><td class="num">7</td><td class="num">+2</td><td class="num">13</td></tr>
+        <tr><td>8</td><td>Aston Villa</td><td class="num">7</td><td class="num">0</td><td class="num">11</td></tr>
+      </table>
+      <div class="row" style="padding-top:12px"><span>View full table</span><span class="r">→</span></div>
+    </div>
+
+    <div class="block">
+      <p class="lab">Form</p>
+      <div class="form"><span>W</span><span>W</span><span>D</span><span>L</span><span>W</span></div>
+      <div class="row" style="padding-top:10px"><span>Most recent first</span></div>
+    </div>
+
+    <div class="block">
+      <p class="lab">Next opponent</p>
+      <p class="opp-name">Arsenal</p>
+      <div class="row"><span>Form</span><span class="r">W W W D L</span></div>
+      <div class="row"><span>Missing</span><span class="r">Saliba · unknown</span></div>
+      <div class="row"><span>Their story</span><span class="r">Talks over Zubimendi</span></div>
+      <a class="opp-link">Arsenal →</a>
+    </div>
+
+    <div class="block">
+      <p class="lab">Around the league</p>
+      <div class="story" style="border-top:0;padding-top:0">
+        <p class="story-h" style="font-size:17px">Man City reopen talks for Donnarumma</p>
+        <div class="outlets"><span>5 outlets</span><span class="count">+3 today</span></div>
+      </div>
+      <div class="story">
+        <p class="story-h" style="font-size:17px">Everton agree fee with Strasbourg for Emegha</p>
+        <div class="outlets"><span>4 outlets</span><span class="count">+2 today</span></div>
+      </div>
+      <div class="story">
+        <p class="story-h" style="font-size:17px">Coventry hold talks over Championship winger</p>
+        <div class="outlets"><span>3 outlets</span><span class="count">+2 today</span></div>
+      </div>
+    </div>
+
+    <div class="block" style="border-bottom:0">
+      <p class="lab">The numbers</p>
+      <div class="row"><span>Position</span><span class="r">5</span></div>
+      <div class="row"><span>Points</span><span class="r">15</span></div>
+      <div class="row"><span>Goal difference</span><span class="r">+5</span></div>
+      <div class="row"><span>Scored · conceded</span><span class="r">14 · 9</span></div>
+      <div class="row"><span>xG for · against</span><span class="r">12.8 · 9.4</span></div>
+      <div class="row"><span>Clean sheets</span><span class="r">2</span></div>
+    </div>
+  </div>
+
+  <!-- CENTRE -->
+  <div class="col-mid">
+    <div class="block">
+      <p class="lab amber">Rising</p>
+      <p class="cat">Transfer</p>
+      <p class="big-h">Atlético Madrid open talks with Tottenham over Cristian Romero</p>
+      <p class="bones">Contact has been made over a move for the defender. No fee has been reported and no timeline has been set. Tottenham have not commented.</p>
+      <div class="outlets"><span>SKY SPORTS · THE ATHLETIC · GUARDIAN · MARCA · TELEGRAPH · AS</span></div>
+      <div class="outlets" style="margin-top:6px">
+        <span>6 outlets · first reported Tuesday</span><span class="count">+2 today</span>
+      </div>
+    </div>
+
+    <div class="block">
+      <p class="lab">Developing</p>
+
+      <div class="story" style="border-top:0;padding-top:0">
+        <p class="cat">Team news</p>
+        <p class="story-h">Kulusevski targeting return before the international break</p>
+        <p class="story-b">The winger has resumed part-training. No date has been given by the club.</p>
+        <div class="outlets"><span>FOOTBALL LONDON · THE ATHLETIC · STANDARD</span><span class="count">+1 today</span></div>
+      </div>
+
+      <div class="story">
+        <p class="cat">Transfer</p>
+        <p class="story-h">Tottenham monitoring Bundesliga midfielder as Bissouma cover</p>
+        <p class="story-b">Scouts attended two matches last month. No approach has been reported.</p>
+        <div class="outlets"><span>BILD · SKY SPORTS · TEAMTALK</span><span class="count">+2 today</span></div>
+      </div>
+
+      <div class="story">
+        <p class="cat">Club</p>
+        <p class="story-h">Stadium expansion plans submitted to Haringey Council</p>
+        <p class="story-b">Documents cover the northern approach and a second retail unit. No cost stated.</p>
+        <div class="outlets"><span>BBC LONDON · STANDARD · TELEGRAPH</span></div>
+      </div>
+
+      <div class="story">
+        <p class="cat">Manager</p>
+        <p class="story-h">Frank defends rotation after nine changes in Europe</p>
+        <p class="story-b">The manager said the fixture schedule made the changes necessary.</p>
+        <div class="outlets"><span>SKY SPORTS · GUARDIAN</span></div>
+      </div>
+
+      <div class="story">
+        <p class="cat">Transfer</p>
+        <p class="story-h">Odobert linked with a loan return to Ligue 1</p>
+        <p class="story-b">Two clubs have made enquiries. No agreement has been reached.</p>
+        <div class="outlets"><span>L'ÉQUIPE · FOOT MERCATO</span></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <p class="lab">Confirmed</p>
+      <div class="conf-row"><span>Kevin Danso joins Wolfsburg on loan for the season</span><span class="official">Official</span></div>
+      <div class="conf-row"><span>Contract extension agreed with Archie Gray to 2031</span><span class="official">Official</span></div>
+      <div class="conf-row"><span>Kick-off against Chelsea moved to Sunday 14:00</span><span class="official">Official</span></div>
+      <div class="conf-row"><span>Vicario named in Italy squad for October</span><span class="official">Official</span></div>
+    </div>
+
+    <div class="block">
+      <p class="lab">Worth your time</p>
+      <div class="wyt">
+        <p class="worth">Worth 38 minutes</p>
+        <p class="wyt-t">Ali Gold on why Spurs stopped bidding in August</p>
+        <p class="wyt-m">Last Word On Spurs · YouTube · yesterday</p>
+      </div>
+      <div class="wyt">
+        <p class="worth">Worth 9 minutes</p>
+        <p class="wyt-t">The Athletic on the Romero contract situation</p>
+        <p class="wyt-m">The Athletic · 2 days ago</p>
+      </div>
+    </div>
+
+    <div class="block" style="border-bottom:0">
+      <p class="lab">Fan pulse · r/coys</p>
+      <div class="row"><span>Match thread: Tottenham 2–1 Brighton</span><span class="r">1.4k</span></div>
+      <div class="row"><span>Has Bergvall quietly become essential?</span><span class="r">412</span></div>
+      <div class="row"><span>Danso loan — did we get this right?</span><span class="r">198</span></div>
+      <div class="row" style="padding-top:12px"><span>Fan discussion, not reporting</span><span class="r">→</span></div>
+    </div>
+
+    <div class="signoff">
+      <p class="signoff-l">That's the lot.</p>
+      <p class="signoff-s">14 stories · 4 moving · updated 14 minutes ago</p>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col-right">
+    <div class="block">
+      <div class="kick"><span>Next up</span><span>Sun 16:30</span></div>
+      <p class="fixture">Tottenham v Arsenal</p>
+      <div class="fixmeta">Premier League<br>Tottenham Hotspur Stadium<br>Sky Sports Main Event</div>
+      <div class="row" style="padding-top:12px"><span>Difficulty</span><span class="r">5 of 5</span></div>
+    </div>
+
+    <div class="block">
+      <p class="lab">Availability</p>
+      <div class="row"><span>Bissouma</span><span class="r">Suspended · to 19 Sep</span></div>
+      <div class="row"><span>Romero</span><span class="r">Out · groin</span></div>
+      <div class="row"><span>Dragusin</span><span class="r">Out · knee · Nov</span></div>
+      <div class="row"><span>Kulusevski</span><span class="r">Doubtful · 75%</span></div>
+      <div class="row"><span>Solanke</span><span class="r">Back · in training</span></div>
+    </div>
+
+    <div class="block">
+      <p class="lab">The referee</p>
+      <p class="ref-name">Anthony Taylor</p>
+      <div class="row"><span>Cards per game</span><span class="r">4.8</span></div>
+      <div class="row"><span>Tottenham record</span><span class="r">5W 2D 3L in 10</span></div>
+      <div class="row"><span>Penalties given</span><span class="r">3 this season</span></div>
+      <p class="ref-fact">Has sent off more Premier League players than any other active official.</p>
+    </div>
+
+    <div class="block" style="border-bottom:0">
+      <p class="lab">Key data</p>
+      <div class="kd"><p class="kd-l">Top scorer</p><p class="kd-v">Solanke <span>· 6</span></p></div>
+      <div class="kd"><p class="kd-l">Most assists</p><p class="kd-v">Maddison <span>· 4</span></p></div>
+      <div class="kd"><p class="kd-l">Most minutes</p><p class="kd-v">Van de Ven <span>· 630</span></p></div>
+      <div class="kd"><p class="kd-l">One booking away</p><p class="kd-v" style="font-size:15px;line-height:1.4">Porro, Bentancur, Spence</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footnote">
+  <div class="footnote-in">
+    <b>Design note.</b> Every word here is #F2F6FA at full strength — no dimmed tier, no grey anywhere. Hierarchy is size, weight, case, letterspacing and the switch between sans and mono. Amber appears four times and only ever means <b>this moved</b>. Green appears only on <b>Official</b> — the one place the site states a fact rather than counting reports. Every edge is square. Data is illustrative. <b>v1.0 · 26 Aug 2026 · reference, not canon.</b>
+  </div>
+</div>
+
+</body>
+</html>

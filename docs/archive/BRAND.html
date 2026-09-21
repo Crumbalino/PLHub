@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Football Hub — Brand v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#05070C; --surface:#0E1116; --raised:#16181D; --hairline:#26282D;
+    --ink:#F2F6FA; --inkDim:#A2C0CA; --inkFaint:#8EABB6;
+    --ice:#9BE8FF; --rose:#FF8FC4; --bridge:#CDBCE2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:0;background:var(--ground);color:var(--ink);
+    font-family:"Atkinson Hyperlegible",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:34px 18px 80px}
+  .mono{font-family:"IBM Plex Mono",monospace}
+
+  /* masthead */
+  .mast{padding-bottom:26px;border-bottom:1px solid var(--hairline);margin-bottom:8px}
+  .brandline{font-family:"Archivo";font-weight:800;letter-spacing:-.035em;font-size:30px;line-height:1}
+  .dots{display:inline-block;margin-left:6px;white-space:nowrap}
+  .dot{display:inline-block;border-radius:50%;width:8px;height:8px;margin-left:3px}
+  .d1{background:var(--ice)}.d2{background:var(--bridge)}.d3{background:var(--rose)}
+  .mastmeta{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--inkFaint);margin:16px 0 0}
+
+  h1{font-family:"Archivo";font-size:40px;line-height:.98;font-weight:800;letter-spacing:-.035em;
+    margin:38px 0 16px}
+  h2{font-size:26px;line-height:1.12;font-weight:700;letter-spacing:-.02em;margin:46px 0 6px}
+  h3{font-size:20px;line-height:1.2;font-weight:700;letter-spacing:-.01em;margin:30px 0 8px}
+  h4{font-size:17px;font-weight:700;margin:22px 0 6px}
+  p{font-size:17px;line-height:1.6;margin:0 0 14px}
+  p.sm{font-size:15px;line-height:1.55}
+  .dim{color:var(--inkDim)}
+  .faint{color:var(--inkFaint)}
+  .lbl{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--inkFaint);margin:0 0 10px}
+  code{font-family:"IBM Plex Mono",monospace;font-size:.9em;color:var(--ice)}
+  hr{border:0;border-top:1px solid var(--hairline);margin:40px 0}
+  ul{padding-left:20px;margin:0 0 14px}
+  li{font-size:16px;line-height:1.6;margin-bottom:8px}
+  strong{font-weight:700}
+
+  .panel{background:var(--surface);border:1px solid var(--hairline);border-radius:13px;padding:22px;margin:18px 0}
+  .rule{background:var(--surface);border-left:3px solid var(--ice);border-radius:0 9px 9px 0;
+    padding:16px 20px;margin:18px 0}
+  .rule p{margin:0;font-size:16px}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+  th{text-align:left;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:10px;
+    color:var(--inkFaint);padding:0 10px 9px 0;border-bottom:1px solid var(--hairline)}
+  td{padding:9px 10px 9px 0;border-bottom:1px solid rgba(38,40,45,.6);vertical-align:middle}
+  .sw{display:inline-block;width:20px;height:20px;border-radius:5px;vertical-align:middle;margin-right:9px}
+
+  .grid2{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:700px){.grid2{grid-template-columns:1fr 1fr}}
+  .grid3{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(min-width:700px){.grid3{grid-template-columns:repeat(3,1fr)}}
+
+  /* logo boards */
+  .lb{background:var(--surface);border:1px solid var(--hairline);border-radius:13px;padding:24px;
+    display:flex;align-items:center;justify-content:center;min-height:112px}
+  .lbcap{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--inkFaint);margin:8px 0 0;text-align:center}
+  .wm{font-family:"Archivo";font-weight:800;letter-spacing:-.035em;line-height:.95;color:var(--ink)}
+
+  .fchip{border-radius:5px;background:var(--ground);display:grid;place-items:center;
+    box-shadow:inset 0 0 0 1px var(--hairline)}
+  .f48{width:48px;height:48px}.f32{width:32px;height:32px}.f16{width:16px;height:16px}
+  .favrow{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+
+  /* do / dont */
+  .dd{border-radius:11px;padding:18px;border:1px solid var(--hairline);background:var(--surface)}
+  .dd .h{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+    padding:4px 9px;border-radius:5px;display:inline-block;margin-bottom:14px;color:var(--ground)}
+  .do .h{background:var(--ice)}
+  .dont .h{background:var(--rose)}
+
+  .pill{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    padding:6px 11px;border-radius:6px;font-weight:600;background:var(--ice);color:var(--ground);display:inline-block}
+  .pill-out{background:transparent;color:var(--ice);box-shadow:inset 0 0 0 1.5px var(--ice)}
+  .pill-bad{background:#111C22;color:var(--ice);box-shadow:none}
+
+  .card{background:var(--surface);border:1px solid var(--hairline);border-radius:13px;padding:20px}
+  .cardh{font-family:"Archivo";font-size:21px;font-weight:800;letter-spacing:-.025em;margin:12px 0 7px;line-height:1.15}
+  .cardb{font-size:16px;line-height:1.55;margin:0 0 10px}
+  .cardm{font-family:"IBM Plex Mono",monospace;font-size:11.5px;margin:0 0 4px;color:var(--inkDim)}
+  .cardc{font-family:"IBM Plex Mono",monospace;font-size:11.5px;margin:0;color:var(--ice)}
+
+  .open{counter-reset:o}
+  .open li{margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="mast">
+  <div class="brandline">The Football Hub<span class="dots"><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span></span></div>
+  <p class="mastmeta">Brand · Version 1.0 · 25 August 2026 · Canonical</p>
+</div>
+
+<p class="dim" style="margin-top:22px">Companion to <code>THE_FOOTBALL_HUB.md</code> and <code>PAGE_SPEC.md</code>. This document resolves §10 (Design direction) and closes open items 2 and 3 of §17. Where it disagrees with §10, this wins — §10 is superseded on colour, type and the wordmark, and stands on everything else.</p>
+
+<div class="rule">
+  <p><strong>One rule governs this document.</strong> No colour, type size or tier enters the system without a measured contrast figure against the ground. Every number here was calculated, not judged by eye.</p>
+</div>
+
+<hr>
+
+<h1>1 · The idea</h1>
+
+<p>A board, not a page. Football sites all look alike because they inherited the newspaper sports section — big photo, big headline, feed below. A departure board is a different object: typographic, dense, information first, photography incidental.</p>
+
+<p>Which means <strong>hierarchy comes from type, not from decoration.</strong> No borders, boxes, badges or background colours doing a job that size and weight should be doing. If a page needs decoration to communicate hierarchy, the typography is not working.</p>
+
+<p><strong>Calm canvas, personality at the edges.</strong> Reading surfaces stay clear. Personality lives in the mark, the loading states, the empty states, the referee's one interesting fact and the sign-off. Nowhere else.</p>
+
+<h3>The consequence of choosing a cool palette</h3>
+<p class="dim">Ice and rose are cool accents on a cool near-black, which is the same temperature family as FotMob, Sky, OneFootball and FPL. So the palette will not be what separates you at a glance — <strong>the typography and the layout have to do that work instead.</strong> That raises the stakes on the board direction above and on Atkinson as the text face. Worth knowing, not worth reopening.</p>
+
+<hr>
+
+<h1>2 · Colour</h1>
+
+<p>Ten values. Nothing else is permitted, and there is no grey among them.</p>
+
+<h3>Surfaces</h3>
+<table>
+  <tr><th>Token</th><th>Hex</th><th>Use</th><th>Ink on it</th></tr>
+  <tr><td><span class="sw" style="background:#05070C;box-shadow:inset 0 0 0 1px #26282D"></span>ground</td><td>#05070C</td><td>The page</td><td>18.56</td></tr>
+  <tr><td><span class="sw" style="background:#0E1116"></span>surface</td><td>#0E1116</td><td>Cards, panels</td><td>17.41</td></tr>
+  <tr><td><span class="sw" style="background:#16181D"></span>surfaceRaised</td><td>#16181D</td><td>Nested panels</td><td>16.35</td></tr>
+  <tr><td><span class="sw" style="background:#26282D"></span>hairline</td><td>#26282D</td><td>1px rules only</td><td>—</td></tr>
+</table>
+<p class="sm dim"><strong>The ground is not pure black.</strong> #FFFFFF on #000000 is 21:1 — the theoretical maximum and the wrong target, because at that separation white bleeds at the edge of every letter. Halation is worst on small text and it hits exactly the readers this site is built for. 18.56:1 is four times the AA requirement with the glare gone.</p>
+
+<h3>Text</h3>
+<table>
+  <tr><th>Token</th><th>Hex</th><th>Use</th><th>Ratio</th></tr>
+  <tr><td><span class="sw" style="background:#F2F6FA"></span>ink</td><td>#F2F6FA</td><td>Body, headings</td><td>18.56</td></tr>
+  <tr><td><span class="sw" style="background:#A2C0CA"></span>inkDim</td><td>#A2C0CA</td><td>Metadata, timestamps</td><td>10.49</td></tr>
+  <tr><td><span class="sw" style="background:#8EABB6"></span>inkFaint</td><td>#8EABB6</td><td>Labels, captions</td><td>8.30</td></tr>
+</table>
+
+<div class="rule">
+  <p><strong>This is how the no-grey rule actually works.</strong> The dim tiers are not the ink at reduced opacity — that gives you #A6AAAE, which is a grey by any definition. They are the dimmed ink pushed 35% toward the ice, so every text tier sits in the same hue family as the accent and reads as <em>cooled ink</em> rather than dead grey. It also measures higher. Derive any new tier the same way.</p>
+</div>
+
+<h3>Flourish</h3>
+<table>
+  <tr><th>Token</th><th>Hex</th><th>Use</th><th>Ratio</th></tr>
+  <tr><td><span class="sw" style="background:#9BE8FF"></span>ice</td><td>#9BE8FF</td><td>The only interface accent</td><td>14.76</td></tr>
+  <tr><td><span class="sw" style="background:#FF8FC4"></span>rose</td><td>#FF8FC4</td><td>Logo mark only</td><td>9.57</td></tr>
+  <tr><td><span class="sw" style="background:#CDBCE2"></span>bridge</td><td>#CDBCE2</td><td>Third dot in the mark only</td><td>11.41</td></tr>
+</table>
+
+<p><strong>Ice marks one thing: that a story has moved.</strong> Outlet counts, movement figures, the <code>RISING</code> state. Nothing else on the page is ever ice, which is why the reader learns it in a day without being told. The moment ice means two things it means nothing.</p>
+
+<p><strong>Rose appears in the logo and nowhere else.</strong> That is what keeps it feeling earned, and it means its lower ratio is never load-bearing.</p>
+
+<h3>Banned</h3>
+<ul>
+  <li><strong>Any grey hex.</strong> Not one, anywhere, for any reason.</li>
+  <li><strong>Grass green.</strong> #2E8B57 measures 4.75:1 — an actual fail for body text, which is why football sites use it as a background rather than a colour.</li>
+  <li><strong>Green-to-cyan gradients.</strong> Fantasy Premier League is #00FF87 → #02EFFF. Since availability and card data come out of the FPL API, resemblance would read as affiliation.</li>
+  <li><strong>Red breaking-news banners</strong>, betting-app aesthetics, neon sports tones, stadium photography.</li>
+  <li><strong>Gradients on letterforms.</strong> See §3.</li>
+</ul>
+
+<hr>
+
+<h1>3 · The mark</h1>
+
+<p>The logo is the wordmark. There is no monogram, no badge, no crest and no separate symbol — <strong>the only device is three dots</strong>, set after the name like an ellipsis, running ice → bridge → rose.</p>
+
+<div class="grid2">
+  <div>
+    <div class="lb"><div class="wm" style="font-size:26px">The Football Hub<span class="dots"><span class="dot d1" style="width:7px;height:7px"></span><span class="dot d2" style="width:7px;height:7px"></span><span class="dot d3" style="width:7px;height:7px"></span></span></div></div>
+    <p class="lbcap">Primary · horizontal</p>
+  </div>
+  <div>
+    <div class="lb"><div style="text-align:center"><div class="wm" style="font-size:23px">THE FOOTBALL<br>HUB<span class="dots"><span class="dot d1" style="width:7px;height:7px"></span><span class="dot d2" style="width:7px;height:7px"></span><span class="dot d3" style="width:7px;height:7px"></span></span></div></div></div>
+    <p class="lbcap">Stacked · square formats</p>
+  </div>
+  <div>
+    <div class="lb"><div class="wm" style="font-size:17px">The Football Hub<span class="dots"><span class="dot d1" style="width:5px;height:5px"></span><span class="dot d2" style="width:5px;height:5px"></span><span class="dot d3" style="width:5px;height:5px"></span></span></div></div>
+    <p class="lbcap">Small · nav, footer, email</p>
+  </div>
+  <div>
+    <div class="lb"><div class="dots" style="margin:0"><span class="dot d1" style="width:15px;height:15px;margin:0 4px 0 0"></span><span class="dot d2" style="width:15px;height:15px;margin-right:4px"></span><span class="dot d3" style="width:15px;height:15px;margin:0"></span></div></div>
+    <p class="lbcap">Mark alone · favicon, avatar</p>
+  </div>
+</div>
+
+<h3>Why three flat dots and not a gradient</h3>
+<p>A gradient has no single contrast value, so it cannot be verified — and the moment one exists in the system, every future use needs a special exemption. Three flat dots read as the ramp, carry the same idea, and <strong>every value in the brand stays measurable.</strong> An ellipsis also happens to mean <em>this is still developing</em>, which is the product.</p>
+
+<h3>Rules</h3>
+<ul>
+  <li><strong>Clear space:</strong> the cap height of the wordmark on all four sides. Nothing enters it.</li>
+  <li><strong>Minimum sizes:</strong> wordmark 110px wide; dots 4px each with 3px gaps; favicon 16px.</li>
+  <li><strong>Dot order never changes.</strong> Ice, bridge, rose, left to right, always.</li>
+  <li><strong>Never</strong> outline the wordmark, add a shadow, place it on a photograph, stretch it, recolour it, put a football in it, or set it in anything but Archivo 800.</li>
+  <li><strong>On light backgrounds</strong> (print, partner decks) the wordmark goes to <code>ground</code> and the dots stay unchanged.</li>
+</ul>
+
+<div class="favrow" style="margin-top:20px">
+  <div class="fchip f48"><div><span class="dot d1" style="width:9px;height:9px;margin:0 3px 0 0"></span><span class="dot d2" style="width:9px;height:9px;margin-right:3px"></span><span class="dot d3" style="width:9px;height:9px;margin:0"></span></div></div>
+  <div class="fchip f32"><div><span class="dot d1" style="width:6px;height:6px;margin:0 2px 0 0"></span><span class="dot d2" style="width:6px;height:6px;margin-right:2px"></span><span class="dot d3" style="width:6px;height:6px;margin:0"></span></div></div>
+  <div class="fchip f16"><div><span class="dot d1" style="width:4px;height:4px;margin:0 1px 0 0"></span><span class="dot d2" style="width:4px;height:4px;margin-right:1px"></span><span class="dot d3" style="width:4px;height:4px;margin:0"></span></div></div>
+  <span class="mono faint" style="font-size:10px;letter-spacing:.1em">48 · 32 · 16 — all hold</span>
+</div>
+
+<hr>
+
+<h1>4 · Type</h1>
+
+<p>Three faces, three jobs, no overlap. All self-hosted via <code>next/font</code> — never a <code>fonts.googleapis.com</code> link.</p>
+
+<div class="grid3">
+  <div class="panel" style="margin:0">
+    <p class="lbl">Archivo</p>
+    <p style="font-family:Archivo;font-weight:800;font-size:29px;letter-spacing:-.035em;margin:0 0 8px;line-height:1">Romero</p>
+    <p class="sm faint" style="margin:0">Wordmark and h1 only. Never body.</p>
+  </div>
+  <div class="panel" style="margin:0">
+    <p class="lbl">Atkinson Hyperlegible</p>
+    <p style="font-size:20px;font-weight:700;margin:0 0 6px;line-height:1.15">Six outlets since Tuesday</p>
+    <p class="sm faint" style="margin:0">h2 down, and all body.</p>
+  </div>
+  <div class="panel" style="margin:0">
+    <p class="lbl">IBM Plex Mono</p>
+    <p class="mono" style="font-size:15px;margin:0 0 6px">6 outlets · +2 · 3h</p>
+    <p class="sm faint" style="margin:0">Labels, counts, timestamps, scores.</p>
+  </div>
+</div>
+
+<p><strong>Atkinson is the choice that carries the accessibility promise.</strong> It was commissioned by the Braille Institute and engineered so that no two characters can be confused — the tail on the <em>l</em>, the slab on the <em>1</em>, the open <em>C</em>. Geometric faces like Poppins make <em>I</em> and <em>l</em> identical and use a single-storey <em>a</em>; that is the wrong trade for a product whose whole premise is scanning. Atkinson is also warm, slightly odd, and used by nothing in football.</p>
+
+<h3>Scale</h3>
+<table>
+  <tr><th>Role</th><th>Size</th><th>Line</th><th>Weight</th><th>Face</th></tr>
+  <tr><td>h1</td><td>40</td><td>0.98</td><td>800</td><td>Archivo</td></tr>
+  <tr><td>h2</td><td>26</td><td>1.12</td><td>700</td><td>Atkinson</td></tr>
+  <tr><td>h3</td><td>20</td><td>1.20</td><td>700</td><td>Atkinson</td></tr>
+  <tr><td>h4</td><td>17</td><td>1.30</td><td>700</td><td>Atkinson</td></tr>
+  <tr><td>body</td><td>17</td><td>1.60</td><td>400</td><td>Atkinson</td></tr>
+  <tr><td>bodySm</td><td>15</td><td>1.55</td><td>400</td><td>Atkinson</td></tr>
+  <tr><td>caption</td><td>13.5</td><td>1.50</td><td>400</td><td>Atkinson</td></tr>
+  <tr><td>label</td><td>11</td><td>1.20</td><td>600</td><td>Mono · 0.18em · caps</td></tr>
+  <tr><td>data</td><td>12</td><td>1.50</td><td>500</td><td>Mono</td></tr>
+</table>
+
+<p class="sm dim"><strong>Body is 17px, not 15px.</strong> The default sports-site body size assumes a reader who has committed to an article. This product assumes someone with two minutes and a toddler in the room.</p>
+
+<hr>
+
+<h1>5 · Components</h1>
+
+<h3>State pills</h3>
+<div class="grid2">
+  <div class="dd do">
+    <span class="h">Do</span>
+    <p style="margin:0 0 12px"><span class="pill">Rising</span> <span class="mono faint" style="font-size:11px">14.76:1 solid</span></p>
+    <p style="margin:0 0 12px"><span class="pill pill-out">Confirmed</span> <span class="mono faint" style="font-size:11px">outline, secondary</span></p>
+    <p style="margin:0"><span class="mono" style="color:var(--ice);font-size:11px;letter-spacing:.14em">RISING</span> <span class="mono faint" style="font-size:11px">— or no pill at all</span></p>
+  </div>
+  <div class="dd dont">
+    <span class="h">Don't</span>
+    <p style="margin:0 0 12px"><span class="pill pill-bad">Rising</span></p>
+    <p class="sm faint" style="margin:0">Accent on tinted accent measures 11:1 — it <em>passes</em>. What it fails is chroma separation: colour on the same colour reads muddy at a glance, so it scans slowly. It is also what every dashboard does.</p>
+  </div>
+</div>
+
+<h3>The story card</h3>
+<div class="card">
+  <span class="pill">Rising</span>
+  <p class="cardh">Atlético open talks over Cristian Romero</p>
+  <p class="cardb">Contact has been made over a move. No fee has been reported and no timeline has been set.</p>
+  <p class="cardm">SKY SPORTS · GUARDIAN · THE ATHLETIC · 3h</p>
+  <p class="cardc">6 outlets · +2 today</p>
+</div>
+<p class="sm dim">Category label in mono. Headline in Archivo at h3 weight. The bones in Atkinson at 16px. Outlets in dim mono. The count in ice, because the count is the movement. <strong>Four tiers, no boxes, no dividers</strong> — the hierarchy is entirely type and colour.</p>
+
+<h3>Hard limits</h3>
+<ul>
+  <li><strong>11px minimum font size.</strong> Anywhere, no exceptions.</li>
+  <li><strong>44×44px minimum touch target.</strong></li>
+  <li><strong>320px minimum viewport.</strong></li>
+  <li><strong>Status is always a word.</strong> Never colour alone — WCAG 1.4.1. A dot may reinforce it.</li>
+  <li><strong>Tokens are plain TypeScript objects</strong>, never CSS custom properties. Undefined CSS variables render components invisibly <em>and pass every build check</em> — that is what broke the site twice.</li>
+  <li><strong>Verify in the live DOM</strong>, not in source.</li>
+</ul>
+
+<hr>
+
+<h1>6 · Voice, in one page</h1>
+
+<p>Flat, factual, devoid of emotion. Summaries orient the reader; they do not entertain.</p>
+<ul>
+  <li>The fact never bends for the joke.</li>
+  <li>The narrator is never above the reader.</li>
+  <li>Nothing is invented. Ever.</li>
+</ul>
+
+<p><strong>Personality lives in exactly two slots.</strong> The referee's one interesting fact — the only place tone is licensed on the page, and the thing you repeat to your mate at kick-off. And the sign-off: one human-written line at the end of the snapshot, sixty seconds a day, and the reason the page feels like a person made it.</p>
+
+<p><strong>Banned:</strong> <span class="dim">exclamation marks · "only time will tell" · "fans will be delighted" · "massive blow" · "huge boost" · "masterclass" · "crucial", "vital", "must-win" · GOAT, cooked, washed, based · "it remains to be seen" · emoji in section headers.</span></p>
+
+<p><strong>Serious news is a different register entirely.</strong> Facts, one sentence. Human response, one sentence. No wit, no hook.</p>
+
+<hr>
+
+<h1>7 · Still open</h1>
+<ol class="open">
+  <li><strong>Gambling.</strong> §11 of the brief has this unresolved and it must be decided before any commercial page ships. It also constrains this document — an age-gated affiliate surface needs its own visual treatment.</li>
+  <li><strong>Legacy pages.</strong> <code>/about</code>, <code>/how-it-works</code>, <code>/principles</code> still describe the deleted product. Needs Search Console impressions before deciding delete, redirect or rewrite.</li>
+  <li><strong>The Hub Rating.</strong> Weighting undecided, block does not render until it is.</li>
+  <li><strong>Motion.</strong> Not specified here. Nothing animates until there is a real page to animate.</li>
+  <li><strong>Light mode.</strong> Not built, not promised. The email will need one.</li>
+</ol>
+
+<hr>
+
+<p class="faint sm" style="margin-top:30px">Living document. It changes when the brand changes, and only then. Companion file: <code>tokens.ts</code> — the values above, ready to drop into the repo.</p>
+
+</div>
+</body>
+</html>

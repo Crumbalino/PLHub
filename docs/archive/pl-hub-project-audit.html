@@ -1,0 +1,613 @@
+<title>PL Hub Project Audit</title>
+<style>
+:root{
+  --ink:#14182B;
+  --paper:#F3F5F4;
+  --panel:#FFFFFF;
+  --line:#DBE0DF;
+  --muted:#5B6478;
+  --navy:#1C2340;
+  --navy-ink:#EFF1F7;
+  --teal:#0E7C86;
+  --teal-soft:#E4F1F0;
+  --pink:#C23C6B;
+  --pink-soft:#FBE8EE;
+  --amber:#B9762E;
+  --amber-soft:#F7EBDB;
+  --shadow: 0 1px 2px rgba(20,24,43,0.06), 0 8px 24px -12px rgba(20,24,43,0.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#EDEFF6;
+    --paper:#12141F;
+    --panel:#191C2B;
+    --line:#2C3040;
+    --muted:#9AA2B8;
+    --navy:#232A47;
+    --navy-ink:#EDEFF6;
+    --teal:#4FC3C0;
+    --teal-soft:#16302E;
+    --pink:#E68AAC;
+    --pink-soft:#3A1E29;
+    --amber:#E0A857;
+    --amber-soft:#3A2C17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#EDEFF6;
+  --paper:#12141F;
+  --panel:#191C2B;
+  --line:#2C3040;
+  --muted:#9AA2B8;
+  --navy:#232A47;
+  --navy-ink:#EDEFF6;
+  --teal:#4FC3C0;
+  --teal-soft:#16302E;
+  --pink:#E68AAC;
+  --pink-soft:#3A1E29;
+  --amber:#E0A857;
+  --amber-soft:#3A2C17;
+  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Source Serif 4", Georgia, "Times New Roman", serif;
+  line-height:1.55;
+}
+h1,h2,h3,.display{
+  font-family:"Sora", -apple-system, "Segoe UI", sans-serif;
+  text-wrap:balance;
+}
+.mono{
+  font-family:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+::selection{ background: var(--pink-soft); }
+
+.wrap{
+  max-width:920px;
+  margin:0 auto;
+  padding:56px 28px 96px;
+}
+
+/* ---------- Header ---------- */
+header.top{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  margin-bottom:44px;
+}
+.eyebrow{
+  font-family:"JetBrains Mono", monospace;
+  font-size:12px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--teal);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.eyebrow::before{
+  content:"";
+  width:7px;height:7px;
+  background:var(--teal);
+  border-radius:1px;
+  transform:rotate(45deg);
+  display:inline-block;
+}
+h1.display{
+  font-size:clamp(28px,4vw,38px);
+  font-weight:650;
+  margin:0;
+  letter-spacing:-0.01em;
+}
+.dek{
+  font-size:16px;
+  color:var(--muted);
+  max-width:62ch;
+  margin:0;
+}
+
+/* ---------- Stat strip ---------- */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:40px;
+}
+.stat{
+  background:var(--panel);
+  padding:16px 18px;
+}
+.stat .n{
+  font-family:"Sora",sans-serif;
+  font-size:26px;
+  font-weight:650;
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+}
+.stat .l{
+  font-family:"JetBrains Mono",monospace;
+  font-size:11px;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-top:6px;
+}
+.stat.flag .n{ color:var(--amber); }
+
+/* ---------- Section headers ---------- */
+section{ margin-bottom:48px; }
+.section-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:16px;
+  border-bottom:2px solid var(--ink);
+  padding-bottom:10px;
+  margin-bottom:6px;
+}
+h2.display{
+  font-size:20px;
+  font-weight:650;
+  margin:0;
+}
+.section-note{
+  font-family:"JetBrains Mono",monospace;
+  font-size:11.5px;
+  color:var(--muted);
+  text-align:right;
+  max-width:34ch;
+}
+.section-intro{
+  font-size:14.5px;
+  color:var(--muted);
+  margin:12px 0 20px;
+  max-width:70ch;
+}
+
+/* ---------- File rows ---------- */
+.filelist{
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+}
+.file{
+  background:var(--panel);
+  padding:14px 18px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:6px 16px;
+  align-items:start;
+}
+.file .name{
+  font-family:"JetBrains Mono",monospace;
+  font-size:13px;
+  font-weight:500;
+  word-break:break-word;
+}
+.file .desc{
+  grid-column:1 / -1;
+  font-size:14.5px;
+  color:var(--ink);
+  opacity:0.88;
+}
+.file .date{
+  font-family:"JetBrains Mono",monospace;
+  font-size:11px;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.tags{
+  grid-column:1/-1;
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:2px;
+}
+.tag{
+  font-family:"JetBrains Mono",monospace;
+  font-size:10.5px;
+  letter-spacing:0.03em;
+  padding:2px 7px;
+  border-radius:4px;
+  text-transform:uppercase;
+}
+.tag.dup{ background:var(--amber-soft); color:var(--amber); }
+.tag.superseded{ background:var(--amber-soft); color:var(--amber); }
+.tag.unique{ background:var(--teal-soft); color:var(--teal); }
+.tag.canonical{ background:var(--pink-soft); color:var(--pink); }
+
+/* ---------- Flags panel ---------- */
+.flags{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.flag{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-left:4px solid var(--amber);
+  border-radius:8px;
+  padding:16px 18px;
+  box-shadow:var(--shadow);
+}
+.flag .fnum{
+  font-family:"JetBrains Mono",monospace;
+  font-size:11px;
+  color:var(--amber);
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+.flag h3{
+  font-family:"Sora",sans-serif;
+  font-size:15.5px;
+  font-weight:650;
+  margin:0 0 6px;
+}
+.flag p{
+  font-size:14.5px;
+  margin:0 0 8px;
+  color:var(--ink);
+}
+.flag .rec{
+  font-size:13.5px;
+  color:var(--muted);
+  border-top:1px solid var(--line);
+  padding-top:8px;
+  margin-top:8px;
+}
+.flag .rec b{ color:var(--ink); font-weight:600; }
+
+/* ---------- Two projects callout ---------- */
+.callout{
+  background:var(--navy);
+  color:var(--navy-ink);
+  border-radius:12px;
+  padding:26px 26px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.callout h2{
+  font-family:"Sora",sans-serif;
+  font-size:18px;
+  font-weight:650;
+  margin:0;
+  color:var(--navy-ink);
+}
+.callout p{
+  font-size:14.5px;
+  margin:0;
+  opacity:0.92;
+  max-width:65ch;
+}
+.callout .opts{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:6px;
+  font-size:13.5px;
+}
+.callout .opts div{
+  display:flex;
+  gap:10px;
+  align-items:baseline;
+}
+.callout .opts .k{
+  font-family:"JetBrains Mono",monospace;
+  color:var(--teal);
+  min-width:18px;
+}
+
+footer{
+  margin-top:56px;
+  padding-top:18px;
+  border-top:1px solid var(--line);
+  font-family:"JetBrains Mono",monospace;
+  font-size:11px;
+  color:var(--muted);
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+@media (max-width:640px){
+  .stats{ grid-template-columns:repeat(2,1fr); }
+  .file{ grid-template-columns:1fr; }
+  .file .date{ text-align:left; }
+  .section-head{ flex-direction:column; align-items:flex-start; gap:4px; }
+  .section-note{ text-align:left; }
+}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;650;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">PL Hub &mdash; Project Knowledge Audit</div>
+    <h1 class="display">What's actually in this project</h1>
+    <p class="dek">A file-by-file pass through all 25 docs in the <strong>PL Hub</strong> project, sorted into the two brand eras they were written under, with the duplicates and superseded drafts called out so you know what's safe to clear.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n">25</div><div class="l">Files read</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">Brand eras</div></div>
+    <div class="stat flag"><div class="n">5</div><div class="l">Flagged for cleanup</div></div>
+    <div class="stat flag"><div class="n">1</div><div class="l">Exact duplicate</div></div>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2 class="display">The organizing fact</h2>
+    </div>
+    <p class="section-intro" style="margin-top:14px;">
+      This project spans a rebrand. Everything below was built as <strong>PLHub</strong> (plhub.co.uk) up through late Feb/early March, then the site became <strong>The Football Hub</strong> (thefootballhub.uk) &mdash; new navy/pink/teal palette, Sora + JetBrains Mono type, the diagonal bracket logo, the Hub Index scoring system. <span class="mono" style="font-size:13px;">tfh-future-proofing-spec.docx</span> even contains an explicit "Rebrand Switchover Checklist." The two eras below aren't just chronological &mdash; the TFH docs are the current source of truth, and most PLHub docs are either fully superseded or hold content that hasn't been migrated yet. That split is the main thing to work from when deciding what to keep.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="display">Current era &mdash; The Football Hub</h2>
+      <div class="section-note">10 files &middot; late-cycle, active brand</div>
+    </div>
+    <p class="section-intro">Most recent uploads, most authoritative. <span class="mono" style="font-size:13px;">tfh-brand-v6.html</span> is the master reference &mdash; everything else in this group either implements or specifies a piece of it.</p>
+    <div class="filelist">
+
+      <div class="file">
+        <div class="name">tfh-brand-v6.html</div>
+        <div class="date">11 Mar &middot; 23:18</div>
+        <div class="desc">Brand Identity System v6.0 (internally versioned 5.1). The master doc: philosophy, logo system, Hub Index, Snapshot concept, colour/type, card types, Your Verdict, buttons/states, layout, dark/light mode, motion, voice, accessibility, ad policy, CSS reference.</div>
+        <div class="tags"><span class="tag canonical">canonical</span><span class="tag dup">uploaded twice, identical</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">tfh-feed-v5.jsx</div>
+        <div class="date">11 Mar &middot; 23:04</div>
+        <div class="desc">React prototype of the feed &mdash; the working implementation the interaction spec and card system are written against.</div>
+        <div class="tags"><span class="tag canonical">canonical</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">tfh-allcaps-v2.html</div>
+        <div class="date">11 Mar &middot; 21:42</div>
+        <div class="desc">Wordmark-specific design exploration. Overlaps with the Logo System section of the brand doc but goes deeper on the all-caps treatment.</div>
+        <div class="tags"><span class="tag unique">unique detail</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">tfh-card-interaction-spec.md</div>
+        <div class="date">11 Mar &middot; 08:59</div>
+        <div class="desc">Formal interaction spec for the card system &mdash; Your Verdict's 10-emoji reactions, card types (By The Numbers, Trivia, On This Day, Quote, Fixture). Matches feed-v5 exactly.</div>
+        <div class="tags"><span class="tag canonical">canonical</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">tfh-frontend-redesign-brief.md</div>
+        <div class="date">9 Mar &middot; 22:54</div>
+        <div class="desc">Describes a different, earlier card taxonomy (Story/Stat/Quote/Result/LOL/Rumour) plus a gamification layer &mdash; progress bar, "Caught Up" badge, confetti &mdash; that isn't in feed-v5 or the interaction spec. Ends "Do not start building until Gautam confirms this document is correct."</div>
+        <div class="tags"><span class="tag superseded">appears superseded</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">tfh-seo-aeo-spec-v1.docx</div>
+        <div class="date">9 Mar &middot; 00:05</div>
+        <div class="desc">Entity-page SEO/AEO architecture: club/competition/manager/player/matchday/topic pages, two-layer copy system (Living Summary + SEO Foundation), JSON-LD, sitemap index.</div>
+        <div class="tags"><span class="tag unique">unique</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">filter-rules.md</div>
+        <div class="date">8 Mar &middot; 22:37</div>
+        <div class="desc">Content-scope rules: Tier 1/2/3, ALWAYS_HIDE keyword lists, PL competitions/clubs allow-lists, with a decisions log.</div>
+        <div class="tags"><span class="tag unique">unique</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">tfh-voice-document.docx</div>
+        <div class="date">8 Mar &middot; 22:21</div>
+        <div class="desc">Editorial voice doc built from 10 real summaries, TFH-branded &mdash; the current-era companion to the PLHub tone-of-voice docs below.</div>
+        <div class="tags"><span class="tag canonical">canonical</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">tfh-future-proofing-spec.docx</div>
+        <div class="date">8 Mar &middot; 08:56</div>
+        <div class="desc">Technical architecture: routes, DB schema, sitemaps, content pipeline, cron jobs &mdash; plus &sect;6, the explicit PLHub &rarr; TFH rebrand switchover checklist.</div>
+        <div class="tags"><span class="tag unique">unique</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">the-snapshot-v2-spec.md</div>
+        <div class="date">2 Mar &middot; 09:06</div>
+        <div class="desc">V2 of the Snapshot system: module changes, adds "By The Numbers" as always-on, makes "And Finally" conditional, adds club pages, data architecture, S1&ndash;S8 build plan.</div>
+        <div class="tags"><span class="tag canonical">supersedes v1</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="display">Legacy era &mdash; PLHub</h2>
+      <div class="section-note">15 files &middot; pre-rebrand</div>
+    </div>
+    <p class="section-intro">Written before the TFH rebrand. Some of this is fully absorbed into the current-era docs above; some &mdash; the feature backlog, the Snapshot v1 prompt templates, the UX microcopy &mdash; hasn't been migrated and is still the only copy of that content.</p>
+    <div class="filelist">
+
+      <div class="file">
+        <div class="name">PLHub-Brand-Voice-v2.docx</div>
+        <div class="date">7 Mar &middot; 22:43:49</div>
+        <div class="desc">4-part master doc: Tone of Voice, AI Summary Spec, UX Microcopy, Site Pages. This is the prose source for the four page components below and appears to supersede the standalone ToV doc.</div>
+        <div class="tags"><span class="tag canonical">master doc (legacy)</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">PLHub-Tone-of-Voice-v2.docx</div>
+        <div class="date">7 Mar &middot; 22:43:51</div>
+        <div class="desc">Narrower, earlier tone-of-voice doc &mdash; its content reads as fully contained within PLHub-Brand-Voice-v2's Tone of Voice section.</div>
+        <div class="tags"><span class="tag superseded">likely absorbed</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">PLHub-Claude-Code-Prompts-TOV-v2.docx</div>
+        <div class="date">7 Mar &middot; 22:43:50</div>
+        <div class="desc">8 sequential build prompts. Prompts 3&ndash;8 contain near-verbatim copies of the code in PageLayout.tsx, about-page.tsx, how-it-works-page.tsx, principles-page.tsx, contact-page.tsx and Footer.tsx.</div>
+        <div class="tags"><span class="tag dup">duplicates 6 files below</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">PageLayout.tsx</div>
+        <div class="date">7 Mar &middot; 22:43:49</div>
+        <div class="desc">Layout shell component. Byte-identical to Prompt 3 in the Prompts doc above.</div>
+        <div class="tags"><span class="tag dup">duplicate content</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">about-page.tsx</div>
+        <div class="date">7 Mar &middot; 22:43:42</div>
+        <div class="desc">About page component. Matches Prompt 4 and Brand-Voice-v2's Page 1 copy.</div>
+        <div class="tags"><span class="tag dup">duplicate content</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">how-it-works-page.tsx</div>
+        <div class="date">7 Mar &middot; 22:43:48</div>
+        <div class="desc">How-it-works page component. Matches Prompt 5 and Brand-Voice-v2's Page 2 copy.</div>
+        <div class="tags"><span class="tag dup">duplicate content</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">principles-page.tsx</div>
+        <div class="date">7 Mar &middot; 22:43:52</div>
+        <div class="desc">Principles page component, PLHub-branded.</div>
+        <div class="tags"><span class="tag dup">duplicate content</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">contact-page.tsx</div>
+        <div class="date">7 Mar &middot; 22:43:45</div>
+        <div class="desc">Contact page component. Matches Prompt 7 and Brand-Voice-v2's Page 4 copy.</div>
+        <div class="tags"><span class="tag dup">duplicate content</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">Footer.tsx</div>
+        <div class="date">7 Mar &middot; 22:43:47</div>
+        <div class="desc">Footer component. Byte-identical to Prompt 8 in the Prompts doc above.</div>
+        <div class="tags"><span class="tag dup">duplicate content</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">fixes-exact.md</div>
+        <div class="date">7 Mar &middot; 22:43:46</div>
+        <div class="desc">Five full-file rewrites &mdash; Navbar.tsx, StoryCard.tsx, ClubFilterBar.tsx, scoring.ts, transform.ts &mdash; PLHub-branded.</div>
+        <div class="tags"><span class="tag unique">unique (legacy code)</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">herogrid-score-fix.md</div>
+        <div class="date">7 Mar &middot; 22:43:47</div>
+        <div class="desc">Narrow bug-fix note for score badge styling on HeroTile/SidekickTile/CompactRow. PLHub-branded (--plh-gold).</div>
+        <div class="tags"><span class="tag unique">narrow / low priority</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">PLHub-Feature-Backlog.md</div>
+        <div class="date">2 Mar &middot; 20:19</div>
+        <div class="desc">Cleaned-up backlog: ~51 items across 8 categories, plus a parking lot and priority order. This is the more complete, later version.</div>
+        <div class="tags"><span class="tag unique">unique &amp; unmigrated</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">PL hub feature backlog</div>
+        <div class="date">28 Feb &middot; 13:08</div>
+        <div class="desc">Raw scratch draft of the backlog above &mdash; includes a stray Google Docs link and a note-to-self preamble. Earlier and less complete.</div>
+        <div class="tags"><span class="tag superseded">superseded by PLHub-Feature-Backlog.md</span></div>
+      </div>
+
+      <div class="file">
+        <div class="name">the-snapshot-content-brief.html</div>
+        <div class="date">1 Mar &middot; 16:21</div>
+        <div class="desc">V1 Snapshot content brief &mdash; companion to a "Snapshot Product Specification v1.0" that isn't in this project (possibly in your other one). Holds detailed AI prompt templates not duplicated anywhere else.</div>
+        <div class="tags"><span class="tag unique">unique &amp; unmigrated</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2 class="display">Five things worth a decision</h2>
+    </div>
+    <div class="flags">
+
+      <div class="flag">
+        <div class="fnum">01 &middot; Exact duplicate</div>
+        <h3>tfh-brand-v6.html is uploaded twice</h3>
+        <p>Same file, same content, two upload timestamps a minute apart (23:17 and 23:18 on 11 Mar). No reason to keep both.</p>
+        <div class="rec"><b>Recommendation:</b> delete one copy. Zero risk &mdash; it's a byte-for-byte duplicate.</div>
+      </div>
+
+      <div class="flag">
+        <div class="fnum">02 &middot; Superseded draft</div>
+        <h3>"PL hub feature backlog" vs. PLHub-Feature-Backlog.md</h3>
+        <p>The unnamed-extension file is an earlier, rougher draft of the same backlog &mdash; same content, less organized, with a stray link and a note-to-self left in.</p>
+        <div class="rec"><b>Recommendation:</b> delete "PL hub feature backlog" once you've confirmed nothing in it is missing from the cleaned-up version.</div>
+      </div>
+
+      <div class="flag">
+        <div class="fnum">03 &middot; Likely absorbed</div>
+        <h3>PLHub-Tone-of-Voice-v2.docx vs. PLHub-Brand-Voice-v2.docx</h3>
+        <p>The standalone tone-of-voice doc reads as a subset of Brand-Voice-v2's own Tone of Voice section &mdash; same rules, same examples, no additions found.</p>
+        <div class="rec"><b>Recommendation:</b> worth a side-by-side skim before deleting, but this looks safe to fold into the master doc.</div>
+      </div>
+
+      <div class="flag">
+        <div class="fnum">04 &middot; Doc/code duplication</div>
+        <h3>Six .tsx files exist twice &mdash; as prose prompts and as code</h3>
+        <p>PLHub-Claude-Code-Prompts-TOV-v2.docx contains the same component code as PageLayout.tsx, about-page.tsx, how-it-works-page.tsx, principles-page.tsx, contact-page.tsx and Footer.tsx, written out as build prompts.</p>
+        <div class="rec"><b>Recommendation:</b> keep the standalone .tsx files (they're the usable form); the Prompts doc is now mostly historical record of how they were built &mdash; fine to archive rather than keep in active project knowledge.</div>
+      </div>
+
+      <div class="flag">
+        <div class="fnum">05 &middot; Conflicting spec</div>
+        <h3>tfh-frontend-redesign-brief.md's card system doesn't match the current build</h3>
+        <p>Its Story/Stat/Quote/Result/LOL/Rumour taxonomy and gamification layer (badges, confetti) aren't present in tfh-feed-v5.jsx or tfh-card-interaction-spec.md, which use a different card set entirely.</p>
+        <div class="rec"><b>Recommendation:</b> confirm with yourself whether this brief was superseded or just never implemented &mdash; the doc itself says not to build from it until you'd signed off, so it may be worth archiving rather than deleting outright.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="margin-bottom:0;">
+    <div class="callout">
+      <h2>On the two projects</h2>
+      <p>I can only read the project attached to this conversation &mdash; "PL Hub," the 25 files above. I have no visibility into your second project, so I can't compare them directly or tell you what's duplicated across the two from here.</p>
+      <div class="opts">
+        <div><span class="k">&rarr;</span> Open a session attached to the other project and I can run this same pass on it, then you'd have two audits to compare side by side.</div>
+        <div><span class="k">&rarr;</span> Or tell me its file list (or paste in a doc or two) here and I'll check for overlap against this list directly.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>PL Hub project &middot; 25 files audited</span>
+    <span>Compiled 7 Sep 2026</span>
+  </footer>
+
+</div>
