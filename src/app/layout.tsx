@@ -49,7 +49,8 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: 'The Football Hub',
     locale: 'en_GB',
-    images: [{ url: '/logo.png', width: 4000, height: 1000 }],
+    // No `images`: src/app/opengraph-image.tsx supplies og:image. An explicit
+    // images entry here would override it, and /logo.png does not exist.
   },
   twitter: {
     card: 'summary',
